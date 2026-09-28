@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PEM Key Formatter</title>
+<style>
+  :root{
+    --bg:#eef1f4;
+    --panel:#ffffff;
+    --ink:#182430;
+    --muted:#5b6b7a;
+    --line:#d4dbe2;
+    --accent:#0e6e5c;
+    --accent-ink:#ffffff;
+    --warn-bg:#fdf3e3;
+    --warn-ink:#8a5a12;
+    --err-bg:#fbeaea;
+    --err-ink:#8f2323;
+    --ok-bg:#e6f3ee;
+    --ok-ink:#0e6e5c;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    padding:28px 20px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:22px}
+  h1{font-size:1.45rem;font-weight:650;letter-spacing:-0.01em}
+  .sub{color:var(--muted);margin-top:6px;font-size:.92rem;max-width:70ch;line-height:1.5}
+  .offline-note{
+    display:inline-block;margin-top:10px;font-size:.8rem;color:var(--ok-ink);
+    background:var(--ok-bg);border:1px solid #bcdccf;border-radius:4px;padding:3px 9px;
+  }
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .panel-head{
+    padding:12px 16px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  }
+  .panel-head h2{font-size:.95rem;font-weight:600}
+  textarea{
+    width:100%;min-height:340px;border:0;resize:vertical;
+    padding:14px 16px;font-family:var(--mono);font-size:.8rem;line-height:1.5;
+    color:var(--ink);outline:none;background:transparent;
+  }
+  textarea::placeholder{color:#9aa8b5}
+  pre#output{
+    min-height:340px;padding:14px 16px;font-family:var(--mono);font-size:.8rem;
+    line-height:1.5;overflow:auto;white-space:pre;color:var(--ink);
+  }
+  .empty-hint{color:#9aa8b5;font-family:inherit;font-size:.85rem;padding:14px 16px}
+  .btn{
+    font:inherit;font-size:.83rem;font-weight:600;cursor:pointer;
+    border:1px solid var(--line);background:#f5f7f9;color:var(--ink);
+    border-radius:6px;padding:7px 14px;
+  }
+  .btn:hover{background:#eceff2}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .btn.primary:hover{background:#0b5c4d}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+  .status{
+    margin-top:14px;display:flex;flex-direction:column;gap:8px;
+  }
+  .msg{border-radius:6px;padding:9px 13px;font-size:.86rem;line-height:1.45;border:1px solid transparent}
+  .msg.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:#bcdccf}
+  .msg.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:#ecd6a8}
+  .msg.err{background:var(--err-bg);color:var(--err-ink);border-color:#efc4c4}
+  .msg code{font-family:var(--mono);font-size:.8rem}
+  .opts{
+    display:flex;gap:18px;flex-wrap:wrap;align-items:center;
+    margin-top:16px;padding:12px 16px;background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;font-size:.87rem;
+  }
+  .opts label{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
+  .opts select,.opts input[type=text]{
+    font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:5px;background:#fff;
+  }
+  .opts input[type=text]{font-family:var(--mono);font-size:.8rem;width:230px}
+  .foot{margin-top:26px;color:var(--muted);font-size:.8rem;line-height:1.55;max-width:78ch}
+  .foot strong{color:var(--ink)}
+  .copied{color:var(--ok-ink);font-size:.82rem;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>PEM Key Formatter</h1>
+    <p class="sub">Paste a private key, public key, or certificate that has been mangled by email, Excel, or copy-paste. The tool rebuilds it into a correctly formatted PEM file: proper BEGIN/END headers, base64 body wrapped at 64 characters, Unix line endings, trailing newline.</p>
+    <span class="offline-note">Runs entirely in your browser — nothing is uploaded or sent anywhere.</span>
+  </header>
+
+  <div class="opts">
+    <label>Line endings
+      <select id="lineEnding">
+        <option value="lf" selected>LF (Unix — recommended)</option>
+        <option value="crlf">CRLF (Windows)</option>
+      </select>
+    </label>
+    <label>File name
+      <input type="text" id="fileName" value="private_key.pem" spellcheck="false">
+    </label>
+    <label><input type="checkbox" id="autoDetect" checked> Auto-detect key type if headers are missing</label>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Paste key here</h2>
+        <div class="btn-row">
+          <button class="btn" id="clearBtn">Clear</button>
+          <button class="btn primary" id="formatBtn">Format key</button>
+        </div>
+      </div>
+      <textarea id="input" spellcheck="false" autocomplete="off" autocapitalize="off"
+placeholder="-----BEGIN RSA PRIVATE KEY----- MIIEpAIBAAKCAQEA7... (even if it's all on one line, has literal \n, quotes, or broken wrapping — paste it as-is)"></textarea>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Formatted output</h2>
+        <div class="btn-row">
+          <span class="copied" id="copiedNote" hidden>Copied</span>
+          <button class="btn" id="copyBtn" disabled>Copy</button>
+          <button class="btn primary" id="downloadBtn" disabled>Download file</button>
+        </div>
+      </div>
+      <pre id="output"><span class="empty-hint">Formatted key will appear here.</span></pre>
+    </section>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <p class="foot">
+    <strong>Reminder:</strong> a private key is a secret. Send it to third parties only over an approved secure channel (SFTP, a secrets vault, or an encrypted file with the password shared separately) — never in a plain email body. This page performs no network calls; you can verify by loading it with Wi-Fi off.
+  </p>
+</div>
+
+<script>
+(function(){
+  var input=document.getElementById('input');
+  var output=document.getElementById('output');
+  var statusBox=document.getElementById('status');
+  var copyBtn=document.getElementById('copyBtn');
+  var downloadBtn=document.getElementById('downloadBtn');
+  var copiedNote=document.getElementById('copiedNote');
+  var formatted='';
+
+  var KNOWN_LABELS=[
+    'RSA PRIVATE KEY','PRIVATE KEY','ENCRYPTED PRIVATE KEY','EC PRIVATE KEY',
+    'RSA PUBLIC KEY','PUBLIC KEY','CERTIFICATE','CERTIFICATE REQUEST',
+    'NEW CERTIFICATE REQUEST','X509 CRL','PKCS7','OPENSSH PRIVATE KEY'
+  ];
+
+  function addMsg(kind,html){
+    var d=document.createElement('div');
+    d.className='msg '+kind;
+    d.innerHTML=html;
+    statusBox.appendChild(d);
+  }
+
+  function guessLabel(b64){
+    // Decode first bytes of DER to guess structure
+    try{
+      var bin=atob(b64.slice(0,64));
+      var bytes=[];
+      for(var i=0;i<bin.length;i++)bytes.push(bin.charCodeAt(i));
+      // PKCS#8: SEQUENCE { INTEGER(0), SEQUENCE{OID...} } — look for 02 01 00 30 near start
+      var head=bytes.slice(0,12).map(function(b){return ('0'+b.toString(16)).slice(-2)}).join(' ');
+      if(/^30 .. .. ..? ?02 01 00 30/.test(head)||/^30 82 .. .. 02 01 00 30/.test(head))return 'PRIVATE KEY';
+      // PKCS#1 RSA private: SEQUENCE { INTEGER(0), INTEGER(modulus)... } — 02 01 00 02
+      if(head.indexOf('02 01 00 02')>-1)return 'RSA PRIVATE KEY';
+      // Certificate: SEQUENCE { SEQUENCE { [0]... } } — 30 82 xx xx 30 82
+      if(/^30 82 .. .. 30 82/.test(head))return 'CERTIFICATE';
+      // SubjectPublicKeyInfo: 30 .. 30 0d 06 09
+      if(head.indexOf('30 0d 06 09')>-1)return 'PUBLIC KEY';
+    }catch(e){}
+    return null;
+  }
+
+  function cleanBase64(s){
+    return s.replace(/[^A-Za-z0-9+/=]/g,'');
+  }
+
+  function isValidBase64(s){
+    if(!s.length)return false;
+    if(!/^[A-Za-z0-9+/]+={0,2}$/.test(s))return false;
+    if(s.length%4!==0)return false;
+    try{atob(s);return true}catch(e){return false}
+  }
+
+  function wrap64(s){
+    var out=[];
+    for(var i=0;i<s.length;i+=64)out.push(s.slice(i,i+64));
+    return out.join('\n');
+  }
+
+  function format(){
+    statusBox.innerHTML='';
+    formatted='';
+    copiedNote.hidden=true;
+    var raw=input.value;
+    if(!raw.trim()){
+      addMsg('err','Nothing to format — paste a key first.');
+      render();return;
+    }
+
+    var notes=[];
+    var text=raw;
+
+    // Normalize common mangling
+    if(/\\r\\n|\\n|\\r/.test(text)){text=text.replace(/\\r\\n|\\n|\\r/g,'\n');notes.push('Converted literal <code>\\n</code> escape sequences into real line breaks.');}
+    if(/[""'']/.test(text)||/^"|"$/m.test(text.trim())){text=text.replace(/[""'']/g,'').replace(/^"+|"+$/gm,'');notes.push('Removed surrounding quote characters.');}
+    text=text.replace(/\r\n?/g,'\n');
+    if(/\u00A0|\u200B|\uFEFF/.test(text)){text=text.replace(/[\u00A0\u200B\uFEFF]/g,' ');notes.push('Removed non-breaking / zero-width spaces (common when copied from Word or web pages).');}
+
+    var blocks=[];
+    // Find PEM blocks with headers (tolerant of broken dashes/spacing)
+    var headerRe=/-{2,}\s*BEGIN\s+([A-Z0-9 ]+?)\s*-{2,}([\s\S]*?)-{2,}\s*END\s+([A-Z0-9 ]+?)\s*-{2,}/g;
+    var m,consumed=false;
+    while((m=headerRe.exec(text))!==null){
+      consumed=true;
+      var beginLabel=m[1].trim().replace(/\s+/g,' ');
+      var endLabel=m[3].trim().replace(/\s+/g,' ');
+      var body=m[2];
+      if(beginLabel!==endLabel)notes.push('BEGIN label “'+beginLabel+'” didn’t match END label “'+endLabel+'” — used the BEGIN label.');
+      // Preserve encrypted-key metadata lines (Proc-Type / DEK-Info)
+      var metaLines=[];
+      body.split('\n').forEach(function(line){
+        var t=line.trim();
+        if(/^(Proc-Type|DEK-Info):/i.test(t))metaLines.push(t);
+      });
+      var b64=cleanBase64(body.replace(/^(Proc-Type|DEK-Info):.*$/gmi,''));
+      blocks.push({label:beginLabel,b64:b64,meta:metaLines});
+    }
+
+    if(!consumed){
+      // No headers at all — treat entire paste as base64 body
+      var b64=cleanBase64(text);
+      if(!b64){addMsg('err','No key content found in the pasted text.');render();return;}
+      var label=null;
+      if(document.getElementById('autoDetect').checked)label=guessLabel(b64);
+      if(label){notes.push('No BEGIN/END headers found — detected content as <code>'+label+'</code> from the key structure and added headers.');}
+      else{label='RSA PRIVATE KEY';notes.push('No BEGIN/END headers found and type could not be detected — defaulted to <code>RSA PRIVATE KEY</code>. Change it manually if this is wrong.');}
+      blocks.push({label:label,b64:b64,meta:[]});
+    }
+
+    var outBlocks=[];
+    var hadError=false;
+    blocks.forEach(function(blk,idx){
+      var name=blk.label+(blocks.length>1?' (block '+(idx+1)+')':'');
+      if(KNOWN_LABELS.indexOf(blk.label)===-1)notes.push('Label <code>'+blk.label+'</code> is unusual — double-check it’s what the third party expects.');
+      if(!isValidBase64(blk.b64)){
+        hadError=true;
+        addMsg('err','<strong>'+name+':</strong> the base64 content is invalid or incomplete (length '+blk.b64.length+' chars, must be a multiple of 4 and decode cleanly). Part of the key is likely missing or corrupted — re-copy it from the original source. Formatting alone can’t fix missing data.');
+      }
+      var lines=['-----BEGIN '+blk.label+'-----'];
+      if(blk.meta.length){lines=lines.concat(blk.meta,['']);}
+      lines.push(wrap64(blk.b64));
+      lines.push('-----END '+blk.label+'-----');
+      outBlocks.push(lines.join('\n'));
+
+      if(/PRIVATE KEY/.test(blk.label)&&blk.label.indexOf('ENCRYPTED')===-1&&!blk.meta.length){
+        notes.push('<strong>'+blk.label+'</strong> is an unencrypted private key — treat the output file as a secret.');
+      }
+    });
+
+    formatted=outBlocks.join('\n')+'\n';
+    if(document.getElementById('lineEnding').value==='crlf')formatted=formatted.replace(/\n/g,'\r\n');
+
+    if(!hadError){
+      var summary=blocks.map(function(b){return b.label}).join(', ');
+      addMsg('ok','<strong>Formatted successfully:</strong> '+summary+' — '+(document.getElementById('lineEnding').value==='crlf'?'CRLF':'LF')+' line endings, 64-char wrapping, trailing newline.');
+    }
+    notes.forEach(function(n){addMsg('warn',n)});
+    render();
+  }
+
+  function render(){
+    if(formatted){
+      output.textContent=formatted;
+      copyBtn.disabled=false;downloadBtn.disabled=false;
+    }else{
+      output.innerHTML='<span class="empty-hint">Formatted key will appear here.</span>';
+      copyBtn.disabled=true;downloadBtn.disabled=true;
+    }
+  }
+
+  document.getElementById('formatBtn').addEventListener('click',format);
+  document.getElementById('clearBtn').addEventListener('click',function(){
+    input.value='';formatted='';statusBox.innerHTML='';copiedNote.hidden=true;render();input.focus();
+  });
+  copyBtn.addEventListener('click',function(){
+    navigator.clipboard.writeText(formatted).then(function(){
+      copiedNote.hidden=false;
+      setTimeout(function(){copiedNote.hidden=true},2000);
+    });
+  });
+  downloadBtn.addEventListener('click',function(){
+    var name=document.getElementById('fileName').value.trim()||'key.pem';
+    var blob=new Blob([formatted],{type:'text/plain'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=name;
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);
+  });
+  document.getElementById('lineEnding').addEventListener('change',function(){if(formatted)format()});
+})();
+</script>
+</body>
+</html>

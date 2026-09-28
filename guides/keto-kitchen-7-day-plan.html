@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keto Kitchen — 7-Day Plan</title>
+<style>
+  :root{
+    --bg:#F4F7F1;
+    --surface:#FFFFFF;
+    --surface-2:#FBFCF9;
+    --ink:#1C2A23;
+    --muted:#5F6A60;
+    --faint:#8A9389;
+    --primary:#2E5A4C;
+    --primary-deep:#234539;
+    --primary-soft:#E7F0E9;
+    --accent:#C0842B;
+    --accent-soft:#F6ECD6;
+    --warn:#AE5238;
+    --warn-soft:#F4E2DA;
+    --line:#E2E8DD;
+    --line-soft:#EDF1E9;
+    --good:#3C7C5C;
+    --mid:#C0842B;
+    --high:#AE5238;
+    --shadow:0 1px 2px rgba(28,42,35,.04), 0 8px 24px rgba(28,42,35,.05);
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;
+    --font-mono:"SFMono-Regular","SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- Layout ---------- */
+  .layout{display:flex;min-height:100vh;}
+  .sidebar{
+    width:264px;flex:0 0 264px;
+    background:var(--primary-deep);
+    color:#DCE7DF;
+    position:sticky;top:0;height:100vh;
+    display:flex;flex-direction:column;
+    padding:26px 18px 22px;
+    overflow-y:auto;
+  }
+  .brand{padding:0 8px 4px;}
+  .brand .eyebrow{
+    font-family:var(--font-mono);
+    font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:#9DBBA8;margin-bottom:8px;
+  }
+  .brand h1{
+    font-family:var(--font-display);
+    font-weight:600;font-size:25px;line-height:1.1;margin:0;color:#fff;
+  }
+  .brand .sub{font-size:12.5px;color:#A9C2B2;margin-top:7px;}
+  .nav{margin-top:26px;display:flex;flex-direction:column;gap:2px;}
+  .nav-label{
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;color:#7FA08C;padding:14px 10px 6px;
+  }
+  .navlink{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 11px;border-radius:9px;
+    font-size:14px;color:#CFE0D5;
+    transition:background .15s ease,color .15s ease;
+    cursor:pointer;border:1px solid transparent;
+  }
+  .navlink .dot{
+    font-family:var(--font-mono);font-size:11px;color:#7FA08C;min-width:16px;
+  }
+  .navlink:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .navlink.active{background:var(--accent);color:#1C2A23;font-weight:600;border-color:transparent;}
+  .navlink.active .dot{color:#3a2c0c;}
+  .nav-foot{margin-top:auto;padding:16px 10px 0;font-size:11px;color:#7FA08C;line-height:1.5;}
+
+  /* ---------- Topbar (mobile) ---------- */
+  .topbar{display:none;}
+
+  /* ---------- Content ---------- */
+  .content{flex:1;min-width:0;}
+  .wrap{max-width:880px;margin:0 auto;padding:46px 38px 90px;}
+  .page{display:none;animation:fade .35s ease;}
+  .page.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .pagehead{margin-bottom:26px;}
+  .pagehead .kicker{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent);margin-bottom:9px;
+  }
+  .pagehead h2{
+    font-family:var(--font-display);font-weight:600;
+    font-size:34px;line-height:1.08;margin:0;letter-spacing:-.01em;
+  }
+  .pagehead p.lede{color:var(--muted);margin:12px 0 0;max-width:60ch;font-size:15.5px;}
+
+  /* ---------- Overview ---------- */
+  .targets{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:28px 0;
+  }
+  .stat{
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px 16px 15px;box-shadow:var(--shadow);
+  }
+  .stat .num{font-family:var(--font-mono);font-size:23px;font-weight:600;color:var(--primary);letter-spacing:-.02em;}
+  .stat .lab{font-size:11.5px;color:var(--faint);margin-top:4px;text-transform:uppercase;letter-spacing:.07em;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px;}
+  .chip{
+    background:var(--primary-soft);color:var(--primary-deep);
+    border:1px solid #D4E3D8;border-radius:999px;
+    padding:6px 13px;font-size:12.5px;font-weight:500;
+  }
+  .chip.no{background:var(--warn-soft);color:#7d3322;border-color:#ecc9bd;}
+
+  .panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:22px 24px;box-shadow:var(--shadow);margin:18px 0;
+  }
+  .panel h3{
+    font-family:var(--font-display);font-size:19px;font-weight:600;margin:0 0 12px;
+  }
+  .panel p{margin:0 0 10px;color:var(--ink);font-size:14.5px;}
+  .panel p:last-child{margin-bottom:0;}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;}
+  .legend .key{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);}
+  .swatch{width:22px;height:8px;border-radius:4px;}
+  .swatch.g{background:var(--good);}
+  .swatch.m{background:var(--mid);}
+  .swatch.h{background:var(--high);}
+
+  .disclaimer{
+    background:var(--warn-soft);border:1px solid #ecc9bd;border-left:4px solid var(--warn);
+    border-radius:12px;padding:16px 18px;margin:22px 0 0;
+  }
+  .disclaimer strong{color:#7d3322;}
+  .disclaimer p{margin:0;font-size:13.5px;color:#5a3025;line-height:1.6;}
+  .disclaimer .tag{
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--warn);display:block;margin-bottom:6px;
+  }
+
+  /* ---------- Day page ---------- */
+  .day-summary{
+    display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:14px 20px;margin-bottom:22px;box-shadow:var(--shadow);
+  }
+  .day-summary .item{display:flex;flex-direction:column;}
+  .day-summary .item .v{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--primary);}
+  .day-summary .item .k{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;}
+  .day-summary .verdict{
+    margin-left:auto;font-size:12.5px;font-weight:600;color:var(--good);
+    background:var(--primary-soft);padding:6px 12px;border-radius:999px;
+  }
+
+  .meal{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden;
+  }
+  .meal-top{padding:20px 22px 4px;}
+  .meal-eyebrow{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;
+  }
+  .slot-tag{
+    font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:#fff;background:var(--primary);padding:4px 9px;border-radius:6px;
+  }
+  .cuisine-tag{
+    font-size:11.5px;color:var(--accent);background:var(--accent-soft);
+    padding:4px 10px;border-radius:999px;font-weight:600;
+  }
+  .time-tag{font-size:12px;color:var(--faint);margin-left:auto;font-family:var(--font-mono);}
+  .meal h3{
+    font-family:var(--font-display);font-size:21px;font-weight:600;margin:0;line-height:1.15;
+  }
+
+  .macros{
+    display:flex;gap:0;margin:16px 22px 0;
+    border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;background:var(--surface-2);
+  }
+  .macros .m{flex:1;padding:11px 8px;text-align:center;border-right:1px solid var(--line-soft);}
+  .macros .m:last-child{border-right:none;}
+  .macros .m .mv{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--ink);}
+  .macros .m .ml{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+  .macros .m.p .mv{color:var(--primary);}
+  .macros .m.c .mv{color:var(--accent);}
+
+  .gauge-wrap{margin:14px 22px 0;}
+  .gauge-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+  .gauge-head .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);}
+  .gauge-head .val{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);}
+  .gauge{height:8px;background:var(--line-soft);border-radius:5px;overflow:hidden;}
+  .gauge .fill{height:100%;border-radius:5px;transition:width .5s ease;}
+
+  .ingredients{padding:18px 22px 4px;}
+  .ingredients h4,.recipe summary span.lbl{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 10px;font-weight:600;
+  }
+  .ing-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;}
+  .ing-list li{
+    font-size:13.5px;color:var(--ink);padding-left:16px;position:relative;line-height:1.4;
+  }
+  .ing-list li::before{
+    content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--primary);
+  }
+
+  .recipe{border-top:1px solid var(--line-soft);margin-top:14px;}
+  .recipe summary{
+    list-style:none;cursor:pointer;padding:14px 22px;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:13.5px;color:var(--primary-deep);font-weight:600;
+  }
+  .recipe summary::-webkit-details-marker{display:none;}
+  .recipe summary .chev{transition:transform .2s ease;color:var(--faint);font-size:13px;}
+  .recipe[open] summary .chev{transform:rotate(90deg);}
+  .recipe ol{margin:0;padding:0 22px 18px 44px;}
+  .recipe ol li{font-size:13.5px;color:var(--ink);margin-bottom:7px;line-height:1.5;}
+
+  .meal-foot{
+    border-top:1px solid var(--line-soft);background:var(--surface-2);
+    padding:14px 22px;display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  }
+  .foot-cell .ft{
+    font-family:var(--font-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:3px;
+  }
+  .foot-cell .fv{font-size:12.5px;color:var(--muted);line-height:1.45;}
+  .micro-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;}
+  .micro{font-size:11px;background:var(--primary-soft);color:var(--primary-deep);padding:2px 8px;border-radius:999px;}
+
+  /* ---------- Prep ---------- */
+  .session{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);margin-bottom:22px;overflow:hidden;
+  }
+  .session-head{padding:20px 22px;border-bottom:1px solid var(--line-soft);background:var(--surface-2);}
+  .session-head .when{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;
+  }
+  .session-head h3{font-family:var(--font-display);font-size:21px;font-weight:600;margin:0;}
+  .session-head .covers{font-size:12.5px;color:var(--muted);margin-top:5px;}
+  .tasklist{list-style:none;margin:0;padding:14px 22px 18px;}
+  .tasklist li{display:flex;gap:11px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line-soft);}
+  .tasklist li:last-child{border-bottom:none;}
+  .tasklist input{margin-top:3px;accent-color:var(--primary);width:17px;height:17px;flex:0 0 auto;cursor:pointer;}
+  .tasklist label{font-size:14px;color:var(--ink);cursor:pointer;line-height:1.45;}
+  .tasklist input:checked + label{color:var(--faint);text-decoration:line-through;}
+
+  .prep-strategy{font-size:14px;color:var(--muted);line-height:1.55;padding:16px 22px 0;margin:0;}
+  .makes{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:14px 22px 2px;}
+  .makes-label{
+    font-family:var(--font-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--faint);margin-right:4px;
+  }
+  .makes .mk{
+    font-size:11.5px;background:var(--accent-soft);color:#7a531a;
+    border:1px solid #ecd9b3;border-radius:999px;padding:3px 10px;
+  }
+  .prep-steps{list-style:none;margin:0;padding:10px 22px 18px;counter-reset:none;}
+  .pstep{display:flex;gap:13px;align-items:flex-start;padding:14px 0;border-bottom:1px dashed var(--line-soft);}
+  .pstep:last-child{border-bottom:none;}
+  .pstep .num{
+    flex:0 0 auto;width:27px;height:27px;border-radius:8px;
+    background:var(--primary);color:#fff;
+    font-family:var(--font-mono);font-size:13px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+  }
+  .pstep.par .num{background:var(--accent);color:#26211a;}
+  .pstep .body{flex:1;min-width:0;}
+  .pstep .ptitle{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:4px;}
+  .pstep .ptitle strong{font-size:14.5px;color:var(--ink);font-weight:600;}
+  .pstep .par-tag{
+    font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+    color:#8a5a16;background:var(--accent-soft);border:1px solid #ecd9b3;padding:2px 7px;border-radius:5px;
+  }
+  .pstep .ptime{font-family:var(--font-mono);font-size:11px;color:var(--faint);margin-left:auto;}
+  .pstep .pdetail{font-size:13.5px;color:var(--muted);line-height:1.55;}
+  .pstep .pcheck{flex:0 0 auto;margin-top:5px;accent-color:var(--primary);width:18px;height:18px;cursor:pointer;}
+  .pstep.done{opacity:.5;}
+  .pstep.done .ptitle strong{text-decoration:line-through;}
+
+  /* ---------- Shopping ---------- */
+  .seg{
+    display:inline-flex;background:var(--surface);border:1px solid var(--line);
+    border-radius:11px;padding:4px;margin-bottom:22px;box-shadow:var(--shadow);gap:4px;flex-wrap:wrap;
+  }
+  .seg button{
+    border:none;background:transparent;font-family:var(--font-body);
+    font-size:13px;font-weight:600;color:var(--muted);
+    padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .15s ease;
+  }
+  .seg button.active{background:var(--primary);color:#fff;}
+  .shop-note{font-size:12.5px;color:var(--faint);margin:-12px 0 20px;}
+  .cat{margin-bottom:20px;}
+  .cat h3{
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--primary);margin:0 0 4px;padding-bottom:8px;border-bottom:2px solid var(--primary-soft);
+  }
+  .cat ul{list-style:none;margin:10px 0 0;padding:0;}
+  .cat li{
+    display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid var(--line-soft);
+  }
+  .cat li:last-child{border-bottom:none;}
+  .cat input{accent-color:var(--primary);width:18px;height:18px;flex:0 0 auto;cursor:pointer;}
+  .cat label{font-size:14px;color:var(--ink);cursor:pointer;flex:1;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+  .cat label .qty{font-family:var(--font-mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+  .cat input:checked + label{color:var(--faint);text-decoration:line-through;}
+  .cat input:checked + label .qty{color:var(--faint);}
+  .staple{
+    font-size:9.5px;font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;
+    color:var(--faint);background:var(--line-soft);padding:2px 7px;border-radius:5px;
+  }
+
+  /* ---------- Nutrition ---------- */
+  .tablewrap{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--faint);text-align:right;padding:14px 14px;background:var(--surface-2);border-bottom:1px solid var(--line);
+  }
+  thead th:first-child{text-align:left;}
+  tbody td{padding:13px 14px;font-size:13.5px;text-align:right;border-bottom:1px solid var(--line-soft);font-family:var(--font-mono);}
+  tbody td:first-child{text-align:left;font-family:var(--font-body);font-weight:600;color:var(--ink);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.avg{background:var(--primary-soft);}
+  tbody tr.avg td{font-weight:600;color:var(--primary-deep);border-top:2px solid #cfe0d5;}
+  .ok{color:var(--good);font-family:var(--font-body);font-weight:600;}
+  .flag{color:var(--warn);font-family:var(--font-body);font-weight:600;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:820px){
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:40;
+      background:var(--primary-deep);color:#fff;padding:13px 18px;
+    }
+    .topbar .t-brand{font-family:var(--font-display);font-size:18px;font-weight:600;}
+    .topbar .t-brand small{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#9DBBA8;display:block;}
+    .menu-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:var(--font-body);font-weight:600;}
+    .layout{display:block;}
+    .sidebar{
+      position:fixed;top:0;left:0;height:100vh;z-index:50;
+      transform:translateX(-100%);transition:transform .25s ease;width:280px;flex-basis:280px;
+      box-shadow:0 0 40px rgba(0,0,0,.3);
+    }
+    body.nav-open .sidebar{transform:translateX(0);}
+    .scrim{display:none;position:fixed;inset:0;background:rgba(20,30,25,.45);z-index:45;}
+    body.nav-open .scrim{display:block;}
+    .wrap{padding:30px 20px 80px;}
+    .pagehead h2{font-size:27px;}
+    .targets{grid-template-columns:repeat(2,1fr);}
+    .ing-list{grid-template-columns:1fr;}
+    .meal-foot{grid-template-columns:1fr;}
+    .day-summary{gap:16px;}
+    .tablewrap{overflow-x:auto;}
+    table{min-width:540px;}
+  }
+  @media (max-width:400px){
+    .macros .m .mv{font-size:14px;}
+    .targets{grid-template-columns:1fr 1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+  }
+  :focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="t-brand"><small>7-day plan</small>Keto Kitchen</div>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰ Menu</button>
+</header>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="eyebrow">7-day plan · 2 meals/day</div>
+      <h1>Keto Kitchen</h1>
+      <div class="sub">Low-carb, high-protein meals built for steady blood sugar and easy batch cooking.</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="nav-foot">Cook twice a week · assemble in minutes the rest.</div>
+  </aside>
+
+  <main class="content">
+    <div class="wrap" id="pages"></div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const DAILY_CARB_BUDGET = 35; // g net carbs / day target ceiling
+
+const MEALS = [
+  /* ---------- DAY 1 ---------- */
+  { day:1, slot:"Late morning", time:"8m prep · 10m cook", session:1,
+    name:"Masala Paneer Bhurji with Avocado", cuisine:"South Indian",
+    macros:{kcal:860,protein:48,net:8,carbs:13,fiber:5,fat:68},
+    ing:["Paneer — 180 g, crumbled","Eggs — 3","Avocado — ½, sliced","Onion — ¼ small, chopped","Tomato — ½ small, chopped","Green chili — 1, minced","Ginger-garlic paste — 1 tsp","Ghee — 2 tbsp","Turmeric, cumin, garam masala","Coriander + salt to taste"],
+    steps:["Heat ghee; sauté onion, chili and ginger-garlic until soft.","Add tomato, turmeric, cumin and garam masala; cook 2 min.","Stir in crumbled paneer; cook 3 min.","Pour in beaten eggs and scramble until just set.","Finish with coriander; serve with sliced avocado."],
+    micro:["Calcium","B12","Choline","Vitamin A"],
+    storage:"Best fresh. Pre-crumble paneer and chop aromatics on prep day; assembles in 10 min.",
+    batch:"Prep-day: crumble paneer, chop onion/tomato/chili." },
+  { day:1, slot:"Dinner", time:"10m prep · 20m cook", session:1,
+    name:"Tandoori Chicken, Cauliflower Rice & Raita", cuisine:"North Indian",
+    macros:{kcal:890,protein:58,net:11,carbs:14,fiber:3,fat:60},
+    ing:["Boneless chicken thighs — 220 g","Greek yogurt — 3 tbsp (marinade)","Tandoori masala — 2 tsp","Kashmiri chili — 1 tsp","Ginger-garlic paste — 1 tsp","Lemon juice — 1 tsp","Cauliflower rice — 1 cup (120 g)","Ghee — 1½ tbsp","Raita: yogurt ½ cup, cucumber ⅓, roasted cumin"],
+    steps:["Marinate chicken in yogurt, tandoori masala, chili, ginger-garlic and lemon (prep day).","Bake at 220°C / 425°F for 18–20 min, or pan-grill until charred.","Sauté cauliflower rice in ghee 5 min with a pinch of salt.","Stir cucumber and cumin into yogurt; serve raita alongside."],
+    micro:["Selenium","Probiotics","Vitamin C & K","Potassium"],
+    storage:"Chicken keeps 3–4 days and reheats well. Cauliflower rice 4 days. Raita 2 days.",
+    batch:"Prep-day: marinate + cook the whole chicken batch; cook cauliflower rice in bulk." },
+
+  /* ---------- DAY 2 ---------- */
+  { day:2, slot:"Late morning", time:"5m prep · no cook", session:1,
+    name:"Greek Yogurt Power Bowl", cuisine:"International",
+    macros:{kcal:800,protein:40,net:12,carbs:20,fiber:8,fat:60},
+    ing:["Full-fat Greek yogurt — 1 cup (240 g)","Chia seeds — 1 tbsp","Ground flaxseed — 1 tbsp","Almonds — 15, chopped","Walnuts — 6, chopped","Mixed berries — ¼ cup (40 g)","Coconut flakes (unsweetened) — 1 tbsp","Cinnamon — a pinch"],
+    steps:["Spoon yogurt into a bowl.","Top with chia, flax, nuts, coconut and berries.","Dust with cinnamon and serve cold."],
+    micro:["Omega-3","Magnesium","Calcium","Fiber"],
+    storage:"No cook. Pre-portion nuts and seeds into a jar on prep day; add yogurt fresh.",
+    batch:"Prep-day: make one dry nut-and-seed mix for the week." },
+  { day:2, slot:"Dinner", time:"10m prep · 20m cook", session:1,
+    name:"Kerala Coconut Fish Curry & Cauliflower Rice", cuisine:"South Indian",
+    macros:{kcal:900,protein:52,net:10,carbs:14,fiber:4,fat:58},
+    ing:["White fish fillets — 230 g (tilapia/cod/seer)","Coconut milk (full-fat) — ¾ cup","Onion — ½, sliced","Tomato — ½, chopped","Ginger-garlic paste — 1 tsp","Green chili — 2","Turmeric, Kashmiri chili, coriander powder","Curry leaves — 1 sprig","Coconut oil — 1½ tbsp","Cauliflower rice — 1 cup"],
+    steps:["Sauté onion, curry leaves, chili and ginger-garlic in coconut oil.","Add tomato and ground spices; cook to a paste.","Pour in coconut milk; simmer 5 min.","Slide in fish; simmer gently 8–10 min until cooked.","Serve over warm cauliflower rice."],
+    micro:["Omega-3","Iodine","Vitamin D","Manganese"],
+    storage:"Gravy keeps 3 days. Add fish fresh, or store cooked 2 days. Reheat gently.",
+    batch:"Prep-day: make the curry gravy in bulk; cook fish fresh or within 2 days." },
+
+  /* ---------- DAY 3 ---------- */
+  { day:3, slot:"Late morning", time:"6m prep · 8m cook", session:1,
+    name:"Cheese & Veg Masala Omelette with Avocado", cuisine:"Indian-style",
+    macros:{kcal:810,protein:38,net:7,carbs:12,fiber:5,fat:64},
+    ing:["Eggs — 3","Cheddar — 30 g, grated","Spinach — handful","Onion — 2 tbsp","Tomato — 2 tbsp","Green chili — 1","Cumin + turmeric — a pinch","Avocado — ½, sliced","Butter — 1½ tbsp"],
+    steps:["Whisk eggs with cumin, turmeric, salt and chili.","Soften onion, tomato and spinach in butter.","Pour in eggs; scatter cheese over the top.","Fold once set; serve with sliced avocado."],
+    micro:["Choline","B12","Folate","Potassium"],
+    storage:"Best fresh (8-min cook). Veg can be pre-chopped on prep day.",
+    batch:"Prep-day: chop the omelette veg mix." },
+  { day:3, slot:"Dinner", time:"12m prep · 12m cook", session:1,
+    name:"Grilled Chicken Caesar Salad (no croutons)", cuisine:"International",
+    macros:{kcal:900,protein:56,net:8,carbs:11,fiber:3,fat:62},
+    ing:["Boneless chicken — 200 g (from batch)","Romaine lettuce — 2 cups, chopped","Parmesan — 25 g, shaved","Egg — 1, soft-boiled","Dressing: mayo 2 tbsp, parmesan, lemon, garlic, mustard","Olive oil — 1 tbsp"],
+    steps:["Slice grilled chicken from the batch (or pan-sear 6 min per side).","Whisk dressing ingredients until smooth.","Toss romaine with dressing and olive oil.","Top with chicken, parmesan and halved soft-boiled egg."],
+    micro:["Vitamin K","Calcium","Selenium","Vitamin A"],
+    storage:"Assemble fresh. Dressing keeps 5 days; batch chicken keeps 3–4 days.",
+    batch:"Prep-day: cook chicken; make a jar of dressing." },
+
+  /* ---------- DAY 4 ---------- */
+  { day:4, slot:"Late morning", time:"8m prep · 10m cook", session:1,
+    name:"Tofu & Paneer Bhurji with Egg", cuisine:"Indian",
+    macros:{kcal:820,protein:40,net:9,carbs:14,fiber:5,fat:62},
+    ing:["Firm tofu — 120 g, crumbled","Paneer — 100 g, crumbled","Egg — 1, boiled","Avocado — ¼, sliced","Onion — ¼","Tomato — ½","Green chili — 1","Turmeric, garam masala, cumin","Ghee — 1½ tbsp","Coriander + salt"],
+    steps:["Sauté onion, chili and spices in ghee.","Add tomato; cook 2 min.","Stir in crumbled tofu and paneer; cook 4–5 min until dry.","Garnish with coriander; serve with boiled egg and avocado."],
+    micro:["Plant + dairy protein","Iron","Magnesium","Calcium"],
+    storage:"Crumble mix keeps 2 days. Best reheated gently or eaten fresh.",
+    batch:"Prep-day: crumble tofu + paneer; boil egg." },
+  { day:4, slot:"Dinner", time:"10m prep · 25m cook", session:1,
+    name:"Keto Butter Chicken & Cauliflower Rice", cuisine:"North Indian",
+    macros:{kcal:910,protein:54,net:13,carbs:17,fiber:4,fat:60},
+    ing:["Boneless chicken thighs — 220 g","Butter — 1½ tbsp","Heavy cream — 3 tbsp","Tomato paste — 2 tbsp","Coconut milk — 3 tbsp","Ginger-garlic paste — 1 tsp","Garam masala + Kashmiri chili","Kasuri methi — ½ tsp","Cauliflower rice — 1 cup"],
+    steps:["Sear chicken in butter; set aside.","Cook ginger-garlic, tomato paste and spices 3 min.","Add cream and coconut milk; simmer to a glossy sauce.","Return chicken; simmer 8 min. Crush in kasuri methi.","Serve over cauliflower rice."],
+    micro:["Vitamin A","Calcium","Lycopene","Potassium"],
+    storage:"Keeps 3 days; flavour improves overnight. Reheat on low.",
+    batch:"Prep-day: cook the full dish; portion with cauliflower rice." },
+
+  /* ---------- DAY 5 (session 2) ---------- */
+  { day:5, slot:"Late morning", time:"8m prep · 15m cook", session:2,
+    name:"Baked Salmon, Sautéed Spinach & Eggs", cuisine:"International",
+    macros:{kcal:840,protein:48,net:5,carbs:8,fiber:3,fat:60},
+    ing:["Salmon fillet — 200 g","Eggs — 2, boiled","Spinach — 2 cups (60 g)","Garlic — 1 clove","Lemon — ½","Olive oil — 1½ tbsp","Butter — 1 tbsp","Salt, pepper, paprika"],
+    steps:["Rub salmon with oil, paprika, salt and pepper.","Bake at 200°C / 400°F for 12–14 min.","Wilt spinach in butter and garlic, 3 min.","Serve with boiled eggs and a squeeze of lemon."],
+    micro:["Omega-3","Vitamin D","Iron","Folate"],
+    storage:"Salmon best within 1 day of baking. Spinach is quick to make fresh.",
+    batch:"Prep-day: boil eggs; portion salmon. Bake fresh or 1 day ahead." },
+  { day:5, slot:"Dinner", time:"10m prep · 20m cook", session:2,
+    name:"Palak Paneer with Cauliflower Rice", cuisine:"North Indian",
+    macros:{kcal:880,protein:40,net:12,carbs:18,fiber:6,fat:62},
+    ing:["Paneer — 150 g, cubed","Spinach — 4 cups (120 g), blanched","Onion — ¼","Tomato — ½","Green chili — 1","Ginger-garlic paste — 1 tsp","Garam masala + cumin","Heavy cream — 2 tbsp","Ghee — 1½ tbsp","Cauliflower rice — 1 cup"],
+    steps:["Blanch spinach 2 min; blend to a smooth puree.","Sauté onion, tomato, chili and spices in ghee.","Add spinach puree; simmer 5 min.","Fold in paneer and cream; warm through.","Serve over cauliflower rice."],
+    micro:["Iron","Calcium","Vitamin A & K","Folate"],
+    storage:"Keeps 3 days; reheats well. Add paneer fresh for best texture.",
+    batch:"Prep-day: blanch & puree spinach; cube paneer; make cauliflower rice." },
+
+  /* ---------- DAY 6 ---------- */
+  { day:6, slot:"Late morning", time:"10m prep · 18m cook", session:2,
+    name:"Veg & Cheese Frittata with Greek Yogurt", cuisine:"International",
+    macros:{kcal:810,protein:42,net:8,carbs:12,fiber:3,fat:58},
+    ing:["Eggs — 4","Cheddar — 30 g","Bell pepper — ¼","Zucchini — ¼","Spinach — handful","Onion — 2 tbsp","Olive oil — 1½ tbsp","Greek yogurt — ½ cup (side)","Salt, pepper, chili flakes"],
+    steps:["Whisk eggs with salt, pepper and chili flakes.","Soften peppers, zucchini, onion and spinach in oil.","Pour eggs over; scatter cheese.","Cook covered 6 min, then finish under a grill/broiler 4 min.","Slice; serve with Greek yogurt."],
+    micro:["Choline","B12","Vitamin C","Probiotics"],
+    storage:"Frittata keeps 3 days — great cold or reheated. Make ahead on prep day.",
+    batch:"Prep-day: bake the whole frittata; slice into portions." },
+  { day:6, slot:"Dinner", time:"12m prep · 22m cook", session:2,
+    name:"Chicken Coconut Curry & Cauliflower Rice", cuisine:"South Indian",
+    macros:{kcal:900,protein:56,net:11,carbs:15,fiber:4,fat:58},
+    ing:["Boneless chicken thighs — 220 g","Coconut milk — ¾ cup","Onion — ½","Tomato — ½","Green chili — 2","Ginger-garlic paste — 1 tsp","Curry leaves — 1 sprig","Turmeric, coriander powder, garam masala","Coconut oil — 1½ tbsp","Cauliflower rice — 1 cup"],
+    steps:["Sauté onion, curry leaves, chili and ginger-garlic in coconut oil.","Add tomato and ground spices; cook to a paste.","Add chicken; brown 5 min.","Pour in coconut milk; simmer 12 min until tender.","Serve over cauliflower rice."],
+    micro:["Selenium","Manganese","Vitamin C","Potassium"],
+    storage:"Keeps 3–4 days; reheats well and deepens in flavour.",
+    batch:"Prep-day: cook the full curry; portion with cauliflower rice." },
+
+  /* ---------- DAY 7 ---------- */
+  { day:7, slot:"Late morning", time:"10m prep · 8m cook", session:2,
+    name:"Shrimp & Avocado Salad", cuisine:"International",
+    macros:{kcal:800,protein:42,net:8,carbs:14,fiber:6,fat:58},
+    ing:["Shrimp (peeled) — 200 g","Avocado — 1, diced","Mixed salad greens — 2 cups","Cucumber — ⅓","Cherry tomato — 4","Olive oil — 2 tbsp","Lemon — ½","Garlic — 1 clove","Pumpkin & sunflower seeds — 1 tbsp"],
+    steps:["Sauté shrimp with garlic in 1 tbsp oil, 3–4 min until pink.","Whisk remaining oil with lemon, salt and pepper.","Toss greens, cucumber, tomato and avocado with dressing.","Top with shrimp and toasted seeds."],
+    micro:["Omega-3","Vitamin E","Magnesium","Folate"],
+    storage:"Cook shrimp fresh (fast). Greens and dressing can be prepped a day ahead.",
+    batch:"Prep-day: portion seeds; wash greens. Cook shrimp day-of." },
+  { day:7, slot:"Dinner", time:"15m prep · 15m cook", session:2,
+    name:"Chicken Seekh Kebab with Mint Chutney", cuisine:"North Indian",
+    macros:{kcal:870,protein:54,net:9,carbs:13,fiber:3,fat:56},
+    ing:["Ground chicken — 220 g","Onion — 2 tbsp, grated","Ginger-garlic paste — 1 tsp","Green chili — 1","Garam masala — 1 tsp","Coriander — 2 tbsp","Egg — 1 (binder)","Ghee/oil — 1½ tbsp","Cucumber-onion salad (side)","Chutney: mint, coriander, chili, yogurt, lemon"],
+    steps:["Mix ground chicken with onion, ginger-garlic, chili, garam masala, coriander and egg.","Shape onto skewers or into logs (prep day).","Pan-grill or bake in ghee 12–15 min, turning, until charred.","Blend chutney ingredients until smooth.","Serve kebabs with chutney and cucumber-onion salad."],
+    micro:["B-vitamins","Vitamin C","Vitamin A","Potassium"],
+    storage:"Shaped kebab mix keeps 2 days raw; grill fresh. Chutney 3 days.",
+    batch:"Prep-day: mix and shape kebabs; make chutney." }
+];
+
+const PREP = [
+  { title:"Cooking Session 1", when:"Sunday — ~75 min", covers:"Covers Days 1–4", total:"~75 min total",
+    strategy:"The oven does the heavy lifting while you work the stovetop. Marinate first, get the chicken baking, then build the two curries in parallel on the hob. Cold bits and portioning come last.",
+    makes:["Tandoori chicken batch","Keto butter chicken","Fish-curry gravy","Cauliflower rice ×3","6 boiled eggs","Caesar dressing","Cucumber raita","Nut-seed jar"],
+    steps:[
+      { t:"Heat the oven &amp; marinate the chicken", time:"10 min",
+        d:"Preheat the oven to 220°C / 425°F. Whisk the marinade — Greek yogurt, tandoori masala, Kashmiri chili, ginger-garlic paste and a squeeze of lemon. Coat the Day 1 thighs fully in it; season the Day 3 (Caesar) thighs simply with oil, salt and pepper. Leave both to sit while you prep the rest." },
+      { t:"Start the eggs (hands-off)", time:"runs in background", par:true,
+        d:"Cover 6 eggs with water, bring to a boil, then time 9–10 minutes. Tip into iced water and leave them — you'll peel at the very end while everything cools." },
+      { t:"Chop everything at once", time:"12 min",
+        d:"Chop all the onions, tomatoes and green chilies and measure out the ginger-garlic. Split into labelled tubs: one bhurji mix, one curry base, one butter-chicken share. Crumble the paneer for Days 1 and 4 and box it separately." },
+      { t:"Bake the chicken", time:"20 min · oven",
+        d:"Spread all the chicken on a lined tray and bake 18–20 minutes until the edges char. Set a timer and move straight to the two stovetop steps below — the oven runs unattended." },
+      { t:"Cook the butter chicken (while the oven runs)", time:"20 min · parallel", par:true,
+        d:"Sear the butter-chicken thighs in butter and set aside. Cook ginger-garlic, tomato paste and the spices for 3 min, add cream and coconut milk, and simmer to a glossy sauce. Return the chicken, simmer 8 min, then crush in kasuri methi. Cool, then box with a portion of cauliflower rice." },
+      { t:"Simmer the fish-curry gravy (while the oven runs)", time:"10 min · parallel", par:true,
+        d:"On a second burner, sauté onion, curry leaves, chili and ginger-garlic in coconut oil. Add tomato and the ground spices, then the coconut milk, and simmer 5 min. Store the gravy on its own — you'll poach the fish fresh on Day 2 so it stays tender." },
+      { t:"Rice &amp; cook the cauliflower", time:"10 min",
+        d:"Pulse the cauliflower to rice (or use ready-riced), toast it in a dry pan 4–5 min to drive off moisture, cool, and split into three tubs for Days 1, 2 and 4." },
+      { t:"Make the cold bits", time:"10 min",
+        d:"Whisk the Caesar dressing into a jar — mayo, parmesan, lemon, garlic and mustard. Stir cucumber and roasted cumin through yogurt for the raita. Tip the almonds, walnuts, chia, flax and coconut flakes into one jar as the dry topping for the yogurt bowls." },
+      { t:"Cool, portion &amp; store", time:"5 min",
+        d:"Pull and cool the baked chicken, peel the eggs, then portion and label everything. Fridge life: chicken and curries 3–4 days, cauliflower rice 4 days, raita 2 days. You're now set through Day 4." }
+    ]},
+  { title:"Cooking Session 2", when:"Wednesday — ~70 min", covers:"Covers Days 5–7", total:"~70 min total",
+    strategy:"Same rhythm: prep the spinach, get the frittata baking, then run the curry and the palak base together on the stovetop. Shape the kebabs raw to grill fresh, and leave salmon and shrimp for their own days.",
+    makes:["Chicken coconut curry","Palak base + cubed paneer","Veg &amp; cheese frittata","Seekh kebab mix","Cauliflower rice ×2","Mint chutney","Washed salad greens","Seed portions"],
+    steps:[
+      { t:"Heat the oven &amp; boil the eggs", time:"5 min",
+        d:"Preheat the oven to 200°C / 400°F for the frittata. Start 2 eggs boiling for Day 5 — 9–10 minutes, then straight into iced water." },
+      { t:"Blanch &amp; blend the spinach", time:"8 min",
+        d:"Blanch the palak spinach 2 minutes, shock it in cold water to keep the colour, then blend smooth for Day 5. Box the puree." },
+      { t:"Chop everything at once", time:"10 min",
+        d:"Chop onions, tomatoes, chilies, coriander and mint, and measure the ginger-garlic. Cube the paneer for the palak and keep it separate — it goes in fresh." },
+      { t:"Bake the frittata", time:"18 min · oven",
+        d:"Whisk 4 eggs with salt, pepper and chili flakes. Soften the peppers, zucchini, onion and spinach in oil, pour the eggs over, scatter the cheese, and bake until set. Move to the stovetop steps while it cooks." },
+      { t:"Cook the chicken coconut curry (while the oven runs)", time:"22 min · parallel", par:true,
+        d:"Sauté onion, curry leaves, chili and ginger-garlic in coconut oil. Add tomato and ground spices, brown the chicken 5 min, then pour in the coconut milk and simmer 12 min until tender. Cool and box with a portion of cauliflower rice." },
+      { t:"Build the palak base (while the oven runs)", time:"10 min · parallel", par:true,
+        d:"On a second burner, sauté onion, tomato, chili and the spices, stir in the spinach puree, simmer 5 min, and finish with cream. Keep the cubed paneer aside — fold it in fresh on Day 5 for the best texture." },
+      { t:"Rice &amp; cook the cauliflower", time:"8 min",
+        d:"Rice the cauliflower, toast it in a dry pan, cool, and split into two tubs for Days 5 and 6." },
+      { t:"Mix &amp; shape the seekh kebabs", time:"10 min",
+        d:"Combine the ground chicken with grated onion, ginger-garlic, chili, garam masala, coriander and a beaten egg. Shape into logs or onto skewers, cover, and refrigerate raw — you'll grill them fresh on Day 7 so they stay juicy." },
+      { t:"Blend the chutney &amp; prep the greens", time:"7 min",
+        d:"Blend mint, coriander, chili, yogurt and lemon into the chutney. Wash and spin-dry the salad greens, and portion the pumpkin and sunflower seeds for Day 7." },
+      { t:"Cool, portion &amp; store", time:"5 min",
+        d:"Slice the cooled frittata, peel the eggs, and label everything. Fridge life: curry 3–4 days, palak base 3 days, frittata 3 days, chutney 3 days. Bake the salmon and cook the shrimp fresh on their days." }
+    ]}
+];
+
+const SHOP = {
+  1:{
+    "Meat &amp; Seafood":[
+      {q:"450 g",t:"Boneless chicken thighs"},
+      {q:"250 g",t:"White fish fillets (tilapia / cod / seer)"}
+    ],
+    "Dairy &amp; Eggs":[
+      {q:"350 g",t:"Paneer"},
+      {q:"1 dozen",t:"Eggs"},
+      {q:"500 g",t:"Full-fat Greek yogurt"},
+      {q:"80 g",t:"Cheddar cheese"},
+      {q:"50 g",t:"Parmesan"}
+    ],
+    "Produce":[
+      {q:"1 large",t:"Cauliflower (for ~3 cups rice)"},
+      {q:"3",t:"Avocados"},
+      {q:"200 g",t:"Baby spinach"},
+      {q:"1 head",t:"Romaine lettuce"},
+      {q:"3",t:"Onions"},
+      {q:"4",t:"Tomatoes"},
+      {q:"2",t:"Cucumbers"},
+      {q:"2",t:"Lemons"},
+      {q:"100 g",t:"Mixed berries"},
+      {q:"1 bunch",t:"Fresh coriander"},
+      {q:"4",t:"Green chilies"},
+      {q:"1 knob",t:"Ginger"},
+      {q:"1 bulb",t:"Garlic"}
+    ],
+    "Pantry &amp; Oils":[
+      {q:"1 can",t:"Coconut milk (full-fat, 400 ml)"},
+      {q:"100 ml",t:"Heavy cream"},
+      {q:"1 small",t:"Tomato paste"},
+      {q:"",t:"Ghee",s:true},
+      {q:"",t:"Olive oil",s:true},
+      {q:"",t:"Coconut oil",s:true},
+      {q:"",t:"Mayonnaise (no-sugar)",s:true}
+    ],
+    "Nuts &amp; Seeds":[
+      {q:"50 g",t:"Almonds"},
+      {q:"30 g",t:"Walnuts"},
+      {q:"",t:"Chia seeds",s:true},
+      {q:"",t:"Ground flaxseed",s:true},
+      {q:"",t:"Coconut flakes (unsweetened)",s:true}
+    ],
+    "Spices &amp; Condiments":[
+      {q:"",t:"Tandoori masala",s:true},
+      {q:"",t:"Garam masala",s:true},
+      {q:"",t:"Turmeric · cumin · coriander powder",s:true},
+      {q:"",t:"Kashmiri red chili powder",s:true},
+      {q:"",t:"Ginger-garlic paste",s:true},
+      {q:"",t:"Kasuri methi (dried fenugreek)",s:true}
+    ]
+  },
+  2:{
+    "Meat &amp; Seafood":[
+      {q:"220 g",t:"Salmon fillet"},
+      {q:"220 g",t:"Boneless chicken thighs"},
+      {q:"220 g",t:"Ground (minced) chicken"},
+      {q:"200 g",t:"Shrimp, peeled"}
+    ],
+    "Dairy &amp; Eggs":[
+      {q:"150 g",t:"Paneer"},
+      {q:"6",t:"Eggs"},
+      {q:"200 g",t:"Full-fat Greek yogurt"},
+      {q:"60 g",t:"Cheddar cheese"}
+    ],
+    "Produce":[
+      {q:"400 g",t:"Spinach"},
+      {q:"1 head",t:"Cauliflower (for ~2 cups rice)"},
+      {q:"1",t:"Avocado"},
+      {q:"2",t:"Onions"},
+      {q:"2",t:"Tomatoes"},
+      {q:"1",t:"Cucumber"},
+      {q:"150 g",t:"Mixed salad greens"},
+      {q:"1",t:"Bell pepper"},
+      {q:"1",t:"Zucchini"},
+      {q:"4",t:"Cherry tomatoes"},
+      {q:"2",t:"Lemons"},
+      {q:"1 bunch",t:"Fresh mint"},
+      {q:"1 bunch",t:"Fresh coriander"},
+      {q:"3",t:"Green chilies"},
+      {q:"1 knob",t:"Ginger"},
+      {q:"1 bulb",t:"Garlic"}
+    ],
+    "Pantry &amp; Oils":[
+      {q:"1 can",t:"Coconut milk (full-fat)"},
+      {q:"50 ml",t:"Heavy cream"},
+      {q:"",t:"Olive oil",s:true},
+      {q:"",t:"Ghee",s:true},
+      {q:"",t:"Butter",s:true}
+    ],
+    "Nuts &amp; Seeds":[
+      {q:"30 g",t:"Pumpkin seeds"},
+      {q:"30 g",t:"Sunflower seeds"}
+    ],
+    "Spices &amp; Condiments":[
+      {q:"",t:"Garam masala · turmeric · cumin",s:true},
+      {q:"",t:"Coriander powder · chili powder · paprika",s:true},
+      {q:"",t:"Ginger-garlic paste",s:true},
+      {q:"",t:"Curry leaves",s:true}
+    ]
+  }
+};
+
+/* ============================================================
+   HELPERS
+============================================================ */
+const $ = (s,el=document)=>el.querySelector(s);
+const days = [...new Set(MEALS.map(m=>m.day))];
+
+function dayTotals(d){
+  const ms = MEALS.filter(m=>m.day===d);
+  return ms.reduce((a,m)=>({
+    kcal:a.kcal+m.macros.kcal, protein:a.protein+m.macros.protein,
+    net:a.net+m.macros.net, fat:a.fat+m.macros.fat, fiber:a.fiber+m.macros.fiber
+  }),{kcal:0,protein:0,net:0,fat:0,fiber:0});
+}
+function gaugeColor(net){ // per-meal scale, max ref 20g
+  if(net<=8) return "var(--good)";
+  if(net<=12) return "var(--mid)";
+  return "var(--high)";
+}
+function gaugeWidth(net){ return Math.min(net/20*100,100); }
+
+/* ============================================================
+   RENDER: NAV
+============================================================ */
+function renderNav(){
+  let h = `<a class="navlink" data-route="overview"><span class="dot">◆</span> Overview</a>`;
+  h += `<div class="nav-label">Daily plan</div>`;
+  days.forEach(d=>{
+    h += `<a class="navlink" data-route="day-${d}"><span class="dot">${d}</span> Day ${d}</a>`;
+  });
+  h += `<div class="nav-label">Kitchen</div>`;
+  h += `<a class="navlink" data-route="prep"><span class="dot">▣</span> Weekly prep</a>`;
+  h += `<a class="navlink" data-route="shopping"><span class="dot">▤</span> Master shopping list</a>`;
+  h += `<a class="navlink" data-route="nutrition"><span class="dot">▦</span> Nutrition summary</a>`;
+  $("#nav").innerHTML = h;
+}
+
+/* ============================================================
+   RENDER: PAGES
+============================================================ */
+function mealCard(m){
+  const g = m.macros;
+  return `
+  <article class="meal">
+    <div class="meal-top">
+      <div class="meal-eyebrow">
+        <span class="slot-tag">${m.slot}</span>
+        <span class="cuisine-tag">${m.cuisine}</span>
+        <span class="time-tag">${m.time}</span>
+      </div>
+      <h3>${m.name}</h3>
+    </div>
+
+    <div class="macros">
+      <div class="m p"><div class="mv">${g.protein}g</div><div class="ml">Protein</div></div>
+      <div class="m c"><div class="mv">${g.net}g</div><div class="ml">Net carbs</div></div>
+      <div class="m"><div class="mv">${g.fat}g</div><div class="ml">Fat</div></div>
+      <div class="m"><div class="mv">${g.kcal}</div><div class="ml">kcal</div></div>
+    </div>
+
+    <div class="gauge-wrap">
+      <div class="gauge-head">
+        <span class="lbl">Net-carb load</span>
+        <span class="val">${g.net}g net · ${g.fiber}g fiber</span>
+      </div>
+      <div class="gauge"><div class="fill" style="width:${gaugeWidth(g.net)}%;background:${gaugeColor(g.net)}"></div></div>
+    </div>
+
+    <div class="ingredients">
+      <h4>Ingredients</h4>
+      <ul class="ing-list">${m.ing.map(i=>`<li>${i}</li>`).join("")}</ul>
+    </div>
+
+    <details class="recipe">
+      <summary><span class="lbl">Method · ${m.steps.length} steps</span><span class="chev">▶</span></summary>
+      <ol>${m.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+    </details>
+
+    <div class="meal-foot">
+      <div class="foot-cell">
+        <div class="ft">Key nutrients</div>
+        <div class="micro-tags">${m.micro.map(x=>`<span class="micro">${x}</span>`).join("")}</div>
+      </div>
+      <div class="foot-cell">
+        <div class="ft">Make-ahead &amp; storage</div>
+        <div class="fv">${m.storage}</div>
+      </div>
+    </div>
+  </article>`;
+}
+
+function dayPage(d){
+  const t = dayTotals(d);
+  const within = t.net <= DAILY_CARB_BUDGET;
+  const ms = MEALS.filter(m=>m.day===d);
+  return `
+  <section class="page" id="page-day-${d}">
+    <div class="pagehead">
+      <div class="kicker">Day ${d} of 7 · ${ms[0].session===1?"Session 1 batch":"Session 2 batch"}</div>
+      <h2>Day ${d}</h2>
+    </div>
+    <div class="day-summary">
+      <div class="item"><span class="v">${t.kcal}</span><span class="k">Calories</span></div>
+      <div class="item"><span class="v">${t.protein}g</span><span class="k">Protein</span></div>
+      <div class="item"><span class="v">${t.net}g</span><span class="k">Net carbs</span></div>
+      <div class="item"><span class="v">${t.fat}g</span><span class="k">Fat</span></div>
+      <div class="verdict">${within?"✓ Within keto target":"⚠ Over carb budget"}</div>
+    </div>
+    ${ms.map(mealCard).join("")}
+  </section>`;
+}
+
+function overviewPage(){
+  return `
+  <section class="page" id="page-overview">
+    <div class="pagehead">
+      <div class="kicker">7-day low-carb plan</div>
+      <h2>A week of steady-energy eating</h2>
+      <p class="lede">Two meals a day, high in protein and built to keep blood sugar level — with South Indian and international dishes, all keto-friendly and no beef or pork. You cook in two short sessions; the rest of the week is assembly.</p>
+    </div>
+
+    <div class="targets">
+      <div class="stat"><div class="num">~1,710</div><div class="lab">kcal / day</div></div>
+      <div class="stat"><div class="num">~95g</div><div class="lab">protein / day</div></div>
+      <div class="stat"><div class="num">&lt;20g</div><div class="lab">net carbs / day</div></div>
+      <div class="stat"><div class="num">2×</div><div class="lab">cook sessions</div></div>
+    </div>
+
+    <div class="panel">
+      <h3>The rules this plan follows</h3>
+      <div class="chips">
+        <span class="chip">Keto · under 35g net carbs/day</span>
+        <span class="chip">30–58g protein per meal</span>
+        <span class="chip">Low glycemic</span>
+        <span class="chip">Easy, fast prep</span>
+        <span class="chip no">No beef</span>
+        <span class="chip no">No pork</span>
+      </div>
+      <p style="margin-top:14px">Proteins lean on chicken, fish, shrimp, eggs, paneer, tofu and Greek yogurt. Carbs come from non-starchy veg and a little fruit — no rice, wheat, potato or added sugar. Cauliflower rice stands in for grains.</p>
+    </div>
+
+    <div class="panel">
+      <h3>How to read each meal</h3>
+      <p>Every meal shows protein, net carbs, fat and calories up top. The <strong>net-carb load</strong> bar is a quick glance at blood-sugar impact — the lower and greener, the gentler on glucose.</p>
+      <div class="legend">
+        <div class="key"><span class="swatch g"></span> Low · gentle (≤8g)</div>
+        <div class="key"><span class="swatch m"></span> Moderate (9–12g)</div>
+        <div class="key"><span class="swatch h"></span> Higher (13g+)</div>
+      </div>
+      <p style="margin-top:14px">Open <strong>Method</strong> on any meal for steps. The <strong>Weekly prep</strong> page lists what to batch on each cooking day, and the <strong>Master shopping list</strong> is built from exactly these 14 meals, split by session.</p>
+    </div>
+
+    <div class="disclaimer">
+      <span class="tag">Please read first</span>
+      <p>This plan is for general information, not medical advice. Insulin resistance is often managed alongside medication — and cutting carbs can lower blood sugar enough that a dose may need adjusting. <strong>Check with your doctor or a registered dietitian before starting keto</strong>, especially if you take any glucose-lowering medication. Stay hydrated and keep electrolytes up, since low-carb eating flushes more sodium, potassium and magnesium.</p>
+    </div>
+  </section>`;
+}
+
+function prepPage(){
+  return `
+  <section class="page" id="page-prep">
+    <div class="pagehead">
+      <div class="kicker">Batch cooking playbook</div>
+      <h2>Weekly prep</h2>
+      <p class="lede">Two cooking sessions cover the whole week, step by step and in order. Amber steps run in parallel — start them while the oven is busy. Tick steps off as you go; nothing is saved, so it resets each time you reopen.</p>
+    </div>
+    ${PREP.map(p=>`
+      <div class="session">
+        <div class="session-head">
+          <div class="when">${p.when}</div>
+          <h3>${p.title}</h3>
+          <div class="covers">${p.covers}</div>
+        </div>
+        <p class="prep-strategy">${p.strategy}</p>
+        <div class="makes">
+          <span class="makes-label">This session makes</span>
+          ${p.makes.map(x=>`<span class="mk">${x}</span>`).join("")}
+        </div>
+        <ol class="prep-steps">
+          ${p.steps.map((s,i)=>{
+            const id="prep-"+p.title.replace(/\s/g,"")+"-"+i;
+            return `<li class="pstep${s.par?" par":""}">
+              <span class="num">${i+1}</span>
+              <div class="body">
+                <div class="ptitle">
+                  <strong>${s.t}</strong>
+                  ${s.par?`<span class="par-tag">↻ parallel</span>`:""}
+                  <span class="ptime">${s.time}</span>
+                </div>
+                <div class="pdetail">${s.d}</div>
+              </div>
+              <input type="checkbox" class="pcheck" id="${id}" aria-label="Mark step done">
+            </li>`;
+          }).join("")}
+        </ol>
+      </div>`).join("")}
+  </section>`;
+}
+
+function shoppingPage(){
+  const renderList = (session)=>{
+    const cats = SHOP[session];
+    return Object.keys(cats).map(cat=>`
+      <div class="cat">
+        <h3>${cat}</h3>
+        <ul>
+          ${cats[cat].map((it,i)=>{
+            const id="shop-"+session+"-"+cat.replace(/[^a-z]/gi,"")+"-"+i;
+            return `<li>
+              <input type="checkbox" id="${id}">
+              <label for="${id}">
+                ${it.q?`<span class="qty">${it.q}</span>`:""}
+                <span>${it.t}</span>
+                ${it.s?`<span class="staple">likely have</span>`:""}
+              </label>
+            </li>`;
+          }).join("")}
+        </ul>
+      </div>`).join("");
+  };
+  return `
+  <section class="page" id="page-shopping">
+    <div class="pagehead">
+      <div class="kicker">Auto-built from this week's 14 meals</div>
+      <h2>Master shopping list</h2>
+      <p class="lede">Everything the plan needs, totalled and grouped by aisle. Buy each session's list before its cooking day. Items marked "likely have" are pantry staples to check before re-buying.</p>
+    </div>
+    <div class="seg" id="shopSeg">
+      <button data-s="1" class="active">Session 1 · Days 1–4</button>
+      <button data-s="2">Session 2 · Days 5–7</button>
+    </div>
+    <p class="shop-note" id="shopNote">For the Sunday cook — covers Days 1 through 4.</p>
+    <div id="shopList">${renderList(1)}</div>
+  </section>`;
+}
+
+function nutritionPage(){
+  let rows = "";
+  let sum={kcal:0,protein:0,net:0,fat:0,fiber:0};
+  days.forEach(d=>{
+    const t=dayTotals(d);
+    sum.kcal+=t.kcal; sum.protein+=t.protein; sum.net+=t.net; sum.fat+=t.fat; sum.fiber+=t.fiber;
+    const ok = t.net<=DAILY_CARB_BUDGET && t.protein>=85;
+    rows+=`<tr>
+      <td>Day ${d}</td>
+      <td>${t.kcal}</td>
+      <td>${t.protein}g</td>
+      <td>${t.net}g</td>
+      <td>${t.fat}g</td>
+      <td>${t.fiber}g</td>
+      <td>${ok?'<span class="ok">✓ on target</span>':'<span class="flag">⚠ review</span>'}</td>
+    </tr>`;
+  });
+  const n=days.length;
+  const avg=k=>Math.round(sum[k]/n);
+  rows+=`<tr class="avg">
+    <td>Weekly avg</td>
+    <td>${avg("kcal")}</td>
+    <td>${avg("protein")}g</td>
+    <td>${avg("net")}g</td>
+    <td>${avg("fat")}g</td>
+    <td>${avg("fiber")}g</td>
+    <td><span class="ok">✓</span></td>
+  </tr>`;
+  return `
+  <section class="page" id="page-nutrition">
+    <div class="pagehead">
+      <div class="kicker">Daily totals</div>
+      <h2>Nutrition summary</h2>
+      <p class="lede">Macros add up from each day's two meals. Every day stays under the ${DAILY_CARB_BUDGET}g net-carb keto ceiling and hits a high protein floor.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Day</th><th>Calories</th><th>Protein</th><th>Net carbs</th><th>Fat</th><th>Fiber</th><th>Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="panel" style="margin-top:22px">
+      <h3>Reading the week</h3>
+      <p>Protein runs high across all seven days to protect muscle and steady appetite — useful for focus and avoiding energy crashes. Net carbs stay in keto range, and fat carries the calories, as expected on a ketogenic plan.</p>
+      <p>If a day feels heavy, drop one fat (skip the side avocado or halve the ghee). If you're more active, add an extra egg or a few more nuts rather than carbs.</p>
+    </div>
+  </section>`;
+}
+
+function renderPages(){
+  let h = overviewPage();
+  days.forEach(d=> h+=dayPage(d));
+  h += prepPage() + shoppingPage() + nutritionPage();
+  $("#pages").innerHTML = h;
+}
+
+/* ============================================================
+   ROUTING & INTERACTION
+============================================================ */
+function showRoute(route){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  const target = document.getElementById("page-"+route);
+  if(target){ target.classList.add("active"); }
+  else { document.getElementById("page-overview").classList.add("active"); route="overview"; }
+  document.querySelectorAll(".navlink").forEach(l=>{
+    l.classList.toggle("active", l.dataset.route===route);
+  });
+  document.body.classList.remove("nav-open");
+  window.scrollTo({top:0,behavior:"instant" in window ? "instant" : "auto"});
+}
+
+function initRouting(){
+  $("#nav").addEventListener("click",e=>{
+    const link=e.target.closest(".navlink");
+    if(!link) return;
+    location.hash = "#/"+link.dataset.route;
+  });
+  window.addEventListener("hashchange",()=>{
+    const r = location.hash.replace("#/","") || "overview";
+    showRoute(r);
+  });
+  const start = location.hash.replace("#/","") || "overview";
+  showRoute(start);
+}
+
+function initShopping(){
+  const seg=$("#shopSeg");
+  if(!seg) return;
+  const notes={1:"For the Sunday cook — covers Days 1 through 4.",2:"For the Wednesday cook — covers Days 5 through 7."};
+  const lists={
+    1:null,2:null
+  };
+  seg.addEventListener("click",e=>{
+    const btn=e.target.closest("button");
+    if(!btn) return;
+    seg.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const s=btn.dataset.s;
+    $("#shopNote").textContent=notes[s];
+    // rebuild list for selected session
+    const cats=SHOP[s];
+    const html=Object.keys(cats).map(cat=>`
+      <div class="cat">
+        <h3>${cat}</h3>
+        <ul>
+          ${cats[cat].map((it,i)=>{
+            const id="shop-"+s+"-"+cat.replace(/[^a-z]/gi,"")+"-"+i;
+            return `<li>
+              <input type="checkbox" id="${id}">
+              <label for="${id}">
+                ${it.q?`<span class="qty">${it.q}</span>`:""}
+                <span>${it.t}</span>
+                ${it.s?`<span class="staple">likely have</span>`:""}
+              </label>
+            </li>`;
+          }).join("")}
+        </ul>
+      </div>`).join("");
+    $("#shopList").innerHTML=html;
+  });
+}
+
+function initMobileNav(){
+  const open=()=>document.body.classList.add("nav-open");
+  const close=()=>document.body.classList.remove("nav-open");
+  $("#menuBtn").addEventListener("click",open);
+  $("#scrim").addEventListener("click",close);
+}
+
+/* ============================================================
+   BOOT
+============================================================ */
+function initPrep(){
+  const pages=$("#pages");
+  if(!pages) return;
+  pages.addEventListener("change",e=>{
+    const cb=e.target.closest(".pcheck");
+    if(!cb) return;
+    const step=cb.closest(".pstep");
+    if(step) step.classList.toggle("done", cb.checked);
+  });
+}
+
+renderNav();
+renderPages();
+initRouting();
+initShopping();
+initPrep();
+initMobileNav();
+</script>
+</body>
+</html>

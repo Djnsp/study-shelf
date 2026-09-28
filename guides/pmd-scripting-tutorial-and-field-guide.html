@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMD Scripting — The Complete Tutorial &amp; Field Guide</title>
+<style>
+:root{
+  --blueberry-400:#0875E1; --blueberry-500:#005CB9; --blueberry-100:#D7EAFC; --blueberry-050:#EEF7FE;
+  --licorice-500:#333333; --licorice-300:#494949; --licorice-200:#767676;
+  --soap-100:#F6F7F8; --soap-200:#F0F1F2; --soap-300:#E8EBED; --soap-400:#DFE2E6; --soap-500:#CED3D9;
+  --french-vanilla:#FFFFFF;
+  --cinnamon-500:#DE2E21; --cinnamon-100:#FFEFEE;
+  --cantaloupe-500:#F38B00; --cantaloupe-100:#FFF3E0;
+  --green-apple-600:#319C4C; --green-apple-100:#EBFFF0;
+  --plum-500:#8660D1; --plum-100:#F2EEFC;
+  --code-bg:#1E2226; --code-fg:#E8EBED; --code-key:#7CC4FA; --code-str:#A5D6A7; --code-com:#8A9299; --code-num:#FFCC80; --code-fn:#CE93D8; --code-tag:#FFAB91;
+  --mono:"SF Mono","Cascadia Code","JetBrains Mono",Consolas,Menlo,monospace;
+  --sans:"Roboto","Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--licorice-500);background:var(--soap-100);font-size:15px;line-height:1.6}
+
+/* ---------- Layout ---------- */
+.wrap{display:flex;min-height:100vh}
+nav{width:290px;flex-shrink:0;background:var(--french-vanilla);border-right:1px solid var(--soap-400);position:sticky;top:0;height:100vh;overflow-y:auto;padding:20px 0 40px}
+main{flex:1;min-width:0;max-width:980px;padding:36px 48px 120px;margin:0 auto}
+@media(max-width:900px){nav{display:none}main{padding:24px 18px 80px}}
+
+/* ---------- Nav ---------- */
+.nav-brand{padding:0 20px 14px;border-bottom:1px solid var(--soap-300);margin-bottom:12px}
+.nav-brand .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--blueberry-500);font-weight:700}
+.nav-brand h1{font-size:17px;font-weight:700;color:var(--licorice-500);line-height:1.3;margin-top:4px}
+.nav-search{margin:0 16px 12px;position:relative}
+.nav-search input{width:100%;padding:8px 12px;border:1px solid var(--soap-500);border-radius:20px;font-size:13px;font-family:var(--sans);outline:none;background:var(--soap-100)}
+.nav-search input:focus{border-color:var(--blueberry-400);background:#fff}
+nav a{display:block;padding:6px 20px 6px 24px;color:var(--licorice-300);text-decoration:none;font-size:13.5px;border-left:3px solid transparent}
+nav a:hover{background:var(--blueberry-050);color:var(--blueberry-500)}
+nav a.active{border-left-color:var(--blueberry-400);color:var(--blueberry-500);font-weight:600;background:var(--blueberry-050)}
+nav .grp{padding:14px 20px 4px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--licorice-200);font-weight:700}
+nav a.hidden{display:none}
+
+/* ---------- Typography ---------- */
+section{margin-bottom:64px;scroll-margin-top:20px}
+h2{font-size:26px;font-weight:700;margin:0 0 6px;color:var(--licorice-500);letter-spacing:-.01em}
+h2 .num{color:var(--blueberry-400);font-weight:800;margin-right:10px;font-variant-numeric:tabular-nums}
+h3{font-size:18px;font-weight:700;margin:32px 0 10px;color:var(--licorice-500)}
+h4{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--licorice-300)}
+p{margin:0 0 12px;max-width:78ch}
+.lede{font-size:16px;color:var(--licorice-300);margin-bottom:20px;max-width:80ch}
+ul,ol{margin:0 0 14px 22px;max-width:78ch}
+li{margin-bottom:5px}
+strong{font-weight:700}
+a.doclink{color:var(--blueberry-500)}
+code{font-family:var(--mono);font-size:.88em;background:var(--soap-300);padding:1.5px 5px;border-radius:4px;color:#1f3d5c;white-space:nowrap}
+hr.sep{border:none;border-top:1px solid var(--soap-400);margin:28px 0}
+
+/* ---------- Hero ---------- */
+.hero{background:linear-gradient(135deg,#0B2E4F 0%,#0A4E8F 55%,var(--blueberry-400) 100%);color:#fff;border-radius:14px;padding:34px 38px;margin-bottom:44px;position:relative;overflow:hidden}
+.hero::after{content:"<% %>";position:absolute;right:26px;bottom:-18px;font-family:var(--mono);font-size:120px;font-weight:700;opacity:.08;letter-spacing:-.05em}
+.hero .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:#9CCBF5;margin-bottom:8px}
+.hero h1{font-size:32px;font-weight:800;line-height:1.15;letter-spacing:-.015em;margin-bottom:12px;max-width:22ch}
+.hero p{color:#D7EAFC;max-width:64ch;font-size:15px}
+.hero .meta{display:flex;gap:22px;margin-top:18px;flex-wrap:wrap}
+.hero .meta div{font-size:12.5px;color:#9CCBF5}
+.hero .meta b{display:block;font-size:19px;color:#fff;font-weight:700}
+
+/* ---------- Code blocks ---------- */
+.cb{position:relative;margin:14px 0 20px;border-radius:10px;overflow:hidden;border:1px solid #12161A}
+.cb .cb-head{display:flex;justify-content:space-between;align-items:center;background:#14181C;padding:7px 14px;font-family:var(--mono);font-size:11.5px;color:#8A9299;border-bottom:1px solid #262C33}
+.cb .cb-head .lang{color:#7CC4FA;font-weight:600}
+.cb button.copy{background:transparent;border:1px solid #3A424A;color:#B8C0C8;font-size:11px;padding:2.5px 10px;border-radius:5px;cursor:pointer;font-family:var(--sans)}
+.cb button.copy:hover{border-color:#7CC4FA;color:#7CC4FA}
+.cb pre{background:var(--code-bg);color:var(--code-fg);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.8px;line-height:1.62;tab-size:2}
+.cb pre .k{color:var(--code-key)}      /* keywords / JSON keys */
+.cb pre .s{color:var(--code-str)}      /* strings */
+.cb pre .c{color:var(--code-com);font-style:italic}  /* comments */
+.cb pre .n{color:var(--code-num)}      /* numbers/bools */
+.cb pre .f{color:var(--code-fn)}       /* functions / namespaces */
+.cb pre .t{color:var(--code-tag)}      /* <% %> delimiters */
+
+/* ---------- Callouts ---------- */
+.co{border-radius:10px;padding:14px 18px 12px;margin:16px 0 20px;border:1px solid;font-size:14px;max-width:82ch}
+.co .co-t{font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.co p:last-child{margin-bottom:0}
+.co.tip{background:var(--green-apple-100);border-color:#BCE5C6}.co.tip .co-t{color:var(--green-apple-600)}
+.co.warn{background:var(--cantaloupe-100);border-color:#F5D9A8}.co.warn .co-t{color:#B36400}
+.co.danger{background:var(--cinnamon-100);border-color:#F3C1BD}.co.danger .co-t{color:var(--cinnamon-500)}
+.co.info{background:var(--blueberry-050);border-color:#BBDCF8}.co.info .co-t{color:var(--blueberry-500)}
+.co.field{background:var(--plum-100);border-color:#DCD0F3}.co.field .co-t{color:var(--plum-500)}
+
+/* ---------- Tables ---------- */
+table{border-collapse:collapse;width:100%;margin:14px 0 22px;font-size:13.5px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--soap-400)}
+th{background:var(--soap-200);text-align:left;padding:9px 14px;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--licorice-300);border-bottom:1px solid var(--soap-400)}
+td{padding:9px 14px;border-bottom:1px solid var(--soap-300);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td code{white-space:normal}
+
+/* ---------- Step list ---------- */
+.steps{counter-reset:st;margin:18px 0 24px}
+.step{display:flex;gap:16px;margin-bottom:22px}
+.step .sn{counter-increment:st;flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--blueberry-400);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px}
+.step .sn::before{content:counter(st)}
+.step .sb{flex:1;min-width:0}
+.step .sb h4{margin:5px 0 6px;font-size:15.5px;color:var(--licorice-500)}
+
+/* ---------- Scenario cards ---------- */
+.scen{background:#fff;border:1px solid var(--soap-400);border-radius:12px;margin:0 0 26px;overflow:hidden}
+.scen .sc-head{padding:16px 20px 14px;border-bottom:1px solid var(--soap-300)}
+.scen .sc-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--plum-500);background:var(--plum-100);border-radius:12px;padding:2px 10px;margin-bottom:8px}
+.scen .sc-tag.beg{color:var(--green-apple-600);background:var(--green-apple-100)}
+.scen .sc-tag.adv{color:var(--cinnamon-500);background:var(--cinnamon-100)}
+.scen h3{margin:0 0 6px;font-size:17px}
+.scen .sc-prob{font-size:14px;color:var(--licorice-300);max-width:82ch}
+.scen .sc-body{padding:16px 20px 20px}
+.scen details{margin-top:6px}
+.scen summary{cursor:pointer;font-weight:700;color:var(--blueberry-500);font-size:14px;list-style:none;display:inline-flex;align-items:center;gap:8px;user-select:none}
+.scen summary::before{content:"▸";transition:transform .15s;font-size:12px}
+.scen details[open] summary::before{transform:rotate(90deg)}
+.scen summary:hover{text-decoration:underline}
+.scen .sc-sol{margin-top:12px}
+
+/* ---------- Misc ---------- */
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.pill{font-family:var(--mono);font-size:12px;background:#fff;border:1px solid var(--soap-500);border-radius:14px;padding:3px 12px;color:var(--licorice-300)}
+.kbd{font-family:var(--mono);font-size:.85em;border:1px solid var(--soap-500);border-bottom-width:2px;border-radius:5px;padding:1px 6px;background:#fff}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+@media(max-width:760px){.two-col{grid-template-columns:1fr}}
+footer{margin-top:70px;padding-top:18px;border-top:1px solid var(--soap-400);font-size:12.5px;color:var(--licorice-200)}
+.top-link{position:fixed;bottom:22px;right:22px;background:var(--blueberry-400);color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s}
+.top-link.show{opacity:1;pointer-events:auto}
+@media print{nav,.top-link,.cb button.copy{display:none}main{padding:0;max-width:none}.cb pre{white-space:pre-wrap}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav id="nav">
+  <div class="nav-brand">
+    <div class="k">Workday Extend</div>
+    <h1>PMD Scripting<br>Tutorial &amp; Field Guide</h1>
+  </div>
+  <div class="nav-search"><input id="navFilter" type="text" placeholder="Filter sections…" aria-label="Filter sections"></div>
+  <div class="grp">Foundations</div>
+  <a href="#s1">1 · What PMD Scripting Is</a>
+  <a href="#s2">2 · Where Scripts Live</a>
+  <a href="#s3">3 · Syntax Fundamentals</a>
+  <a href="#s4">4 · Predefined Variables</a>
+  <div class="grp">Core Mechanics</div>
+  <a href="#s5">5 · Events &amp; Page Lifecycle</a>
+  <a href="#s6">6 · Widget Methods</a>
+  <a href="#s7">7 · Endpoints &amp; Scripting</a>
+  <a href="#s8">8 · Outbound Data &amp; onSend</a>
+  <a href="#s9">9 · Script Blocks &amp; Modules</a>
+  <a href="#s10">10 · Function Namespaces</a>
+  <a href="#s11">11 · Logging &amp; Debugging</a>
+  <div class="grp">Hands-On</div>
+  <a href="#s12">12 · Tutorial: First Scripted Page</a>
+  <a href="#s13">13 · Real Scenarios &amp; Solutions</a>
+  <div class="grp">Mastery</div>
+  <a href="#s14">14 · Best Practices &amp; Pitfalls</a>
+  <a href="#s15">15 · Limits &amp; What's New</a>
+</nav>
+
+<main>
+<div class="hero">
+  <div class="eyebrow">Workday Extend · Presentation Services</div>
+  <h1>PMD Scripting: The Complete Tutorial &amp; Field Guide</h1>
+  <p>Everything from the <code style="background:rgba(255,255,255,.14);color:#fff">&lt;% %&gt;</code> notation to production event handling — built from the official Workday Developer documentation and battle-tested patterns mined from a live Resource Management Extend app (139 source files, 50 onSend handlers, 60 deferred endpoints, 613 pageVariables references).</p>
+  <div class="meta">
+    <div><b>15</b>Sections</div>
+    <div><b>12</b>Real scenarios + solutions</div>
+    <div><b>40+</b>Annotated code examples</div>
+    <div><b>Offline</b>Single file, zero dependencies</div>
+  </div>
+</div>
+<!-- ============ SECTION 1 ============ -->
+<section id="s1">
+<h2><span class="num">1</span>What PMD Scripting Is</h2>
+<p class="lede">PMD Scripting is Workday Extend's <strong>server-side scripting language</strong> for Presentation Model Definitions (PMDs). It lets you embed logic directly inside page JSON — transforming data, reacting to user interaction, validating input, and shaping outbound payloads — without any client-side JavaScript.</p>
+
+<p>Despite the syntax resembling JavaScript, PMD Scripting is <strong>not</strong> JavaScript. It's a Java-based expression language executed on Workday's servers as part of Presentation Services. You cannot use JavaScript in Extend apps; PMD Scripting is the only supported logic layer in a PMD.</p>
+
+<h3>What you can do with it</h3>
+<ul>
+  <li><strong>Bind &amp; transform data</strong> — compute widget values from endpoint responses using PMD functions (<code>string:</code>, <code>list:</code>, <code>date:</code>, <code>number:</code>, <code>json:</code>, …).</li>
+  <li><strong>Call widget methods</strong> — get/set widget properties at runtime (<code>setVisible</code>, <code>setError</code>, <code>setRows</code>, …), replacing most needs for dynamic tag attributes.</li>
+  <li><strong>Handle events</strong> — run logic on <code>onLoad</code>, <code>onChange</code>, <code>onClick</code>, <code>onSubmit</code>, <code>onSend</code>, and more.</li>
+  <li><strong>Invoke deferred endpoints</strong> — fetch data lazily, only when your business logic actually needs it.</li>
+  <li><strong>Shape outbound JSON</strong> — build or manipulate the exact request body sent to POST/PATCH/PUT endpoints.</li>
+  <li><strong>Reuse logic</strong> — package functions in page-level <code>script</code> blocks or app-wide <code>.script</code> modules.</li>
+</ul>
+
+<h3>The one-line mental model</h3>
+<div class="co info"><div class="co-t">Mental model</div>
+<p>A PMD page is a JSON document. Anywhere a value can appear, you can replace it with <code>&lt;% script %&gt;</code>. The script runs server-side, and <strong>its last evaluated expression becomes the value</strong> — unless you use an explicit <code>return</code>.</p></div>
+
+<div class="cb"><div class="cb-head"><span class="lang">pmd · a value binding, a function call, and an event handler</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"type"</span>: <span class="s">"text"</span>,
+  <span class="k">"id"</span>: <span class="s">"alias"</span>,
+  <span class="k">"label"</span>: <span class="s">"Alternate name:"</span>,
+  <span class="c">// instance-method style: call defaultIfBlank on the endpoint field</span>
+  <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> getAlias.name.defaultIfBlank('None') <span class="t">%&gt;</span>"</span>,
+  <span class="c">// react when the user edits the field</span>
+  <span class="k">"onChange"</span>: <span class="s">"<span class="t">&lt;%</span> console.info('New alias: ', self.value); <span class="t">%&gt;</span>"</span>
+}</pre></div>
+
+<div class="co warn"><div class="co-t">PMD Scripting ≠ JavaScript</div>
+<p>Key differences you'll trip on if you're coming from JS: <code>&amp;&amp; || !</code> only (no <code>and/or/not</code> word operators), the <code>empty</code> and <code>size</code> built-in functions, <code>{:}</code> for empty maps, the <code>to</code>/<code>until</code> range operators, backtick strings interpolate with <code>{{var}}</code> (not <code>${var}</code>), closures cannot reassign outer variables, and there is no <code>window</code>, no DOM, no async.</p></div>
+</section>
+
+<!-- ============ SECTION 2 ============ -->
+<section id="s2">
+<h2><span class="num">2</span>Where Scripts Live in a PMD</h2>
+<p class="lede">Before writing scripts, know all the places <code>&lt;% %&gt;</code> can appear. Each location has different powers and restrictions — the single biggest source of confusion in PMD Scripting is trying to reference widgets from a location that runs before widgets exist.</p>
+
+<table>
+<tr><th>Location</th><th>Runs when</th><th>Can reference widgets?</th><th>Typical use</th></tr>
+<tr><td><code>"url"</code> on an endpoint</td><td>Before the endpoint is invoked</td><td>No (page load); prior endpoints yes</td><td>Build dynamic URLs, WQL queries</td></tr>
+<tr><td><code>"exclude"</code> on an endpoint</td><td>Before the endpoint is invoked</td><td>No</td><td>Conditionally skip the call</td></tr>
+<tr><td><code>"onLoad"</code> (page level)</td><td>After all inbound endpoints, before any widget renders</td><td><strong>No</strong> — use <code>pageVariables</code></td><td>Massage inbound data once</td></tr>
+<tr><td>Tag attributes (<code>value</code>, <code>visible</code>, <code>label</code>, <code>render</code>, …)</td><td>During tag processing</td><td>Edit pages: earlier widgets; View pages: no</td><td>Bind &amp; format data</td></tr>
+<tr><td>Widget events (<code>onChange</code>, <code>onClick</code>, <code>onSearch</code>, …)</td><td>User interaction</td><td><strong>Yes</strong> — full widget API + <code>self</code></td><td>Interactivity, validation, deferred fetches</td></tr>
+<tr><td><code>"onSubmit"</code> (page level)</td><td>User clicks OK, before outbound endpoints</td><td>Yes</td><td>Page-level validation gate</td></tr>
+<tr><td><code>"onSend"</code> / <code>"onMultiPartSend"</code></td><td>Just before an outbound request fires</td><td>Yes</td><td>Build/patch the request payload (<code>self.data</code>)</td></tr>
+<tr><td><code>"script"</code> block (page level)</td><td>Declares functions; runs when called</td><td>Depends on caller's context</td><td>Reusable page functions</td></tr>
+<tr><td><code>.script</code> module file</td><td>Included via <code>"include"</code></td><td>Depends on caller's context</td><td>App-wide shared functions</td></tr>
+</table>
+
+<div class="co field"><div class="co-t">From the field — real app footprint</div>
+<p>In the Resource Management app that this guide dissects, the distribution looks like: <strong>29</strong> <code>onLoad</code> handlers, <strong>50</strong> <code>onSend</code> handlers, <strong>39</strong> <code>onChange</code>, <strong>9</strong> <code>onClick</code>, <strong>7</strong> <code>onSubmit</code>, <strong>60</strong> deferred endpoints with <strong>59</strong> <code>.invoke()</code> calls, and <strong>1</strong> shared script module (<code>rafFunctions.script</code>) included by 8+ pages. That ratio — heavy on onSend/onLoad/deferred, light on exotic events — is typical of production apps.</p></div>
+</section>
+
+<!-- ============ SECTION 3 ============ -->
+<section id="s3">
+<h2><span class="num">3</span>Syntax Fundamentals</h2>
+<p class="lede">PMD Scripting reads like a strict, server-side dialect of JavaScript. This section covers every language element you'll actually use, per the official <em>Reference: PMD Scripting Syntax</em>.</p>
+
+<h3>3.1 Comments, identifiers, keywords</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre><span class="c">// single-line comment</span>
+<span class="c">/* multi-line
+   comment */</span>
+
+<span class="k">var</span> validName1 = <span class="n">1</span>;   <span class="c">// identifiers start with a-z A-Z _ $</span>
+<span class="k">var</span> _a99 = <span class="n">2</span>;         <span class="c">// then may contain digits</span>
+<span class="c">// case-sensitive: var1 and Var1 are different variables</span></pre></div>
+<p>Reserved keywords you must not use as variable names include: <code>and</code>, <code>break</code>, <code>catch</code>, <code>const</code>, <code>continue</code>, <code>div</code>, <code>do</code>, <code>else</code>, <code>eq</code>, <code>ge</code>, <code>gt</code>, <code>if</code>, <code>instanceof</code>, <code>le</code>, <code>let</code>, <code>lt</code>, <code>mod</code>, <code>ne</code>, <code>new</code>, <code>not</code>, <code>null</code>, <code>or</code>, <code>return</code>, <code>throw</code>, <code>true</code>, <code>try</code>, <code>typeof</code>, <code>var</code>, <code>while</code>.</p>
+
+<h3>3.2 Variables: const, let, var</h3>
+<table>
+<tr><th>Keyword</th><th>Scope</th><th>Reassignable</th><th>When to use</th></tr>
+<tr><td><code>const</code></td><td>Block <code>{ }</code></td><td>No</td><td><strong>Default choice</strong> — guards against accidental mutation</td></tr>
+<tr><td><code>let</code></td><td>Block <code>{ }</code></td><td>Yes</td><td>When the value must change within the block</td></tr>
+<tr><td><code>var</code></td><td>Entire script</td><td>Yes</td><td>Function declarations; legacy code; when broad scope is intended</td></tr>
+</table>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre><span class="k">const</span> tenant = <span class="s">'gms'</span>;
+tenant = <span class="s">'amu'</span>;                 <span class="c">// ERROR: cannot reassign a const</span>
+
+<span class="k">if</span> (condition) { <span class="k">let</span> region = <span class="s">'emea'</span>; }
+console.info(region);           <span class="c">// ERROR: region is out of scope here</span>
+
+<span class="c">// Inside a page-level "script" block you may NOT declare a bare variable</span>
+<span class="c">// outside a function declaration:</span>
+<span class="k">var</span> someInvalidVariable;        <span class="c">// invalid at script-block top level</span>
+<span class="k">var</span> ok = <span class="k">function</span>() { <span class="k">var</span> fine = <span class="n">1</span>; };  <span class="c">// valid</span></pre></div>
+
+<h3>3.3 Operators</h3>
+<div class="pill-row">
+<span class="pill">+ - * / %</span><span class="pill">== !=</span><span class="pill">&lt; &lt;= &gt; &gt;=</span>
+<span class="pill">&amp;&amp; || !</span><span class="pill">++ --</span><span class="pill">?: ternary</span>
+<span class="pill">?? null-coalescing</span><span class="pill">?. safe access</span>
+<span class="pill">1 to 10 (inclusive range)</span><span class="pill">1 until 10 (exclusive)</span>
+</div>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script · the three null-safety tools</span><button class="copy">Copy</button></div><pre><span class="c">// ?? — return right side only when the left is null</span>
+<span class="k">var</span> rows = documentList.data[<span class="n">0</span>].workerDocuments ?? [];
+
+<span class="c">// ?: — Elvis: return right side when left is null OR falsy/empty-ish</span>
+<span class="k">var</span> userID = queryParams.userID ?: (flowVariables.userID ?: <span class="s">''</span>);
+
+<span class="c">// ?. — short-circuit to null instead of throwing on a missing property</span>
+console.info(map.foo.bar123?.upperCase());   <span class="c">// no error even if bar123 is absent</span>
+
+<span class="c">// null equality: null == null is true; null == anythingElse is false</span></pre></div>
+<div class="co danger"><div class="co-t">Dot-notation trap</div>
+<p>The dot notation interprets operators. <code>someVariable.a-b</code> is parsed as <em>subtraction</em> and fails validation. Any property containing an operator character or a reserved word needs <strong>bracket notation</strong>: <code>someVariable['a-b']</code>, <code>event['for'].id</code>.</p></div>
+
+<h3>3.4 Strings &amp; template literals</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre><span class="k">var</span> name = <span class="s">'Logan McNeil'</span>;
+<span class="k">var</span> greeting = <span class="s">`Hi, {{name}}`</span>;          <span class="c">// backticks interpolate with {{ }}</span>
+
+<span class="k">var</span> message = <span class="s">`
+Hi, {{name}}
+How are you doing?
+`</span>;                                     <span class="c">// backticks also give you multiline</span></pre></div>
+<div class="co warn"><div class="co-t">String interpolation in tag values</div>
+<p>When a tag value mixes static text and variables, put <em>everything</em> inside one <code>&lt;% %&gt;</code>: <code>"value": "&lt;% 'static text ' + variable %&gt;"</code>. Writing <code>'static text' + &lt;%variable%&gt;</code> triggers a validation warning.</p></div>
+
+<h3>3.5 empty and size</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre><span class="f">empty</span>(arg)   <span class="c">// true for: null, '', zero-length array/collection/map</span>
+<span class="f">size</span>(<span class="s">"Hello"</span>) <span class="c">// 5; size(null) is 0; works on arrays, strings, collections, maps</span>
+
+<span class="c">// Both also work in prefix form — very common in real code:</span>
+<span class="k">var</span> customers = myEndPoint.data.customers;
+<span class="k">empty</span> customers ? <span class="s">''</span> : customers[<span class="n">0</span>].name;
+<span class="k">if</span> (!<span class="k">empty</span> raf.processComment) { <span class="c">/* ... */</span> }</pre></div>
+
+<h3>3.6 Functions &amp; closures</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre><span class="c">// named function (assigned to a variable)</span>
+<span class="k">var</span> fun = <span class="k">function</span>(x, y) { x + y };     <span class="c">// last expression is the return value</span>
+fun(<span class="n">17</span>, <span class="n">25</span>);
+
+<span class="c">// closure (arrow) — used heavily as arguments to list functions</span>
+<span class="k">var</span> target = someEndpoint.data.<span class="f">find</span>(item =&gt; {item.id == id});
+<span class="k">var</span> names  = memberGrid.selectedRows.<span class="f">map</span>(row =&gt; {row.childrenMap.name.value});</pre></div>
+<div class="co danger"><div class="co-t">Closures cannot reassign outer variables</div>
+<p>This is the #1 closure gotcha. A closure may <em>mutate</em> an outer collection but never <em>reassign</em> an outer variable:</p></div>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre><span class="k">const</span> items = [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>];
+
+<span class="k">let</span> counter = <span class="n">0</span>;
+items.<span class="f">forEach</span>(item =&gt; { counter++; });      <span class="c">// ✗ FAILS — reassignment in closure</span>
+
+<span class="k">const</span> collected = [];
+items.<span class="f">forEach</span>(item =&gt; { collected.<span class="f">add</span>(item) }); <span class="c">// ✓ works — mutation is fine</span>
+
+<span class="k">let</span> loopCount = <span class="n">0</span>;
+<span class="k">for</span> (<span class="k">var</span> item : items) { loopCount++; }     <span class="c">// ✓ works — for loop is not a closure</span></pre></div>
+
+<h3>3.7 Return semantics</h3>
+<div class="co info"><div class="co-t">The last-line rule</div>
+<p>A script returns its <strong>last evaluated expression</strong> (or whatever follows an explicit <code>return</code>). This matters most after a <code>console.*</code> call — logging functions return nothing, so if a log is your last line, your script returns null. Always restate the value:</p></div>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre><span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">var</span> result = getStaticText();
+  console.info(result);
+  result;                    <span class="c">// ← without this line, value would be null</span>
+<span class="t">%&gt;</span>"</span></pre></div>
+</section>
+<!-- ============ SECTION 4 ============ -->
+<section id="s4">
+<h2><span class="num">4</span>Predefined Variables</h2>
+<p class="lede">Every script runs with a set of predefined app variables in scope. Knowing which one to reach for — and their precedence — separates clean pages from fragile ones.</p>
+
+<table>
+<tr><th>Variable</th><th>Scope &amp; lifetime</th><th>What it's for</th></tr>
+<tr><td><code>self</code></td><td>Current event handler</td><td>The widget/tag that fired the event (or the endpoint in <code>onSend</code>, where <code>self.data</code> is the payload)</td></tr>
+<tr><td><code>event</code></td><td>Certain events</td><td>Event payload: <code>event.row</code> (onFileAdd/Remove), <code>event.query</code> (onSearch)</td></tr>
+<tr><td><code>pageVariables</code></td><td>Current page render</td><td>Scratchpad map for passing data from <code>onLoad</code> to widgets, or between handlers</td></tr>
+<tr><td><code>flowVariables</code></td><td>Across pages in a flow</td><td>State handed between wizard/flow steps (written by <code>outboundVariable</code> with <code>variableScope: "flow"</code>)</td></tr>
+<tr><td><code>sessionVariables</code></td><td>User session</td><td>Longer-lived state (same mechanism, <code>variableScope: "session"</code>)</td></tr>
+<tr><td><code>queryParams</code></td><td>Page URL</td><td>Parameters passed to the page/task (e.g., <code>queryParams.workerId</code>)</td></tr>
+<tr><td><code>site</code></td><td>App</td><td>App metadata — <code>site.applicationId</code> is essential for WQL against app business objects</td></tr>
+<tr><td><code>environment</code></td><td>Tenant</td><td>Which environment the app runs in (e.g., <code>'WCPDEV'</code>) — great for env-conditional behavior</td></tr>
+<tr><td><em>endpoint names</em></td><td>Page</td><td>Each inbound endpoint is a variable: <code>workersEndpoint.data</code>, <code>getRafRequest.status</code>, …</td></tr>
+</table>
+
+<div class="co tip"><div class="co-t">Null-check custom properties</div>
+<p>Predefined variables holding maps of custom properties (<code>pageVariables</code>, <code>flowVariables</code>, <code>queryParams</code>) may simply not contain the key you expect. Guard every read: <code>"&lt;% flowVariables.aFlowVariable ?: 'fallback' %&gt;"</code>.</p></div>
+
+<h4>The production fallback-chain idiom</h4>
+<p>Pages that can be entered from multiple routes (direct task, flow step, BP step) receive their context either via <code>queryParams</code> or <code>flowVariables</code>. The Resource Management app standardizes on this chain everywhere:</p>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script · real pattern (rafRequest pages)</span><button class="copy">Copy</button></div><pre><span class="k">var</span> userID = queryParams.userID ?: (flowVariables.userID ?: <span class="s">''</span>);
+<span class="k">var</span> editWizard = queryParams.editWizard ?: (flowVariables.editWizard ?: <span class="s">'false'</span>);</pre></div>
+</section>
+
+<!-- ============ SECTION 5 ============ -->
+<section id="s5">
+<h2><span class="num">5</span>Events &amp; the Page Lifecycle</h2>
+<p class="lede">Event handlers are where PMD Scripting earns its keep. But every event fires at a precise point in the page lifecycle, and each point has different access to widgets and endpoints. Learn the three timelines below and 90% of "why is my widget null?" questions disappear.</p>
+
+<h3>5.1 The three timelines</h3>
+<div class="cb"><div class="cb-head"><span class="lang">lifecycle · page load (edit or view)</span><button class="copy">Copy</button></div><pre><span class="c">┌ PAGE LOAD ─────────────────────────────────────────────────────────┐</span>
+<span class="c">│</span> <span class="n">1</span>  Inbound endpoints invoked (<span class="n">1</span>..*, concurrent unless dependent)   <span class="c">│</span>
+<span class="c">│</span>      └─ onSend fires on POST inbound endpoints (shape request)     <span class="c">│</span>
+<span class="c">│</span> <span class="n">2</span>  <span class="f">onLoad</span> fires  ← endpoints available, <span class="k">NO widgets yet</span>            <span class="c">│</span>
+<span class="c">│</span> <span class="n">3</span>  PMD tag processing — widgets render, value scripts evaluate     <span class="c">│</span>
+<span class="c">└────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="c">┌ USER INTERACTION (edit pages) ─────────────────────────────────────┐</span>
+<span class="c">│</span>  <span class="f">onChange onClick onSearch onRowAdd onRowRemove onRowSelect</span>       <span class="c">│</span>
+<span class="c">│</span>  <span class="f">onFileAdd onFileRemove onPanelAdd onPanelRemove</span>                  <span class="c">│</span>
+<span class="c">│</span>  ← full widget access via <span class="k">self</span> and widget ids; may .invoke()     <span class="c">│</span>
+<span class="c">└────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="c">┌ PAGE SUBMIT (user clicks OK) ──────────────────────────────────────┐</span>
+<span class="c">│</span> <span class="n">1</span>  <span class="f">onSubmit</span> fires (page level)  ← widget access; validation gate   <span class="c">│</span>
+<span class="c">│</span> <span class="n">2</span>  Outbound endpoints fire in order of placement (<span class="n">1</span>..*)            <span class="c">│</span>
+<span class="c">│</span>      └─ <span class="f">onSend</span> / <span class="f">onMultiPartSend</span> per endpoint (shape payload)      <span class="c">│</span>
+<span class="c">└────────────────────────────────────────────────────────────────────┘</span></pre></div>
+
+<div class="co danger"><div class="co-t">The two rules people break most</div>
+<p><strong>1) onLoad cannot touch widgets.</strong> It fires before tag processing — no widget exists yet. Stash transformed data in <code>pageVariables</code> and let widget <code>value</code> scripts read from there. <strong>2) View pages can't cross-reference widgets.</strong> Event handlers and tag attributes on a view page can't reference other widgets at all — widget interaction is an edit-page concept.</p></div>
+
+<h3>5.2 Event catalog</h3>
+<table>
+<tr><th>Event</th><th>Fires on / when</th><th>Notes</th></tr>
+<tr><td><code>onChange</code></td><td>checkBox, checkBoxList, currency, date, dropdown, instanceList, number, radioGroup, richText, text, textArea, time — when value changes (edit pages)</td><td><code>self.value</code> is a list for selection widgets — read <code>self.value[0]</code> or <code>self.value.get(0)</code></td></tr>
+<tr><td><code>onClick</code></td><td><code>pageActionButton</code> click (edit pages)</td><td>Does <strong>not</strong> apply to the plain <code>button</code> widget</td></tr>
+<tr><td><code>onLoad</code></td><td>After all inbound endpoints, initial load only</td><td>Data transformation only; no widgets; no <code>invoke()</code> on deferred inbound POST endpoints; paginated grids only transform the first page</td></tr>
+<tr><td><code>onSubmit</code></td><td>User clicks OK, before outbound endpoints</td><td>Page-level validation; setting an error on any widget blocks submission</td></tr>
+<tr><td><code>onSend</code></td><td>Just before an outbound endpoint / outboundVariable / POST inbound endpoint fires</td><td><code>self.data</code> = payload built from valueOutBinding + values; returning <code>null</code> <em>skips</em> POST/PATCH/PUT (not DELETE); last line must be <code>self.data</code> (or your payload)</td></tr>
+<tr><td><code>onMultiPartSend</code></td><td>Multipart POST/PUT outbound endpoints (fileUploader)</td><td><code>self.data</code> is a map of <code>&lt;formDataName, Object&gt;</code>; empty/null return sends files only</td></tr>
+<tr><td><code>onSearch</code></td><td>User types a search string in an <code>instanceList</code></td><td><code>event.query</code> read-only; mutually exclusive with <code>searchEndPoint</code>/<code>searchValues</code></td></tr>
+<tr><td><code>onRowAdd / onRowRemove</code></td><td>Grid rows added/removed (grid must allow it; <code>view: false</code>)</td><td>Access cells via <code>row.childrenMap.columnId</code></td></tr>
+<tr><td><code>onRowSelect</code></td><td>Grid row (un)selected; requires <code>selectionEnabled: true</code> + <code>maxRowSelection</code></td><td>Read <code>grid.selectedRows</code></td></tr>
+<tr><td><code>onFileAdd / onFileRemove</code></td><td>fileUploader upload/remove</td><td><code>event.row</code> carries the file row (e.g., <code>event.row.fileName</code>)</td></tr>
+<tr><td><code>onPanelAdd / onPanelRemove</code></td><td>panelList panel added/removed</td><td>—</td></tr>
+</table>
+
+<h3>5.3 onChange essentials</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · official pattern — cascading widgets from a radioGroup</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"type"</span>: <span class="s">"radioGroup"</span>,
+  <span class="k">"label"</span>: <span class="s">"Select a billing cycle:"</span>,
+  <span class="k">"id"</span>: <span class="s">"billType"</span>,
+  <span class="k">"instanceList"</span>: [
+    { <span class="k">"id"</span>: <span class="s">"annual"</span>, <span class="k">"descriptor"</span>: <span class="s">"Annual"</span> },
+    { <span class="k">"id"</span>: <span class="s">"other"</span>,  <span class="k">"descriptor"</span>: <span class="s">"Other options"</span> }
+  ],
+  <span class="k">"required"</span>: <span class="n">true</span>,
+  <span class="k">"onChange"</span>: <span class="s">"<span class="t">&lt;%</span>
+    <span class="k">var</span> myVal = self.value.get(<span class="n">0</span>);
+    <span class="k">if</span> (myVal == 'annual') {
+      billingRate.<span class="f">setValue</span>(string:toString(<span class="n">40</span>));
+      billingFrequencyList.<span class="f">setVisible</span>(<span class="n">false</span>);
+    } <span class="k">else</span> {
+      billingFrequencyList.<span class="f">setVisible</span>(<span class="n">true</span>);
+      billingFrequencyList.<span class="f">setEnabled</span>(<span class="n">true</span>);
+      billingFrequencyList.<span class="f">setRequired</span>(<span class="n">true</span>);
+    }
+  <span class="t">%&gt;</span>"</span>
+}</pre></div>
+<div class="co tip"><div class="co-t">Always give widgets an id</div>
+<p>Widget interaction and debugging both depend on the <code>id</code> attribute. Use <code>self</code> inside a handler instead of repeating the tag's own id — it's shorter and survives renames.</p></div>
+
+<h3>5.4 onLoad: transform once, render everywhere</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern (rafRequestSubmit) — cache document metadata for widgets</span><button class="copy">Copy</button></div><pre><span class="k">"onLoad"</span>: <span class="s">"<span class="t">&lt;%</span>
+  pageVariables.employeeCVID =
+      !<span class="k">empty</span> getWorkersDocDtl.data[<span class="n">0</span>].workerDocuments[<span class="n">0</span>].referenceID1
+        ? getWorkersDocDtl.data[<span class="n">0</span>].workerDocuments[<span class="n">0</span>].referenceID1 : '';
+  pageVariables.employeeCVFileName =
+      !<span class="k">empty</span> getWorkersDocDtl.data[<span class="n">0</span>].workerDocuments[<span class="n">0</span>].fileName
+        ? getWorkersDocDtl.data[<span class="n">0</span>].workerDocuments[<span class="n">0</span>].fileName : '';
+<span class="t">%&gt;</span>"</span></pre></div>
+<p>Widgets then read <code>pageVariables.employeeCVID</code> in their <code>value</code>/<code>visible</code> scripts. One traversal of a deep response, zero duplication across widgets.</p>
+</section>
+
+<!-- ============ SECTION 6 ============ -->
+<section id="s6">
+<h2><span class="num">6</span>Widget Methods</h2>
+<p class="lede">Every widget is a runtime object with get/set methods. There's also a shortcut: replace <code>getX()</code>/<code>setX(v)</code> with the lowercase property name.</p>
+
+<div class="two-col">
+<div>
+<h4>Universal methods (most widgets)</h4>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td><code>getValue() / setValue(v)</code></td><td>Read/write the widget value</td></tr>
+<tr><td><code>setVisible(bool)</code></td><td>Show/hide</td></tr>
+<tr><td><code>setEnabled(bool)</code></td><td>Enable/disable</td></tr>
+<tr><td><code>setRequired(bool)</code></td><td>Toggle required</td></tr>
+<tr><td><code>getLabel() / setLabel(s)</code></td><td>Read/write the label</td></tr>
+<tr><td><code>setError(msg) / clearError()</code></td><td>Validation error (blocks submit)</td></tr>
+<tr><td><code>setWarning(msg) / clearWarning()</code></td><td>Non-blocking warning</td></tr>
+<tr><td><code>getValueOutBinding() / setValueOutBinding(s)</code></td><td>Read/write outbound binding</td></tr>
+</table>
+</div>
+<div>
+<h4>Container &amp; composite methods</h4>
+<table>
+<tr><th>Method / property</th><th>Purpose</th></tr>
+<tr><td><code>grid.setRows(list) / getRows()</code></td><td>Replace/read grid rows</td></tr>
+<tr><td><code>grid.selectedRows</code></td><td>Rows selected by user</td></tr>
+<tr><td><code>grid.getSubtotal(columnId)</code></td><td>Sum a numeric column</td></tr>
+<tr><td><code>row.childrenMap.colId</code></td><td>Reach a cell widget in a row</td></tr>
+<tr><td><code>section/fieldSet.get(childId)</code></td><td>Reach a child widget</td></tr>
+<tr><td><code>container.children</code></td><td>Iterate child widgets</td></tr>
+<tr><td><code>instanceList.selectedEntries</code></td><td>Selected id/descriptor entries</td></tr>
+<tr><td><code>deferredEndpoint.invoke(argsMap)</code></td><td>Call a deferred endpoint now</td></tr>
+</table>
+</div>
+</div>
+
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script · method vs property shortcut</span><button class="copy">Copy</button></div><pre><span class="k">var</span> someValue = someText.<span class="f">getValue</span>();   <span class="c">// method style</span>
+<span class="k">var</span> someValue = someText.value;         <span class="c">// property shortcut — identical</span>
+
+someGrid.<span class="f">setVisible</span>(<span class="n">false</span>);
+someGrid.visible = <span class="n">false</span>;               <span class="c">// identical</span></pre></div>
+
+<h3>Reaching into grids: childrenMap</h3>
+<p>The single most-used composite pattern in production. Every grid row exposes its cell widgets keyed by <strong>columnId</strong> through <code>childrenMap</code>. Nested containers chain: <code>row.childrenMap.valuesColumn.childrenMap.instanceSelectionsId</code>.</p>
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script · official pattern — sum selected rows</span><button class="copy">Copy</button></div><pre><span class="k">var</span> selectRow = <span class="k">function</span>(grid) {
+  <span class="k">var</span> nameList = [];
+  <span class="k">var</span> expenses = <span class="n">0</span>;
+  <span class="k">for</span> (<span class="k">var</span> row : grid.selectedRows) {
+    nameList.<span class="f">add</span>(row.childrenMap.fname.value + <span class="s">' '</span> + row.childrenMap.lname.value);
+    expenses += row.childrenMap.expense.value;
+  }
+};</pre></div>
+</section>
+<!-- ============ SECTION 7 ============ -->
+<section id="s7">
+<h2><span class="num">7</span>Endpoints &amp; Scripting</h2>
+<p class="lede">Endpoints are where PMDs meet data — Workday REST APIs, your app's business objects, WQL, RaaS, and Orchestrations. Scripts appear on endpoints in three places: the <code>url</code>, the <code>exclude</code> condition, and (for deferred endpoints) explicit <code>invoke()</code> calls.</p>
+
+<h3>7.1 Dynamic URLs</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern (availability micro) — WQL query built in the url script</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"name"</span>: <span class="s">"clinicalAvailability"</span>,
+  <span class="k">"baseUrlType"</span>: <span class="s">"WQL"</span>,
+  <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span>
+    <span class="k">var</span> query = 'SELECT jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec, functionalRole'
+              + ' FROM ' + site.applicationId + '_clinicalAvailabilities'
+              + ' WHERE resourceId in (' + queryParams.worker + ')';
+    <span class="k">return</span> '/data?query=' + query.<span class="f">urlEncode</span>();
+  <span class="t">%&gt;</span>"</span>,
+  <span class="k">"authType"</span>: <span class="s">"WCPISU"</span>,
+  <span class="k">"exclude"</span>: <span class="s">"<span class="t">&lt;%</span> <span class="k">empty</span>(queryParams.worker) <span class="t">%&gt;</span>"</span>
+}</pre></div>
+<p>Three habits worth copying from this real endpoint: build the WQL as a string against <code>site.applicationId + '_businessObject'</code> so it survives tenant migration; <strong>always</strong> <code>urlEncode()</code> (or <code>pathEncode()</code>) query strings; and pair a parameter-driven URL with an <code>exclude</code> guard so the call is skipped when the parameter is absent instead of failing.</p>
+
+<h3>7.2 exclude: conditional invocation</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern (clinicalExperienceAdd) — POST vs PATCH on one page</span><button class="copy">Copy</button></div><pre><span class="c">// The same edit page serves Add and Edit. queryParams decides which outbound fires.</span>
+{ <span class="k">"name"</span>: <span class="s">"clinicalExperiencePOST"</span>,  <span class="k">"httpMethod"</span>: <span class="s">"POST"</span>,
+  <span class="k">"exclude"</span>: <span class="s">"<span class="t">&lt;%</span> !<span class="k">empty</span>(queryParams.clinicalExperienceId) <span class="t">%&gt;</span>"</span> },
+
+{ <span class="k">"name"</span>: <span class="s">"clinicalExperiencePATCH"</span>, <span class="k">"httpMethod"</span>: <span class="s">"PATCH"</span>,
+  <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span> '/clinicalAssignments/' + queryParams.clinicalExperienceId <span class="t">%&gt;</span>"</span>,
+  <span class="k">"exclude"</span>: <span class="s">"<span class="t">&lt;%</span> <span class="k">empty</span>(queryParams.clinicalExperienceId) <span class="t">%&gt;</span>"</span> }</pre></div>
+
+<h3>7.3 Deferred endpoints &amp; invoke()</h3>
+<p>Mark an endpoint <code>"deferred": true</code> and it does <em>not</em> fire at page load. Call it from any widget event handler with <code>invoke()</code>, optionally passing a map whose keys become variables inside the endpoint's <code>url</code> script.</p>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · official pattern — search-as-you-type</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"type"</span>: <span class="s">"text"</span>,
+  <span class="k">"id"</span>: <span class="s">"searchName"</span>,
+  <span class="k">"label"</span>: <span class="s">"Please enter a name to search"</span>,
+  <span class="k">"onChange"</span>: <span class="s">"<span class="t">&lt;%</span>
+    <span class="k">var</span> result = workerData.<span class="f">invoke</span>({'name': self.value});
+    workersGrid.<span class="f">setVisible</span>(<span class="n">true</span>);
+    workersGrid.<span class="f">setRows</span>(result.data);
+  <span class="t">%&gt;</span>"</span>
+}
+
+<span class="c">// endpoint definition:</span>
+{
+  <span class="k">"name"</span>: <span class="s">"workerData"</span>,
+  <span class="k">"baseUrlType"</span>: <span class="s">"worker"</span>,
+  <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span> 'workers?limit=10&amp;search=' + name <span class="t">%&gt;</span>"</span>,   <span class="c">// ← 'name' from invoke() map</span>
+  <span class="k">"authType"</span>: <span class="s">"SSO"</span>,
+  <span class="k">"deferred"</span>: <span class="n">true</span>
+}</pre></div>
+
+<div class="co tip"><div class="co-t">Check the response before using it</div>
+<p>Real code from the app validates the deferred response before touching widgets: <code>if (!empty searchList &amp;&amp; empty searchList.errors) { … }</code>. Deferred calls can fail; a bare <code>result.data[0].x</code> becomes a page error.</p></div>
+
+<div class="co field"><div class="co-t">From the field — inline invoke inside a value binding</div>
+<p>Deferred invokes aren't limited to event handlers. The app resolves a therapeutic area at submit time <em>inside an outbound value script</em>: <code>selectedIndication.value[0] ? therapeuticAreasSearch.invoke({'indication': selectedIndication.value[0]}).data[0].therapeuticAreaId.id : ''</code>. Powerful — but each inline invoke is a network round-trip; don't put one in a grid cellTemplate.</p></div>
+
+<h3>7.4 Environment-conditional endpoint attributes</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern — different auth in dev vs deployed tenants</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"name"</span>: <span class="s">"convertRoleHistory"</span>,
+  <span class="k">"baseUrlType"</span>: <span class="s">"ORCHESTRATE"</span>,
+  <span class="k">"authType"</span>: <span class="s">"<span class="t">&lt;%</span> environment == 'WCPDEV' ? 'sso' : 'WCPISU' <span class="t">%&gt;</span>"</span>,
+  <span class="k">"httpMethod"</span>: <span class="s">"POST"</span>,
+  <span class="k">"url"</span>: <span class="s">"/ConvertRoleHistory/launch"</span>
+}</pre></div>
+</section>
+
+<!-- ============ SECTION 8 ============ -->
+<section id="s8">
+<h2><span class="num">8</span>Outbound Data &amp; onSend</h2>
+<p class="lede">There are three ways to build the JSON your page submits, and they compose. Master the precedence rules and <code>self.data</code> and you control every byte that leaves the page.</p>
+
+<h3>8.1 The three payload mechanisms</h3>
+<table>
+<tr><th>Mechanism</th><th>How it works</th><th>Choose it when</th></tr>
+<tr><td><code>valueOutBinding</code> (on widgets)</td><td>Binds a widget's value into the payload at a path: <code>"endpointName.fieldName"</code></td><td>Simple field-to-field mapping</td></tr>
+<tr><td><code>values</code> + <code>outboundPath</code> (on the endpoint)</td><td>Each entry computes one payload field with a script</td><td>Fields need per-field transformation</td></tr>
+<tr><td><code>onSend</code> (on the endpoint)</td><td>Runs last; <code>self.data</code> is whatever the above produced; return the final payload</td><td>Cross-field logic, restructuring, conditional skip</td></tr>
+</table>
+
+<div class="co info"><div class="co-t">Precedence &amp; the null contract</div>
+<p><code>self.data</code> inside <code>onSend</code> contains everything <code>valueOutBinding</code>/<code>values</code> built — or <code>null</code> if none exist. For outbound <em>variables</em>, <code>values</code> takes precedence over <code>onSend</code>. Returning <code>null</code> from <code>onSend</code> <strong>cancels</strong> a POST/PATCH/PUT (DELETE still fires — it needs no body). That makes <code>onSend</code> a legitimate last-second veto.</p></div>
+
+<h3>8.2 valueOutBinding + onSend enrichment</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · official pattern — bind, then enrich</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"type"</span>: <span class="s">"text"</span>,
+  <span class="k">"id"</span>: <span class="s">"currentBusinessTitle"</span>,
+  <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> workerData.businessTitle <span class="t">%&gt;</span>"</span>,
+  <span class="k">"valueOutBinding"</span>: <span class="s">"businessTitleChange.proposedBusinessTitle"</span>
+},
+...
+<span class="k">"outboundData"</span>: {
+  <span class="k">"outboundEndPoints"</span>: [{
+    <span class="k">"name"</span>: <span class="s">"businessTitleChange"</span>,
+    <span class="k">"baseUrlType"</span>: <span class="s">"workday-common"</span>,
+    <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span> '/workers/' + queryParams.workerId + '/businessTitleChanges' <span class="t">%&gt;</span>"</span>,
+    <span class="k">"httpMethod"</span>: <span class="s">"POST"</span>,
+    <span class="k">"onSend"</span>: <span class="s">"<span class="t">&lt;%</span>
+      self.data.proposedBusinessTitle = getNewTitle();
+      self.data.descriptor = 'Title Change : ' + name.value;
+      self.data;                        <span class="c">// ← always end with the payload</span>
+    <span class="t">%&gt;</span>"</span>
+  }]
+}</pre></div>
+
+<h3>8.3 values with per-field scripts</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern (clinicalExperiencePATCH) — transform each field</span><button class="copy">Copy</button></div><pre><span class="k">"values"</span>: [
+  {
+    <span class="k">"outboundPath"</span>: <span class="s">"studyTypes"</span>,
+    <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span>
+      <span class="k">var</span> studyTypeList = [];
+      <span class="k">if</span> (!<span class="k">empty</span> selectedStudyTypes.value) {
+        selectedStudyTypes.value.<span class="f">forEach</span>(item =&gt; { studyTypeList.<span class="f">add</span>({'id': item}) });
+      };
+      <span class="k">return</span> studyTypeList;                 <span class="c">// multiselect → array of {id}</span>
+    <span class="t">%&gt;</span>"</span>
+  },
+  {
+    <span class="k">"outboundPath"</span>: <span class="s">"indicationID.id"</span>,       <span class="c">// dotted path builds nested JSON</span>
+    <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> selectedIndication.value[<span class="n">0</span>] ?: '' <span class="t">%&gt;</span>"</span>
+  }
+]</pre></div>
+
+<h3>8.4 onSend building the whole payload</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern — launch an Orchestration with a hand-built body</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"name"</span>: <span class="s">"convertRoleHistory"</span>,
+  <span class="k">"baseUrlType"</span>: <span class="s">"ORCHESTRATE"</span>,
+  <span class="k">"httpMethod"</span>: <span class="s">"POST"</span>,
+  <span class="k">"url"</span>: <span class="s">"/ConvertRoleHistory/launch"</span>,
+  <span class="k">"onSend"</span>: <span class="s">"<span class="t">&lt;%</span>
+    <span class="k">var</span> userID = queryParams.userID ?: (flowVariables.userID ?: '');
+    <span class="k">return</span> {'worker': userID, 'employeeID': employeeID.data[<span class="n">0</span>].employeeID};
+  <span class="t">%&gt;</span>"</span>
+}</pre></div>
+
+<h3>8.5 outboundVariable: state across flow pages</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern — persist context into flowVariables</span><button class="copy">Copy</button></div><pre><span class="k">"outboundData"</span>: {
+  <span class="k">"outboundEndPoints"</span>: [{
+    <span class="k">"type"</span>: <span class="s">"outboundVariable"</span>,
+    <span class="k">"name"</span>: <span class="s">"initiatingPage"</span>,
+    <span class="k">"variableScope"</span>: <span class="s">"flow"</span>,
+    <span class="k">"values"</span>: [
+      { <span class="k">"outboundPath"</span>: <span class="s">"editWizard"</span>,
+        <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> queryParams.editWizard ?: (flowVariables.editWizard ?: 'false') <span class="t">%&gt;</span>"</span> },
+      { <span class="k">"outboundPath"</span>: <span class="s">"userID"</span>,
+        <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> queryParams.userID ?: (flowVariables.userID ?: '') <span class="t">%&gt;</span>"</span> }
+    ]
+  }]
+}
+<span class="c">// The next page in the flow reads flowVariables.editWizard, flowVariables.userID.</span>
+<span class="c">// Note the pass-through idiom: re-emit incoming context so it survives every hop.</span></pre></div>
+</section>
+
+<!-- ============ SECTION 9 ============ -->
+<section id="s9">
+<h2><span class="num">9</span>Script Blocks &amp; Script Modules</h2>
+<p class="lede">Three tiers of reuse: a page-level <code>script</code> block, an app-wide <code>.script</code> module, and nested modules (max 2 dependency levels). Choose the smallest tier that fits.</p>
+
+<h3>9.1 Page-level script block</h3>
+<div class="cb"><div class="cb-head"><span class="lang">pmd</span><button class="copy">Copy</button></div><pre><span class="k">"script"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">var</span> getRegistrationFee = <span class="k">function</span>() {
+    <span class="k">return</span> <span class="n">75</span>;
+  };
+<span class="t">%&gt;</span>"</span>,
+<span class="c">// any widget on the SAME page (and pods used by the page) can call it:</span>
+<span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> getRegistrationFee() + (<span class="n">12</span> * flowVariables.monthlyRate) <span class="t">%&gt;</span>"</span></pre></div>
+<ul>
+  <li>Declare each function with <code>var name = function() {…}</code>. Put the block at the top of the PMD.</li>
+  <li>Inside one embedded script, <strong>define a function before the function that calls it</strong>.</li>
+  <li>No bare variable declarations at block top level — only function declarations.</li>
+</ul>
+
+<h3>9.2 Script modules (.script files)</h3>
+<p>A <code>.script</code> file lives in <code>presentation/scripts</code>. It contains plain function declarations (no <code>&lt;% %&gt;</code> wrapper) and <strong>ends with an export map</strong>. Pages opt in with <code>"include"</code>, then call functions namespaced by the module name.</p>
+
+<div class="cb"><div class="cb-head"><span class="lang">script · real module (rafFunctions.script, abridged)</span><button class="copy">Copy</button></div><pre><span class="k">var</span> determineAvailabilityMonth = <span class="k">function</span>(availabilityDate) {
+  <span class="k">var</span> availDate = availabilityDate.<span class="f">format</span>(<span class="s">'MMM'</span>);
+  <span class="k">return</span> availDate.<span class="f">toString</span>().<span class="f">lowerCase</span>();
+}
+
+<span class="k">var</span> getComments = <span class="k">function</span>(eventComments, raf) {
+  <span class="k">var</span> valuesArray = [];
+  <span class="k">if</span> (!<span class="k">empty</span> raf.processComment) {
+    <span class="k">var</span> comment = {:};                       <span class="c">// {:} = empty map literal</span>
+    comment.dateVal = raf.processDateChange ?: <span class="s">''</span>;
+    comment.person  = <span class="s">'Salesforce'</span>;
+    comment.text    = raf.processComment ?: <span class="s">''</span>;
+    valuesArray.<span class="f">add</span>(comment);
+  }
+  <span class="k">if</span> (!<span class="k">empty</span> eventComments.data) {
+    <span class="k">for</span> (<span class="k">var</span> x : eventComments.data) {
+      <span class="k">var</span> comment = {:};
+      comment.dateVal = x.commentDate ?: <span class="s">''</span>;
+      comment.person  = x.person.descriptor;
+      comment.text    = x.comment ? <span class="s">'&lt;p&gt;'</span> + x.comment + <span class="s">'&lt;/p&gt;'</span> : <span class="s">''</span>;
+      valuesArray.<span class="f">add</span>(comment);
+    };
+  }
+  <span class="k">return</span> <span class="f">list:sort</span>(valuesArray, <span class="s">'dateVal'</span>, <span class="n">false</span>);   <span class="c">// newest first</span>
+}
+
+<span class="c">// ⬇ REQUIRED: the export map — only listed functions are callable from pages</span>
+{
+  <span class="k">"getComments"</span> : getComments,
+  <span class="k">"determineAvailabilityMonth"</span> : determineAvailabilityMonth
+}</pre></div>
+
+<div class="cb"><div class="cb-head"><span class="lang">pmd · including and calling the module</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"id"</span>: <span class="s">"rafRequestApprove"</span>,
+  <span class="k">"include"</span>: [ <span class="s">"rafFunctions.script"</span> ],
+  ...
+  <span class="c">// call functions as moduleName.functionName(...)</span>
+  <span class="k">"rows"</span>: <span class="s">"<span class="t">&lt;%</span> rafFunctions.getComments(eventComments, getRafRequest) <span class="t">%&gt;</span>"</span>
+}</pre></div>
+
+<div class="co warn"><div class="co-t">Module rules that bite</div>
+<p>Don't wrap module content in <code>&lt;% %&gt;</code>. Only exported names are visible. Nested modules max out at <strong>2 dependency levels</strong> (a.script → b.script → c.script; if c includes anything, validation fails). And note the self-reference quirk visible in the real module: when one module function calls another, it calls it <em>through the module namespace</em> — <code>rafFunctions.isClinicalAssignmentField(...)</code> — even inside <code>rafFunctions.script</code> itself.</p></div>
+</section>
+<!-- ============ SECTION 10 ============ -->
+<section id="s10">
+<h2><span class="num">10</span>Function Namespaces — Working Reference</h2>
+<p class="lede">PMD functions come in namespaces. Most have instance-method equivalents — <code>myString.trim()</code> equals <code>string:trim(myString)</code> — and instance style is usually cleaner. Below are the functions that carry real production weight, with the exact idioms from the app.</p>
+
+<h3>10.1 string:</h3>
+<table>
+<tr><th>Function</th><th>Idiom</th></tr>
+<tr><td><code>defaultIfBlank / defaultIfEmpty</code></td><td><code>getAlias.name.defaultIfBlank('None')</code></td></tr>
+<tr><td><code>contains / startsWith / endsWith</code> (+ IgnoreCase)</td><td><code>fileName.endsWithIgnoreCase('.pdf')</code></td></tr>
+<tr><td><code>substringBefore / substringAfter / substringAfterLast</code></td><td><code>email.substringBefore('@')</code></td></tr>
+<tr><td><code>replace / replaceOnce / split / join</code></td><td><code>string:join(', ', part1, part2)</code></td></tr>
+<tr><td><code>upperCase / lowerCase / capitalize / trim</code></td><td><code>today.toString().lowerCase()</code></td></tr>
+<tr><td><code>urlEncode / pathEncode / urlDecode</code></td><td><code>'/data?query=' + wql.urlEncode()</code> — mandatory for WQL URLs</td></tr>
+<tr><td><code>leftPad / rightPad / truncate / abbreviate</code></td><td><code>empId.leftPad(8, '0')</code></td></tr>
+<tr><td><code>isBlank / isNumeric / isAllUpperCase</code></td><td><code>if (input.isNumeric()) …</code></td></tr>
+<tr><td><code>formatMessage</code></td><td><code>string:formatMessage('Hi {0}, {1} items', [name, n])</code></td></tr>
+</table>
+
+<h3>10.2 list:</h3>
+<table>
+<tr><th>Function</th><th>Idiom</th></tr>
+<tr><td><code>filter(closure)</code></td><td><code>grid.rows.filter(row =&gt; {!empty row.childrenMap.col.value[0]}) ?? []</code></td></tr>
+<tr><td><code>map(closure)</code></td><td><code>selectedEntries.map(x =&gt; {x.id})</code></td></tr>
+<tr><td><code>find(closure)</code></td><td><code>data.find(item =&gt; {item.id == id})</code> — first match or null</td></tr>
+<tr><td><code>forEach(closure)</code></td><td><code>values.forEach(item =&gt; { merged.add(item) })</code></td></tr>
+<tr><td><code>sort(list, key, ascending)</code></td><td><code>list:sort(valuesArray, 'dateVal', false)</code> — sort maps by key</td></tr>
+<tr><td><code>filter/exclude(list, key, value)</code></td><td>Declarative filtering without closures</td></tr>
+<tr><td><code>mapAttribute(list, key)</code></td><td>Pluck one attribute from each map</td></tr>
+<tr><td><code>distinct / flatten / reverse / subList</code></td><td>—</td></tr>
+<tr><td><code>toMap(list, key) / createMapList</code></td><td>Index a list of maps by a key</td></tr>
+<tr><td><code>add / addAll / remove / contains / indexOf / size / first / last</code></td><td>—</td></tr>
+</table>
+
+<h3>10.3 date:</h3>
+<table>
+<tr><th>Function</th><th>Idiom</th></tr>
+<tr><td><code>getTodaysDate(tz) / getDateTimeZone(tz)</code></td><td><code>date:getTodaysDate(date:getDateTimeZone('UTC'))</code></td></tr>
+<tr><td><code>parse(str, fmt, tz)</code></td><td><code>date:parse(x, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'UTC')</code></td></tr>
+<tr><td><code>parseDateString / parseFormattedDateString</code></td><td>ISO date strings from endpoints</td></tr>
+<tr><td><code>format(fmt) / formatWithTimeZone(fmt, tz)</code></td><td><code>d.formatWithTimeZone('MM/dd/yyyy HH:mm:ss a', 'UTC')</code></td></tr>
+<tr><td><code>plusDays/Months/Years, minus…</code></td><td><code>today.plusMonths(1).format('MMM')</code></td></tr>
+<tr><td><code>withDayOfMonth / withMonth / withYear</code></td><td>Snap to period boundaries</td></tr>
+<tr><td><code>after / before / between</code></td><td>Date comparisons</td></tr>
+</table>
+<div class="co warn"><div class="co-t">Escaping date format literals</div>
+<p>In PMD JSON, single quotes inside format strings must be escaped as <code>\\'</code>. The real app's Workday-timestamp parse looks like: <code>date:parse(value, 'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'', 'UTC')</code>.</p></div>
+
+<h3>10.4 number:, json:, map:</h3>
+<table>
+<tr><th>Function</th><th>Idiom</th></tr>
+<tr><td><code>number:convertStringToInt / convertNumberToInt</code></td><td><code>number:convertStringToInt(row.childrenMap.priority.value[0])</code> — dropdown values are strings!</td></tr>
+<tr><td><code>number:format / toDecimal / toBigDecimal</code></td><td>Display formatting &amp; precision</td></tr>
+<tr><td><code>math: min / max / pow / sqrt</code></td><td>—</td></tr>
+<tr><td><code>json:asJSON(object)</code></td><td><code>console.info('POST: ' + json:asJSON(self.data))</code> — the standard payload-logging idiom</td></tr>
+<tr><td><code>json:parse(string) / query(source, jsonPath)</code></td><td>JSONPath extraction from raw JSON</td></tr>
+<tr><td><code>map: getKeys / getValues / getObject / put / containsKey</code></td><td>—</td></tr>
+<tr><td><code>{:}</code> literal</td><td>Empty map: <code>var comment = {:};</code></td></tr>
+</table>
+</section>
+
+<!-- ============ SECTION 11 ============ -->
+<section id="s11">
+<h2><span class="num">11</span>Logging &amp; Debugging</h2>
+<p class="lede">The <code>console</code> object logs to the Extend developer console (View Extend Logs / app monitoring). Four levels, all variadic, none return a value.</p>
+
+<div class="cb"><div class="cb-head"><span class="lang">pmd-script</span><button class="copy">Copy</button></div><pre>console.<span class="f">debug</span>(<span class="s">'Debug the current value: '</span>, self.value);
+console.<span class="f">info</span>(<span class="s">'Informational value: '</span>, self.value);
+console.<span class="f">warn</span>(<span class="s">'Warning value: '</span>, self.value);
+console.<span class="f">error</span>(<span class="s">'Invalid value error: '</span>, self.value);</pre></div>
+
+<h3>Production debugging habits (from the app)</h3>
+<ul>
+  <li><strong>Log outbound payloads on every onSend</strong>: <code>console.info('Clinical Experience POST: ' + json:asJSON(self.data)); return self.data;</code> — visibility into exactly what was submitted, with the payload restated as the last line.</li>
+  <li><strong>Tag log lines with a grep-able prefix</strong>: the app uses markers like <code>DEBUG_CONNECT</code> so log searches isolate one feature.</li>
+  <li><strong>Log both sides of a comparison</strong> before acting on it: <code>console.debug(' Sent Back ' + dateOfSentBack + ' Doc Created ' + latestCVDocCreated);</code></li>
+</ul>
+
+<div class="co danger"><div class="co-t">console kills your return value</div>
+<p><code>console.*</code> methods return nothing. If a log is the final statement of a <code>value</code>, <code>onSend</code>, or module function, the script returns null — silently blanking a widget or cancelling a POST. Always restate the value (<code>self.data;</code>) as the true last line. This is the single most common self-inflicted PMD bug.</p></div>
+
+<div class="co tip"><div class="co-t">Reading script failures</div>
+<p>When a script throws at runtime, the page error contains the script error detail, and the same detail lands in the Extend logs. CPU time per script is capped (≈5s, excluding endpoint invocations and widget API calls, which run in separate execution contexts) — a runaway loop surfaces as a script timeout, not a hung page.</p></div>
+</section>
+
+<!-- ============ SECTION 12 ============ -->
+<section id="s12">
+<h2><span class="num">12</span>Tutorial: Your First Fully Scripted Page</h2>
+<p class="lede">A step-by-step build of a small but complete edit page — <em>Assign Training Credit</em> — that exercises every core mechanic: dynamic endpoint, onLoad transform, script block, onChange cascade, deferred invoke, validation, and an onSend-shaped POST. Adapt names to any app.</p>
+
+<div class="steps">
+
+<div class="step"><div class="sn"></div><div class="sb">
+<h4>Define the inbound endpoints — one static, one deferred</h4>
+<div class="cb"><div class="cb-head"><span class="lang">pmd</span><button class="copy">Copy</button></div><pre><span class="k">"id"</span>: <span class="s">"assignTrainingCredit"</span>,
+<span class="k">"endPoints"</span>: [
+  {
+    <span class="k">"name"</span>: <span class="s">"workerInfo"</span>,
+    <span class="k">"baseUrlType"</span>: <span class="s">"workday-common"</span>,
+    <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span> '/workers/' + queryParams.workerId <span class="t">%&gt;</span>"</span>,
+    <span class="k">"authType"</span>: <span class="s">"sso"</span>,
+    <span class="k">"exclude"</span>: <span class="s">"<span class="t">&lt;%</span> <span class="k">empty</span>(queryParams.workerId) <span class="t">%&gt;</span>"</span>
+  },
+  {
+    <span class="k">"name"</span>: <span class="s">"courseCatalog"</span>,
+    <span class="k">"baseUrlType"</span>: <span class="s">"WQL"</span>,
+    <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span>
+      <span class="k">var</span> wql = 'SELECT courseName, credits, courseId FROM '
+              + site.applicationId + '_courses WHERE category = \\'' + category + '\\'';
+      <span class="k">return</span> '/data?query=' + wql.<span class="f">urlEncode</span>();
+    <span class="t">%&gt;</span>"</span>,
+    <span class="k">"authType"</span>: <span class="s">"sso"</span>,
+    <span class="k">"deferred"</span>: <span class="n">true</span>          <span class="c">// fired later, from onChange, with {category: ...}</span>
+  }
+],</pre></div>
+</div></div>
+
+<div class="step"><div class="sn"></div><div class="sb">
+<h4>Transform inbound data once in onLoad</h4>
+<div class="cb"><div class="cb-head"><span class="lang">pmd</span><button class="copy">Copy</button></div><pre><span class="k">"onLoad"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="c">// widgets do NOT exist yet — write to pageVariables only</span>
+  pageVariables.workerName = workerInfo.descriptor ?: 'Unknown worker';
+  pageVariables.hireYear = !<span class="k">empty</span> workerInfo.hireDate
+      ? date:parseDateString(workerInfo.hireDate).<span class="f">format</span>('yyyy') : '';
+<span class="t">%&gt;</span>"</span>,</pre></div>
+</div></div>
+
+<div class="step"><div class="sn"></div><div class="sb">
+<h4>Declare shared functions in a script block</h4>
+<div class="cb"><div class="cb-head"><span class="lang">pmd</span><button class="copy">Copy</button></div><pre><span class="k">"script"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">var</span> creditsFor = <span class="k">function</span>(courseId, catalogRows) {
+    <span class="k">var</span> hit = catalogRows.<span class="f">find</span>(c =&gt; {c.courseId == courseId});
+    <span class="k">return</span> <span class="k">empty</span> hit ? <span class="n">0</span> : hit.credits;
+  };
+  <span class="k">var</span> validateCredit = <span class="k">function</span>() {
+    creditAmount.<span class="f">clearError</span>();
+    <span class="k">if</span> (creditAmount.value &gt; <span class="n">40</span>) {
+      creditAmount.<span class="f">setError</span>('Credits cannot exceed 40 per assignment.');
+      <span class="k">return</span> <span class="n">false</span>;
+    }
+    <span class="k">return</span> <span class="n">true</span>;
+  };
+<span class="t">%&gt;</span>"</span>,</pre></div>
+</div></div>
+
+<div class="step"><div class="sn"></div><div class="sb">
+<h4>Build the widgets: onChange fetches deferred data and cascades</h4>
+<div class="cb"><div class="cb-head"><span class="lang">pmd</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"type"</span>: <span class="s">"dropdown"</span>, <span class="k">"id"</span>: <span class="s">"categoryList"</span>, <span class="k">"label"</span>: <span class="s">"Course category"</span>,
+  <span class="k">"instanceList"</span>: [
+    { <span class="k">"id"</span>: <span class="s">"tech"</span>, <span class="k">"descriptor"</span>: <span class="s">"Technical"</span> },
+    { <span class="k">"id"</span>: <span class="s">"comp"</span>, <span class="k">"descriptor"</span>: <span class="s">"Compliance"</span> }
+  ],
+  <span class="k">"onChange"</span>: <span class="s">"<span class="t">&lt;%</span>
+    <span class="k">if</span> (!<span class="k">empty</span> self.value) {
+      <span class="k">var</span> result = courseCatalog.<span class="f">invoke</span>({'category': self.value[<span class="n">0</span>]});
+      <span class="k">if</span> (!<span class="k">empty</span> result &amp;&amp; <span class="k">empty</span> result.errors) {
+        courseList.<span class="f">setVisible</span>(<span class="n">true</span>);
+        courseList.<span class="f">setValues</span>(result.data ?? []);
+        pageVariables.catalogRows = result.data ?? [];
+      }
+    } <span class="k">else</span> {
+      courseList.<span class="f">setVisible</span>(<span class="n">false</span>);
+    }
+  <span class="t">%&gt;</span>"</span>
+},
+{
+  <span class="k">"type"</span>: <span class="s">"instanceList"</span>, <span class="k">"id"</span>: <span class="s">"courseList"</span>, <span class="k">"label"</span>: <span class="s">"Course"</span>,
+  <span class="k">"idKey"</span>: <span class="s">"courseId"</span>, <span class="k">"displayKey"</span>: <span class="s">"courseName"</span>, <span class="k">"visible"</span>: <span class="n">false</span>,
+  <span class="k">"values"</span>: <span class="s">"<span class="t">&lt;%</span> [] <span class="t">%&gt;</span>"</span>,
+  <span class="k">"onChange"</span>: <span class="s">"<span class="t">&lt;%</span>
+    creditAmount.value = <span class="k">empty</span> self.value ? <span class="n">0</span>
+        : creditsFor(self.value[<span class="n">0</span>], pageVariables.catalogRows ?? []);
+    validateCredit();
+  <span class="t">%&gt;</span>"</span>
+},
+{
+  <span class="k">"type"</span>: <span class="s">"number"</span>, <span class="k">"id"</span>: <span class="s">"creditAmount"</span>, <span class="k">"label"</span>: <span class="s">"Credits"</span>,
+  <span class="k">"onChange"</span>: <span class="s">"<span class="t">&lt;%</span> validateCredit(); <span class="t">%&gt;</span>"</span>
+}</pre></div>
+</div></div>
+
+<div class="step"><div class="sn"></div><div class="sb">
+<h4>Gate submission with onSubmit</h4>
+<div class="cb"><div class="cb-head"><span class="lang">pmd</span><button class="copy">Copy</button></div><pre><span class="k">"onSubmit"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">if</span> (<span class="k">empty</span> courseList.value) {
+    courseList.<span class="f">setError</span>('Select a course before submitting.');
+  }
+  validateCredit();     <span class="c">// any widget error blocks the submit</span>
+<span class="t">%&gt;</span>"</span>,</pre></div>
+</div></div>
+
+<div class="step"><div class="sn"></div><div class="sb">
+<h4>Shape the POST with onSend, log it, ship it</h4>
+<div class="cb"><div class="cb-head"><span class="lang">pmd</span><button class="copy">Copy</button></div><pre><span class="k">"outboundData"</span>: {
+  <span class="k">"outboundEndPoints"</span>: [{
+    <span class="k">"name"</span>: <span class="s">"createCredit"</span>,
+    <span class="k">"baseUrlType"</span>: <span class="s">"BUSINESS-OBJECT"</span>,
+    <span class="k">"url"</span>: <span class="s">"/trainingCredits"</span>,
+    <span class="k">"httpMethod"</span>: <span class="s">"POST"</span>,
+    <span class="k">"authType"</span>: <span class="s">"sso"</span>,
+    <span class="k">"onSend"</span>: <span class="s">"<span class="t">&lt;%</span>
+      <span class="k">var</span> payload = {
+        'workerID':  { 'id': queryParams.workerId },
+        'courseID':  { 'id': courseList.value[<span class="n">0</span>] },
+        'credits':   creditAmount.value,
+        'assignedOn': date:getTodaysDate(date:getDateTimeZone('UTC'))
+      };
+      console.info('createCredit POST: ' + json:asJSON(payload));
+      <span class="k">return</span> payload;
+    <span class="t">%&gt;</span>"</span>
+  }]
+}</pre></div>
+<p>Deploy, open the task with <code>?workerId=…</code>, watch the logs, and you've touched every mechanic in one page.</p>
+</div></div>
+</div>
+</section>
+<!-- ============ SECTION 13 ============ -->
+<section id="s13">
+<h2><span class="num">13</span>Real Scenarios &amp; Solutions</h2>
+<p class="lede">Twelve production problems, each solved with the exact technique used in the live Resource Management app (a clinical resource-fulfillment app: RAF requests, candidate search, CV generation, master data admin). Try each one mentally before opening the solution.</p>
+
+<!-- S1 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag adv">Advanced · Validation</span>
+<h3>Scenario 1 — Per-row validation on a dynamic criteria grid</h3>
+<p class="sc-prob"><strong>Problem:</strong> Users build a candidate search from a grid where each row is one criterion (criteria type, And/Or, operator, values, priority). Before running the search you must validate every row — required cells, conditional rules (a proficiency is required only when a priority is set on a skill row), and a cross-row rule (each priority number may be used only once) — and surface errors <em>on the exact cell</em> with the row number.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">script · rafFunctions.script (abridged real code)</span><button class="copy">Copy</button></div><pre><span class="k">var</span> validateSearchCriteria = <span class="k">function</span>(searchGrid) {
+  <span class="k">var</span> isErrorFound = <span class="n">false</span>;
+  <span class="k">var</span> rowIndex = <span class="n">1</span>;
+
+  <span class="k">for</span> (<span class="k">let</span> thisRow : searchGrid.rows) {
+    <span class="k">let</span> searchType = thisRow.childrenMap.searchCriteriaCol.value[<span class="n">0</span>] ?: <span class="s">''</span>;
+
+    <span class="c">// 1) always clear ALL cell errors first — stale errors are worse than none</span>
+    thisRow.childrenMap.searchCriteriaCol.<span class="f">clearError</span>();
+    thisRow.childrenMap.andorCol.<span class="f">clearError</span>();
+    thisRow.childrenMap.operatorCol.<span class="f">clearError</span>();
+    thisRow.childrenMap.valuesColumn.childrenMap.instanceSelectionsId.<span class="f">clearError</span>();
+
+    <span class="c">// 2) required-cell checks, error message carries the row number</span>
+    <span class="k">if</span> (<span class="k">empty</span> thisRow.childrenMap.andorCol.value[<span class="n">0</span>]) {
+      thisRow.childrenMap.andorCol.<span class="f">setError</span>(<span class="s">'And/Or is required for row '</span> + rowIndex);
+      isErrorFound = <span class="n">true</span>;
+    }
+
+    <span class="c">// 3) conditional rule: proficiency needed only when priority is set on skills</span>
+    <span class="k">let</span> ranking = !<span class="k">empty</span> thisRow.childrenMap.includeYrAndSkillCol.value[<span class="n">0</span>]
+        ? number:convertStringToInt(thisRow.childrenMap.includeYrAndSkillCol.value[<span class="n">0</span>]) : <span class="n">0</span>;
+    <span class="k">if</span> (searchType == <span class="s">'seachSkills'</span>) {
+      <span class="k">let</span> prof = !<span class="k">empty</span> thisRow.childrenMap.skillLevelsCol.value[<span class="n">0</span>]
+          ? number:convertStringToInt(thisRow.childrenMap.skillLevelsCol.value[<span class="n">0</span>]) : <span class="n">0</span>;
+      <span class="k">if</span> (ranking &gt; <span class="n">0</span> &amp;&amp; prof == <span class="n">0</span>) {
+        thisRow.childrenMap.skillLevelsCol.<span class="f">setError</span>(
+          <span class="s">'A proficiency is required ... in row '</span> + rowIndex);
+        isErrorFound = <span class="n">true</span>;
+      }
+    }
+
+    <span class="c">// 4) cross-row rule: a priority number may appear only once — filter the grid</span>
+    <span class="k">if</span> (ranking &gt; <span class="n">0</span>) {
+      <span class="k">let</span> priorityStr = thisRow.childrenMap.includeYrAndSkillCol.value[<span class="n">0</span>];
+      <span class="k">let</span> priorityCount = <span class="n">0</span>;
+      <span class="k">for</span> (<span class="k">let</span> row : searchGrid.rows.<span class="f">filter</span>(row =&gt; {
+              !<span class="k">empty</span> row.childrenMap.includeYrAndSkillCol.value[<span class="n">0</span>] &amp;&amp;
+              row.childrenMap.includeYrAndSkillCol.value[<span class="n">0</span>] == priorityStr }) ?? []) {
+        priorityCount = priorityCount + <span class="n">1</span>;
+      }
+      <span class="k">if</span> (priorityCount &gt; <span class="n">1</span>) {
+        thisRow.childrenMap.includeYrAndSkillCol.<span class="f">setError</span>(
+          <span class="s">'Priority '</span> + ranking + <span class="s">' can only be specified once'</span>);
+        isErrorFound = <span class="n">true</span>;
+      }
+    }
+    rowIndex = rowIndex + <span class="n">1</span>;
+  }
+  <span class="k">return</span> isErrorFound;      <span class="c">// caller gates the search/submit on this flag</span>
+}</pre></div>
+<p><strong>Why it works:</strong> clear-then-validate prevents stale errors; <code>childrenMap</code> reaches the exact cell so the error renders in place; counting inside a <code>for</code> loop sidesteps the closure-reassignment restriction (note: the real code increments the counter in the loop body, not inside the filter closure); and returning a boolean lets both <code>onChange</code> and the Search button share one function. Notice the priority-count loop iterates a <em>filtered</em> row list — filter for the value, count matches, error if &gt;1: a general recipe for any "unique across rows" rule.</p>
+</div></details></div></div>
+
+<!-- S2 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag">Intermediate · Data shaping</span>
+<h3>Scenario 2 — Merge comments from two sources into one sorted timeline</h3>
+<p class="sc-prob"><strong>Problem:</strong> An approval page must show a unified comment history: a free-text comment that arrived from Salesforce on the record itself, plus BP event comments from a Workday endpoint — normalized to one shape and sorted newest-first for a grid.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">script · getComments (real code)</span><button class="copy">Copy</button></div><pre><span class="k">var</span> getComments = <span class="k">function</span>(eventComments, raf) {
+  <span class="k">var</span> valuesArray = [];
+
+  <span class="k">if</span> (!<span class="k">empty</span> raf.processComment) {              <span class="c">// source 1: the record field</span>
+    <span class="k">var</span> comment = {:};
+    comment.dateVal = raf.processDateChange ?: <span class="s">''</span>;
+    comment.person  = <span class="s">'Salesforce'</span>;
+    comment.text    = raf.processComment ?: <span class="s">''</span>;
+    valuesArray.<span class="f">add</span>(comment);
+  }
+  <span class="k">if</span> (!<span class="k">empty</span> eventComments.data) {              <span class="c">// source 2: the endpoint list</span>
+    <span class="k">for</span> (<span class="k">var</span> x : eventComments.data) {
+      <span class="k">var</span> comment = {:};
+      comment.dateVal = x.commentDate ?: <span class="s">''</span>;
+      comment.person  = x.person.descriptor;
+      comment.text    = x.comment ? <span class="s">'&lt;p&gt;'</span> + x.comment + <span class="s">'&lt;/p&gt;'</span> : <span class="s">''</span>;
+      valuesArray.<span class="f">add</span>(comment);
+    };
+  }
+  <span class="k">return</span> <span class="f">list:sort</span>(valuesArray, <span class="s">'dateVal'</span>, <span class="n">false</span>);   <span class="c">// descending by key</span>
+}
+
+<span class="c">// the grid binds it directly, and only renders when there is anything to show:</span>
+<span class="k">"rows"</span>: <span class="s">"<span class="t">&lt;%</span> rafFunctions.getComments(eventComments, getRafRequest) <span class="t">%&gt;</span>"</span>,
+<span class="k">"render"</span>: <span class="s">"<span class="t">&lt;%</span> !<span class="k">empty</span>(eventComments.data) || !<span class="k">empty</span>(getRafRequest.processComment) <span class="t">%&gt;</span>"</span></pre></div>
+<p><strong>Why it works:</strong> normalize both sources to one map shape (<code>{:}</code> literal), then <code>list:sort(list, key, ascending=false)</code> does the ordering. The <code>render</code> guard hides the whole grid when both sources are empty — cleaner than an empty grid. Bonus detail: the endpoint comment is wrapped in <code>&lt;p&gt;</code> because the cell is a richText.</p>
+</div></details></div></div>
+
+<!-- S3 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag beg">Beginner · Endpoints</span>
+<h3>Scenario 3 — A WQL endpoint that must not fire without its parameter</h3>
+<p class="sc-prob"><strong>Problem:</strong> A micro-card queries availability for a worker passed via <code>queryParams.worker</code>. If the card is opened without that parameter, the raw WQL would be malformed and the endpoint would error the whole card.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real code (availability micro)</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"name"</span>: <span class="s">"clinicalAvailability"</span>,
+  <span class="k">"baseUrlType"</span>: <span class="s">"WQL"</span>,
+  <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span>
+    <span class="k">var</span> query = 'SELECT jan, feb, ..., functionalRole FROM '
+              + site.applicationId + '_clinicalAvailabilities'
+              + ' WHERE resourceId in (' + queryParams.worker + ')';
+    <span class="k">return</span> '/data?query=' + query.<span class="f">urlEncode</span>();
+  <span class="t">%&gt;</span>"</span>,
+  <span class="k">"authType"</span>: <span class="s">"WCPISU"</span>,
+  <span class="k">"exclude"</span>: <span class="s">"<span class="t">&lt;%</span> <span class="k">empty</span>(queryParams.worker) <span class="t">%&gt;</span>"</span>
+}
+<span class="c">// downstream, every consumer defends against the skipped endpoint:</span>
+<span class="k">"rows"</span>: <span class="s">"<span class="t">&lt;%</span> clinicalAvailability.data ?: [] <span class="t">%&gt;</span>"</span></pre></div>
+<p><strong>Why it works:</strong> <code>exclude</code> evaluates <em>before</em> invocation — the call never happens, no error is raised. The trio to memorize: parameterized <code>url</code> + <code>exclude</code> guard + <code>?: []</code> fallback at every consumer. This exact trio appears on dozens of endpoints in the app.</p>
+</div></details></div></div>
+
+<!-- S4 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag">Intermediate · Dates</span>
+<h3>Scenario 4 — Rolling 12-month grid columns starting from "this month"</h3>
+<p class="sc-prob"><strong>Problem:</strong> Availability is stored as fixed columns <code>jan…dec</code>, but the grid must show the next 12 months starting from today in the user's timezone — column 1 is the current month, column 2 is next month, and each cell picks the matching month field from the row.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real approach + the refactor</span><button class="copy">Copy</button></div><pre><span class="c">// Column label: today's month name, offset per column</span>
+<span class="k">"label"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">var</span> today = date:parseDateString(
+      date:getTodaysDate(date:getDateTimeZone(userInfo.data[<span class="n">0</span>].timezone)));
+  <span class="k">return</span> today.<span class="f">plusMonths</span>(<span class="n">1</span>).<span class="f">format</span>('MMM');    <span class="c">// column 2 → next month</span>
+<span class="t">%&gt;</span>"</span>
+
+<span class="c">// The original cell value used a 12-branch if/else on the month name.</span>
+<span class="c">// The maintainable refactor: the month key IS the lowercase month name —</span>
+<span class="c">// so look the row property up by name with bracket notation:</span>
+<span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">var</span> monthKey = date:parseDateString(
+      date:getTodaysDate(date:getDateTimeZone(userInfo.data[<span class="n">0</span>].timezone)))
+      .<span class="f">plusMonths</span>(<span class="n">1</span>).<span class="f">format</span>('MMM').<span class="f">toString</span>().<span class="f">lowerCase</span>();
+  <span class="k">return</span> row[monthKey];                          <span class="c">// row['feb'] etc.</span>
+<span class="t">%&gt;</span>"</span></pre></div>
+<p><strong>Why it works:</strong> timezone-correct "today" comes from <code>getTodaysDate(getDateTimeZone(tz))</code>; <code>plusMonths(n)</code> gives each column its offset; and bracket notation turns a 12-branch conditional into one dynamic property read. The shared module even packages the key derivation as <code>determineAvailabilityMonth(date)</code> so labels and cells stay in sync.</p>
+</div></details></div></div>
+
+<!-- S5 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag adv">Advanced · Deferred + dates</span>
+<h3>Scenario 5 — A Refresh button that only shows documents created after a cutoff</h3>
+<p class="sc-prob"><strong>Problem:</strong> A CV-review page has a Refresh button that re-queries worker documents. But if the approval event was <em>sent back</em>, only CVs generated <strong>after</strong> the send-back moment should populate the grid — older CVs are the ones that got rejected.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real code (abridged)</span><button class="copy">Copy</button></div><pre><span class="k">"onClick"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">var</span> documentList = retrieveDocuments.<span class="f">invoke</span>();          <span class="c">// deferred re-query</span>
+
+  <span class="k">if</span> (!<span class="k">empty</span> getExpEventDetail.data[<span class="n">0</span>].isSentBack &amp;&amp;
+      getExpEventDetail.data[<span class="n">0</span>].isSentBack == <span class="n">true</span>) {
+
+    <span class="c">// normalize BOTH timestamps to the same format before comparing</span>
+    <span class="k">var</span> dateOfSentBack = !<span class="k">empty</span> getExpEventDetail.data[<span class="n">0</span>].lastApprovalUpdateDate
+      ? date:parse(getExpEventDetail.data[<span class="n">0</span>].lastApprovalUpdateDate,
+          'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'', 'UTC')
+          .<span class="f">formatWithTimeZone</span>('MM/dd/yyyy HH:mm:ss a', 'UTC') : '';
+    <span class="k">var</span> latestCVDocCreated = !<span class="k">empty</span> documentList.data[<span class="n">0</span>].workerDocuments[<span class="n">0</span>].lastFunctionallyUpdated
+      ? date:parse(documentList.data[<span class="n">0</span>].workerDocuments[<span class="n">0</span>].lastFunctionallyUpdated,
+          'yyyy-MM-dd\\'T\\'HH:mm:ss.SSS\\'Z\\'', 'UTC')
+          .<span class="f">formatWithTimeZone</span>('MM/dd/yyyy HH:mm:ss a', 'UTC') : '';
+
+    console.debug(' Sent Back ' + dateOfSentBack + ' Doc Created ' + latestCVDocCreated);
+
+    <span class="k">if</span> (dateOfSentBack &lt; latestCVDocCreated) {           <span class="c">// only newer CVs qualify</span>
+      documentGrid.<span class="f">setRows</span>(documentList.data[<span class="n">0</span>].workerDocuments ?? []);
+      pageVariables.isDocumentFound = <span class="n">true</span>;
+    }
+  } <span class="k">else</span> {
+    documentGrid.<span class="f">setRows</span>(documentList.data[<span class="n">0</span>].workerDocuments ?? []);
+    pageVariables.isDocumentFound = documentList.data[<span class="n">0</span>].workerDocuments ? <span class="n">true</span> : <span class="n">false</span>;
+    CVnotFound.<span class="f">setVisible</span>(pageVariables.isDocumentFound == <span class="n">true</span> ? <span class="n">false</span> : <span class="n">true</span>);
+  }
+<span class="t">%&gt;</span>"</span></pre></div>
+<p><strong>Why it works:</strong> the button pairs a deferred <code>invoke()</code> with <code>setRows()</code> to refresh without reloading the page. The date-comparison trick: parse both Workday timestamps with the same pattern and re-format both with the same <code>formatWithTimeZone</code> — comparing identically formatted strings sidesteps object-comparison surprises. The debug line logs both values because a wrong comparison here fails silently. (Cleaner still: compare the parsed date objects with <code>date:after(d1, d2)</code>.)</p>
+</div></details></div></div>
+
+<!-- S6 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag beg">Beginner · Page design</span>
+<h3>Scenario 6 — One edit page that serves both Add and Edit</h3>
+<p class="sc-prob"><strong>Problem:</strong> "Add Trial Experience" and "Edit Trial Experience" are 95% identical. You want one PMD that POSTs a new record when opened bare, and PATCHes an existing record when opened with <code>?clinicalExperienceId=…</code> — including a title that reflects the mode.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real code (clinicalExperienceAdd)</span><button class="copy">Copy</button></div><pre><span class="c">// mode-aware title</span>
+<span class="k">"title"</span>: { <span class="k">"type"</span>: <span class="s">"title"</span>,
+  <span class="k">"label"</span>: <span class="s">"<span class="t">&lt;%</span> <span class="k">empty</span>(queryParams.clinicalExperienceId)
+                ? 'Add Trial Experience' : 'Edit Trial Experience' <span class="t">%&gt;</span>"</span> },
+
+<span class="c">// two outbound endpoints; exclude makes them mutually exclusive</span>
+{ <span class="k">"name"</span>: <span class="s">"clinicalExperiencePOST"</span>,  <span class="k">"httpMethod"</span>: <span class="s">"POST"</span>,
+  <span class="k">"url"</span>: <span class="s">"/clinicalAssignments"</span>,
+  <span class="k">"onSend"</span>: <span class="s">"<span class="t">&lt;%</span> console.info('POST: ' + json:asJSON(self.data)); <span class="k">return</span> self.data; <span class="t">%&gt;</span>"</span>,
+  <span class="k">"exclude"</span>: <span class="s">"<span class="t">&lt;%</span> !<span class="k">empty</span>(queryParams.clinicalExperienceId) <span class="t">%&gt;</span>"</span> },
+
+{ <span class="k">"name"</span>: <span class="s">"clinicalExperiencePATCH"</span>, <span class="k">"httpMethod"</span>: <span class="s">"PATCH"</span>,
+  <span class="k">"url"</span>: <span class="s">"<span class="t">&lt;%</span> '/clinicalAssignments/' + queryParams.clinicalExperienceId <span class="t">%&gt;</span>"</span>,
+  <span class="k">"allowEmptyValue"</span>: <span class="n">true</span>,
+  <span class="k">"exclude"</span>: <span class="s">"<span class="t">&lt;%</span> <span class="k">empty</span>(queryParams.clinicalExperienceId) <span class="t">%&gt;</span>"</span> }</pre></div>
+<p><strong>Why it works:</strong> the mode lives in one place (<code>queryParams</code>), and the two <code>exclude</code> conditions are exact complements — exactly one endpoint fires. <code>allowEmptyValue</code> on the PATCH lets users blank a field. Every mode-sensitive widget uses the same <code>empty(queryParams.…) ? addBehavior : editBehavior</code> ternary.</p>
+</div></details></div></div>
+
+<!-- S7 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag adv">Advanced · Outbound</span>
+<h3>Scenario 7 — Derive a submit-time field with an inline deferred invoke</h3>
+<p class="sc-prob"><strong>Problem:</strong> The record stores both an indication and its parent therapeutic area, but the user only picks the indication. The therapeutic area must be looked up and written at submit time — without adding a visible widget or an extra page step.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real code — outbound value with an invoke inside it</span><button class="copy">Copy</button></div><pre><span class="k">"values"</span>: [
+  { <span class="k">"outboundPath"</span>: <span class="s">"indicationID.id"</span>,
+    <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> selectedIndication.value[<span class="n">0</span>] ?: '' <span class="t">%&gt;</span>"</span> },
+  { <span class="k">"outboundPath"</span>: <span class="s">"therapeuticAreaID.id"</span>,
+    <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> selectedIndication.value[<span class="n">0</span>]
+        ? therapeuticAreasSearch.<span class="f">invoke</span>(
+            {'indication': selectedIndication.value[<span class="n">0</span>]}).data[<span class="n">0</span>].therapeuticAreaId.id
+        : '' <span class="t">%&gt;</span>"</span> },
+  { <span class="k">"outboundPath"</span>: <span class="s">"parentClientID.id"</span>,
+    <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> selectedClient.value[<span class="n">0</span>]
+        ? 'ResourceManagement_ParentClient_ID=' + selectedClient.value[<span class="n">0</span>] : '' <span class="t">%&gt;</span>"</span> }
+]</pre></div>
+<p><strong>Why it works:</strong> outbound <code>values</code> scripts run at submit, when the selection is final, so the lookup happens exactly once. The ternary guard means no invoke fires when nothing is selected. Also note the third entry: composing a <strong>reference-ID string</strong> (<code>Type_ID=value</code>) — the standard way to write a typed reference to an Extend business-object field. Trade-off: each inline invoke is a synchronous round-trip; for many derived fields prefer one <code>onSend</code> that invokes once and fills several fields.</p>
+</div></details></div></div>
+
+<!-- S8 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag beg">Beginner · Validation</span>
+<h3>Scenario 8 — Block submission until every grid row is acknowledged</h3>
+<p class="sc-prob"><strong>Problem:</strong> A CV-review page lists generated documents with an "Agree" checkbox per row. The user must not be able to click OK until every row's checkbox is ticked.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real code (clinicalExperienceStartHere)</span><button class="copy">Copy</button></div><pre><span class="k">"onSubmit"</span>: <span class="s">"<span class="t">&lt;%</span>
+  <span class="k">for</span> (<span class="k">let</span> row : documentGrid.rows ?? []) {
+    row.childrenMap.agreeCol.<span class="f">clearError</span>();
+    <span class="k">if</span> (row.childrenMap.agreeCol.value != <span class="n">true</span>) {
+      row.childrenMap.agreeCol.<span class="f">setError</span>(
+        'You must Generate your CV, review your CV, then check the Agree checkbox ...');
+    }
+  }
+<span class="t">%&gt;</span>"</span></pre></div>
+<p><strong>Why it works:</strong> <code>onSubmit</code> fires after OK but before outbound endpoints — and <strong>any widget carrying an error blocks the submit</strong>. No flags or manual short-circuiting needed: clear, check, set errors, and the framework does the gating. Iterate <code>rows ?? []</code> so an empty grid doesn't throw.</p>
+</div></details></div></div>
+
+<!-- S9 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag">Intermediate · Flows</span>
+<h3>Scenario 9 — Carry context through a multi-page flow, whatever the entry point</h3>
+<p class="sc-prob"><strong>Problem:</strong> A wizard can be launched from a task (context in <code>queryParams</code>) or resumed mid-flow (context in <code>flowVariables</code>). Every page needs the same worker/event context, and it must survive each page transition.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real pattern — read with fallback, re-emit on every page</span><button class="copy">Copy</button></div><pre><span class="c">// READ anywhere on the page:</span>
+<span class="k">var</span> userID = queryParams.userID ?: (flowVariables.userID ?: <span class="s">''</span>);
+
+<span class="c">// WRITE on every page's outboundData, so the next hop always has it:</span>
+{ <span class="k">"type"</span>: <span class="s">"outboundVariable"</span>, <span class="k">"name"</span>: <span class="s">"initiatingPage"</span>, <span class="k">"variableScope"</span>: <span class="s">"flow"</span>,
+  <span class="k">"values"</span>: [
+    { <span class="k">"outboundPath"</span>: <span class="s">"userID"</span>,
+      <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> queryParams.userID ?: (flowVariables.userID ?: '') <span class="t">%&gt;</span>"</span> },
+    { <span class="k">"outboundPath"</span>: <span class="s">"eventStepId"</span>,
+      <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> queryParams.eventStepId ?: (flowVariables.eventStepId ?: '') <span class="t">%&gt;</span>"</span> }
+  ] }
+
+<span class="c">// Alternative: build the whole variable in onSend from widget state</span>
+{ <span class="k">"type"</span>: <span class="s">"outboundVariable"</span>, <span class="k">"name"</span>: <span class="s">"selectedTeamMembers"</span>, <span class="k">"variableScope"</span>: <span class="s">"flow"</span>,
+  <span class="k">"onSend"</span>: <span class="s">"<span class="t">&lt;%</span> { 'team': teamList.value[<span class="n">0</span>],
+                  'selectedMembers': getSelectedMembers() } <span class="t">%&gt;</span>"</span> }</pre></div>
+<p><strong>Why it works:</strong> the read side is a two-level fallback (<code>queryParams ?: flowVariables ?: default</code>) so entry point doesn't matter; the write side re-emits the same chain, making the context self-propagating across N pages. Remember: for outbound variables, <code>values</code> wins over <code>onSend</code> if both exist — pick one mechanism per variable.</p>
+</div></details></div></div>
+
+<!-- S10 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag adv">Advanced · Search</span>
+<h3>Scenario 10 — Criteria-dependent onSearch on an instanceList</h3>
+<p class="sc-prob"><strong>Problem:</strong> A "values" picker in the criteria grid must search a <em>different</em> data source depending on which criteria type is selected in the same row (cost centers vs skills vs study types) — and must refuse to search at all until a criteria type is chosen.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real code (abridged)</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"type"</span>: <span class="s">"instanceList"</span>, <span class="k">"id"</span>: <span class="s">"instanceSelectionsId"</span>,
+  <span class="k">"values"</span>: <span class="s">"<span class="t">&lt;%</span> [] <span class="t">%&gt;</span>"</span>, <span class="k">"multiSelect"</span>: <span class="n">true</span>,
+  <span class="k">"onSearch"</span>: <span class="s">"<span class="t">&lt;%</span>
+    <span class="k">var</span> isCriteriaSelected = !<span class="k">empty</span> fieldSearchId.value[<span class="n">0</span>] ? <span class="n">true</span> : <span class="n">false</span>;
+    <span class="k">if</span> (isCriteriaSelected == <span class="n">false</span>) {
+      self.<span class="f">setError</span>('A criteria is required before searching values');
+    } <span class="k">else</span> {
+      self.<span class="f">clearError</span>();
+    }
+
+    <span class="k">var</span> searchResult = {};
+    <span class="k">if</span> (fieldSearchId.value[<span class="n">0</span>] == 'searchCostCenter') {
+      <span class="k">var</span> searchList = searchCostCenters.<span class="f">invoke</span>();    <span class="c">// per-criteria endpoint</span>
+      <span class="k">if</span> (!<span class="k">empty</span> searchList &amp;&amp; <span class="k">empty</span> searchList.errors) {
+        searchResult = searchList.data;
+      }
+    }
+    <span class="c">// ... else-if per criteria type; event.query holds the typed string ...</span>
+    <span class="k">return</span> searchResult;         <span class="c">// what the list displays</span>
+  <span class="t">%&gt;</span>"</span>
+}</pre></div>
+<p><strong>Why it works:</strong> <code>onSearch</code> replaces static <code>searchEndPoint</code>/<code>searchValues</code> (the three are mutually exclusive) and gives you a full script: validate the precondition on <code>self</code>, branch to the right deferred endpoint, check <code>.errors</code>, and return the result list. Inside a grid, <code>onSearch</code> can see the other widgets in the <em>current row</em> — which is what makes the row-local dependency possible.</p>
+</div></details></div></div>
+
+<!-- S11 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag">Intermediate · Actions</span>
+<h3>Scenario 11 — A button that validates, launches an Orchestration, and confirms inline</h3>
+<p class="sc-prob"><strong>Problem:</strong> "Generate CV" must (a) require a CV type selection, (b) launch a document-generation Orchestration, and (c) confirm to the user on the same page — no submit, no navigation.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">pmd · real code</span><button class="copy">Copy</button></div><pre>{
+  <span class="k">"type"</span>: <span class="s">"pageActionButton"</span>,
+  <span class="k">"label"</span>: <span class="s">"Generate CV"</span>,
+  <span class="k">"onClick"</span>: <span class="s">"<span class="t">&lt;%</span>
+    billableDropDwn.<span class="f">clearError</span>();
+    <span class="k">if</span> (!<span class="k">empty</span> billableDropDwn.value[<span class="n">0</span>]) {
+      <span class="k">var</span> integrationWID = generateCVOrch.<span class="f">invoke</span>();   <span class="c">// deferred ORCHESTRATE endpoint</span>
+      actionMsg.value = 'Request to create CV Document has been initiated.';
+    } <span class="k">else</span> {
+      billableDropDwn.<span class="f">setError</span>('Please specify a CV Type before generating a CV');
+    }
+  <span class="t">%&gt;</span>"</span>
+},
+{ <span class="k">"type"</span>: <span class="s">"text"</span>, <span class="k">"id"</span>: <span class="s">"actionMsg"</span>, <span class="k">"enabled"</span>: <span class="n">false</span>, <span class="k">"value"</span>: <span class="s">"<span class="t">&lt;%</span> '' <span class="t">%&gt;</span>"</span> }</pre></div>
+<p><strong>Why it works:</strong> <code>pageActionButton.onClick</code> is the in-page action pattern: clear → validate → invoke → write a status message into a disabled text widget. The Orchestration runs async; the page confirms initiation rather than completion (pair with a Refresh button — Scenario 5 — to poll for the result).</p>
+</div></details></div></div>
+
+<!-- S12 -->
+<div class="scen">
+<div class="sc-head"><span class="sc-tag adv">Advanced · Architecture</span>
+<h3>Scenario 12 — Package cross-page logic as a script module</h3>
+<p class="sc-prob"><strong>Problem:</strong> Eight RAF pages (approve, confirm, revise, submit, search…) all need the same comment merging, criteria validation, and dropdown option logic. Copy-pasting the functions into each PMD has already caused two drift bugs.</p></div>
+<div class="sc-body"><details><summary>Show solution &amp; why it works</summary><div class="sc-sol">
+<div class="cb"><div class="cb-head"><span class="lang">structure · rafFunctions.script</span><button class="copy">Copy</button></div><pre><span class="c">// presentation/scripts/rafFunctions.script — NO &lt;% %&gt; wrapper</span>
+<span class="k">var</span> getComments = <span class="k">function</span>(eventComments, raf) { <span class="c">/* Scenario 2 */</span> }
+<span class="k">var</span> setOperatorList = <span class="k">function</span>(searchType) {
+  <span class="c">// returns different dropdown option lists per criteria type</span>
+  <span class="k">var</span> ddnList = [];
+  <span class="k">if</span> (searchType == <span class="s">'seachSkills'</span> || searchType == <span class="s">'searchLanguage'</span>) {
+    ddnList = [ {<span class="s">'id'</span>:<span class="s">'anyOperator'</span>,   <span class="s">'descriptor'</span>:<span class="s">'any in the selection list'</span>},
+                {<span class="s">'id'</span>:<span class="s">'exactOperator'</span>, <span class="s">'descriptor'</span>:<span class="s">'exact match with selection list'</span>} ];
+  } <span class="k">else</span> {
+    ddnList = [ {<span class="s">'id'</span>:<span class="s">'anyOperator'</span>, <span class="s">'descriptor'</span>:<span class="s">'any in the selection list'</span>} ];
+  }
+  <span class="k">return</span> ddnList;
+}
+<span class="k">var</span> validateSearchCriteria = <span class="k">function</span>(searchGrid) { <span class="c">/* Scenario 1 */</span> }
+<span class="k">var</span> clearSearchGridErrors  = <span class="k">function</span>(searchGrid) { <span class="c">/* reset-only variant */</span> }
+
+<span class="c">// export map — the module's public API</span>
+{
+  <span class="k">"getComments"</span>: getComments,
+  <span class="k">"setOperatorList"</span>: setOperatorList,
+  <span class="k">"validateSearchCriteria"</span>: validateSearchCriteria,
+  <span class="k">"clearSearchGridErrors"</span>: clearSearchGridErrors
+}
+
+<span class="c">// every consuming PMD:</span>
+<span class="k">"include"</span>: [<span class="s">"rafFunctions.script"</span>],
+<span class="k">"values"</span>: <span class="s">"<span class="t">&lt;%</span> rafFunctions.setOperatorList(searchCriteriaCol.value[<span class="n">0</span>]) <span class="t">%&gt;</span>"</span></pre></div>
+<p><strong>Why it works:</strong> one source of truth for logic that eight pages share; the export map makes the public surface explicit; and note the design choice of shipping <em>both</em> <code>validateSearchCriteria</code> and <code>clearSearchGridErrors</code> — pages that only need to reset (e.g., on criteria change) don't pay for full validation. Module functions receive widgets (the grid) as parameters, keeping the module page-agnostic.</p>
+</div></details></div></div>
+</section>
+
+<!-- ============ SECTION 14 ============ -->
+<section id="s14">
+<h2><span class="num">14</span>Best Practices &amp; Pitfalls</h2>
+
+<h3>The ten commandments (earned the hard way)</h3>
+<ol>
+  <li><strong>End onSend with the payload.</strong> After any <code>console.*</code> call, restate <code>self.data</code> (or your object). A trailing log = null return = cancelled POST.</li>
+  <li><strong>Selection widget values are lists of strings.</strong> Read <code>self.value[0]</code>, and convert with <code>number:convertStringToInt()</code> before arithmetic.</li>
+  <li><strong>Guard every optional read.</strong> <code>?? []</code> for lists, <code>?: ''</code> for strings, <code>?.</code> for deep chains, <code>empty</code> checks before indexing <code>data[0]</code>.</li>
+  <li><strong>onLoad transforms, widgets render.</strong> Never reference widgets in onLoad; write to <code>pageVariables</code> instead.</li>
+  <li><strong>Clear errors before setting them.</strong> Validation that doesn't clear first strands stale errors after the user fixes the input.</li>
+  <li><strong>exclude beats failure.</strong> A parameterized endpoint without an <code>exclude</code> guard is a page error waiting for a missing query param.</li>
+  <li><strong>Don't reassign outer variables in closures.</strong> Mutate collections, or use a plain <code>for</code> loop for counters.</li>
+  <li><strong>urlEncode every WQL query.</strong> And build table names from <code>site.applicationId</code>, never hardcoded reference IDs.</li>
+  <li><strong>One invoke, many fields.</strong> Prefer a single <code>onSend</code> lookup that fills several payload fields over inline invokes scattered across <code>values</code> — and never put an invoke in a grid cellTemplate.</li>
+  <li><strong>Give every widget an id, and prefer <code>self</code>.</strong> Debuggability and refactor-safety in one habit.</li>
+</ol>
+
+<h3>Common failure modes → fixes</h3>
+<table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+<tr><td>Widget value silently blank</td><td>Script ends with a <code>console.*</code> or a statement returning null</td><td>Restate the value as the last line</td></tr>
+<tr><td>POST/PATCH never fires</td><td><code>onSend</code> returned null (or an <code>exclude</code> evaluated true)</td><td>Return <code>self.data</code>; log <code>json:asJSON(self.data)</code> to verify</td></tr>
+<tr><td>"Cannot reference widget" on page load</td><td>Widget referenced in <code>onLoad</code> or in a view-page attribute</td><td>Move to <code>pageVariables</code> / restructure as edit page</td></tr>
+<tr><td>Validation error on <code>a-b</code> style property</td><td>Hyphen parsed as subtraction in dot notation</td><td>Bracket notation: <code>obj['a-b']</code></td></tr>
+<tr><td>Closure "works" but counter stays 0</td><td>Reassignment inside a closure</td><td><code>for</code> loop, or mutate a list and take <code>size()</code></td></tr>
+<tr><td>Comparison of dropdown value to number always false</td><td>String vs number</td><td><code>number:convertStringToInt(value[0])</code></td></tr>
+<tr><td>Script timeout</td><td>&gt;5s CPU (nested loops over large grids)</td><td>Pre-index with <code>list:toMap</code>; move heavy transforms to the endpoint/WQL/Orchestration</td></tr>
+<tr><td>Module function not found</td><td>Missing from export map, or missing <code>include</code>, or &gt;2 nesting levels</td><td>Export it; include the module; flatten dependencies</td></tr>
+<tr><td>Stale validation errors</td><td>Errors set but never cleared</td><td>clear-then-validate pattern (Scenario 1)</td></tr>
+</table>
+
+<div class="co tip"><div class="co-t">Performance mindset</div>
+<p>PMD scripts run per page render or per event on Workday's servers under CPU and memory limits. Push heavy lifting <em>down</em>: filter in WQL (<code>WHERE</code>), not in <code>list:filter</code>; aggregate in the query, not in a loop; and reach for an Orchestration when the logic involves multiple API calls, loops over large datasets, or needs to run without a page.</p></div>
+</section>
+
+<!-- ============ SECTION 15 ============ -->
+<section id="s15">
+<h2><span class="num">15</span>Limits &amp; What's New</h2>
+
+<h3>Hard limits to design around</h3>
+<table>
+<tr><th>Limit</th><th>Value / behavior</th></tr>
+<tr><td>CPU time per script</td><td>≈5 seconds max (endpoint invocations and widget API calls excluded — they run in separate contexts)</td></tr>
+<tr><td>Call frames</td><td>Program-stack depth is capped — deep recursion fails</td></tr>
+<tr><td>Nested script modules</td><td>Max 2 dependency levels (a → b → c; c may include nothing)</td></tr>
+<tr><td>Memory</td><td>Bounded per execution; oversized intermediate collections throw</td></tr>
+<tr><td>Script size</td><td>Capped per script — another push toward modules</td></tr>
+</table>
+
+<h3>Recent platform additions worth knowing (2025–2026)</h3>
+<ul>
+  <li><strong>New PMD layout tags</strong> — <code>multiStepLayout</code> partitions one PMD into sequential carousel-style steps; <code>columnLayout</code> enables side-by-side views; enhanced form layout properties round it out. Event handling and scripting work the same inside them.</li>
+  <li><strong>editWizard draft saving</strong> — native draft persistence for wizard flows, reducing the need for hand-rolled flowVariable checkpointing.</li>
+  <li><strong>WDCLI</strong> — a unified CLI to build, validate, test, and deploy Extend apps and Orchestrations, with browser↔local file sync for real version control and CI/CD of your PMDs and script modules.</li>
+  <li><strong>WQL Generation &amp; PMD Scripting assistance</strong> — AI-assisted authoring in the builder tools for WQL and PMD scripts.</li>
+  <li><strong>Developer Agent &amp; Agent Actions</strong> — for logic beyond the page, Orchestrate keeps absorbing complexity (long-running API waits, dynamic SFTP, Prism job triggers), reinforcing the "thin scripts, heavy orchestrations" split.</li>
+</ul>
+<p>Verify specifics against the current release notes on <a class="doclink" href="https://developer.workday.com" target="_blank" rel="noopener">developer.workday.com</a> — Extend ships on Workday's R1/R2 cadence and details evolve.</p>
+
+<footer>
+Compiled from the Workday Developers documentation set (Concept: PMD Scripting; Concept: Event Handling with PMD Scripting; Concept: Script Modules; Reference: PMD Scripting Syntax / Events / Widget Methods / Logging / Examples; function-namespace references) and pattern analysis of a production Resource Management Extend application. Single-file offline reference — no external dependencies. Field patterns are shown for instruction; adapt identifiers, security, and error handling to your own app standards.
+</footer>
+</section>
+</main>
+</div>
+<a href="#" class="top-link" id="topLink" aria-label="Back to top">↑</a>
+
+<script>
+// ---- copy buttons ----
+document.querySelectorAll('.cb button.copy').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var pre = btn.closest('.cb').querySelector('pre');
+    var txt = pre.innerText;
+    function ok(){ btn.textContent='Copied!'; setTimeout(function(){btn.textContent='Copy';},1400); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(ok, function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+      ta.select(); try{document.execCommand('copy'); ok();}catch(e){} document.body.removeChild(ta);
+    }
+  });
+});
+
+// ---- nav filter ----
+var filter=document.getElementById('navFilter');
+if(filter){filter.addEventListener('input',function(){
+  var q=filter.value.trim().toLowerCase();
+  document.querySelectorAll('#nav a').forEach(function(a){
+    a.classList.toggle('hidden', q!=='' && a.textContent.toLowerCase().indexOf(q)===-1);
+  });
+});}
+
+// ---- scroll spy + top link ----
+var links=[].slice.call(document.querySelectorAll('#nav a'));
+var sections=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+var topLink=document.getElementById('topLink');
+function onScroll(){
+  var y=window.scrollY;
+  topLink.classList.toggle('show', y>600);
+  var current=0;
+  for(var i=0;i<sections.length;i++){ if(sections[i] && sections[i].offsetTop-90<=y) current=i; }
+  links.forEach(function(a,i){ a.classList.toggle('active', i===current); });
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+topLink.addEventListener('click',function(e){e.preventDefault();window.scrollTo({top:0,behavior:'smooth'});});
+</script>
+</body>
+</html>

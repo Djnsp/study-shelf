@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XSLT 3.0 for Workday · transforms, maps, streaming &amp; how it differs from 2.0</title>
+<style>
+:root{
+  --bg:#0b1016; --bg2:#0f1620; --panel:#131c28; --panel2:#172230;
+  --line:#22303f; --line2:#2c3e50;
+  --ink:#e6edf3; --muted:#93a4b5; --faint:#62768a;
+  --teal:#3dd6c4; --teal-d:#1f9d8f; --amber:#f5b94a; --violet:#a98bff;
+  --green:#4ad481; --red:#ff6b6b; --blue:#5fb3ff;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:12px; --rs:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(1200px 700px at 80% -10%,#16202d 0%,var(--bg) 55%) fixed;
+  color:var(--ink); font-family:var(--sans); line-height:1.55;
+  -webkit-font-smoothing:antialiased; font-size:16px;
+}
+a{color:var(--teal);text-decoration:none}
+code,.mono{font-family:var(--mono)}
+.hidden{display:none!important}
+.wrap{max-width:1100px;margin:0 auto;padding:0 22px}
+button{font-family:inherit}
+
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(11,16,22,.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);}
+.topbar .wrap{display:flex;align-items:center;gap:16px;height:58px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px;cursor:pointer}
+.brand .dot{width:11px;height:11px;border-radius:3px;background:var(--teal);box-shadow:0 0 14px var(--teal)}
+.brand small{color:var(--faint);font-weight:500;font-family:var(--mono);font-size:11px}
+.nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.nav button{background:transparent;border:1px solid transparent;color:var(--muted);
+  padding:7px 13px;border-radius:99px;cursor:pointer;font-size:13.5px;transition:.18s}
+.nav button:hover{color:var(--ink);border-color:var(--line2)}
+.nav button.active{color:var(--bg);background:var(--teal);font-weight:600}
+
+/* ---------- home ---------- */
+.hero{padding:54px 0 26px}
+.kicker{font-family:var(--mono);color:var(--teal);font-size:12.5px;letter-spacing:2px;text-transform:uppercase}
+.hero h1{font-size:clamp(30px,5vw,46px);margin:.25em 0 .15em;line-height:1.08;letter-spacing:-.5px}
+.hero p.lead{color:var(--muted);font-size:18px;max-width:680px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:34px 0 10px}
+@media(max-width:820px){.cards{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+  border-radius:var(--r);padding:22px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-3px);border-color:var(--teal-d);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.card .ic{font-family:var(--mono);font-size:12px;letter-spacing:1px;color:var(--faint)}
+.card h3{margin:12px 0 6px;font-size:21px}
+.card p{color:var(--muted);font-size:14.5px;margin:0 0 14px}
+.card .go{font-family:var(--mono);font-size:13px;color:var(--teal)}
+.card.cTeal{border-top:3px solid var(--teal)}
+.card.cAmber{border-top:3px solid var(--amber)}
+.card.cViolet{border-top:3px solid var(--violet)}
+.stats{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px;color:var(--faint);font-size:13px;font-family:var(--mono)}
+.stats b{color:var(--ink)}
+
+/* ---------- layout: study guide ---------- */
+.guide{display:grid;grid-template-columns:240px 1fr;gap:30px;padding:26px 0 70px}
+@media(max-width:900px){.guide{grid-template-columns:1fr}}
+.side{position:sticky;top:74px;align-self:start;max-height:calc(100vh-90px);overflow:auto;
+  border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:10px}
+@media(max-width:900px){.side{position:static;max-height:none}}
+.side .grp{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;color:var(--faint);
+  text-transform:uppercase;padding:12px 10px 5px}
+.side a{display:block;color:var(--muted);padding:7px 10px;border-radius:7px;font-size:13.5px;cursor:pointer;border-left:2px solid transparent}
+.side a:hover{background:var(--panel2);color:var(--ink)}
+.side a.active{color:var(--teal);background:rgba(61,214,196,.08);border-left-color:var(--teal)}
+.content{min-width:0}
+.content h2{font-size:28px;margin:8px 0 4px;letter-spacing:-.3px}
+.content h2 .tag{font-family:var(--mono);font-size:12px;color:var(--bg);background:var(--teal);padding:3px 8px;border-radius:6px;vertical-align:middle;margin-left:8px}
+.content h3{font-size:18.5px;margin:30px 0 8px;color:var(--ink)}
+.content h4{font-size:15px;margin:20px 0 4px;color:var(--amber);font-family:var(--mono);letter-spacing:.3px}
+.content p{color:#cdd8e3}
+.sec{display:none;animation:fade .35s ease}
+.sec.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.lead2{font-size:17px;color:var(--muted);border-left:3px solid var(--teal-d);padding-left:14px;margin:14px 0 6px}
+
+.callout{border:1px solid var(--line2);border-radius:var(--rs);padding:13px 15px;margin:16px 0;background:var(--panel)}
+.callout.tip{border-left:3px solid var(--teal)}
+.callout.warn{border-left:3px solid var(--amber)}
+.callout.key{border-left:3px solid var(--violet)}
+.callout .lbl{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:4px}
+
+table.t{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+table.t th,table.t td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+table.t th{background:var(--panel2);color:var(--ink);font-weight:600;font-family:var(--mono);font-size:12px;letter-spacing:.3px}
+table.t td{color:#c3d0db}
+table.t code{color:var(--amber)}
+table.t tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:6px;border:1px solid var(--line2);color:var(--muted);margin:2px 3px 2px 0}
+.pill.t{color:var(--teal);border-color:var(--teal-d)}
+.pill.a{color:var(--amber);border-color:#7a5e22}
+.pill.v{color:var(--violet);border-color:#5a4a8a}
+.pill.g{color:var(--green);border-color:#2c7a4d}
+.pill.r{color:var(--red);border-color:#8a3838}
+
+ul.clean{list-style:none;padding:0;margin:10px 0}
+ul.clean li{padding:7px 0 7px 24px;position:relative;color:#cdd8e3;border-bottom:1px solid rgba(255,255,255,.04)}
+ul.clean li:before{content:"▸";position:absolute;left:4px;color:var(--teal)}
+ul.dash{padding-left:20px;color:#cdd8e3}
+ul.dash li{margin:5px 0}
+
+.codeblock{background:#070b10;border:1px solid var(--line);border-radius:var(--rs);padding:14px 16px;overflow:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#bcd; margin:14px 0;white-space:pre}
+.codeblock .c1{color:var(--teal)} .codeblock .c2{color:var(--amber)} .codeblock .c3{color:var(--violet)}
+.codeblock .c4{color:var(--green)} .codeblock .c5{color:var(--faint)} .codeblock .c6{color:var(--red)}
+
+/* ---------- effective stack visualizer ---------- */
+.viz{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:18px;margin:18px 0}
+.viz .ctrls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.viz .ctrls button{background:var(--panel2);border:1px solid var(--line2);color:var(--muted);
+  padding:7px 12px;border-radius:99px;font-size:12.5px;cursor:pointer;transition:.15s;font-family:var(--mono)}
+.viz .ctrls button:hover{color:var(--ink);border-color:var(--teal-d)}
+.viz .ctrls button.on{background:var(--teal);color:var(--bg);border-color:var(--teal);font-weight:600}
+.stack{display:flex;flex-direction:column;gap:10px}
+.echange{border:1px solid var(--line2);border-radius:var(--rs);padding:12px 14px;background:linear-gradient(180deg,var(--panel2),var(--panel));
+  position:relative;display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center;
+  animation:slide .4s ease backwards}
+.echange:nth-child(2){animation-delay:.06s}.echange:nth-child(3){animation-delay:.12s}
+.echange:nth-child(4){animation-delay:.18s}.echange:nth-child(5){animation-delay:.24s}
+@keyframes slide{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+.echange .seq{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--teal);text-align:center;
+  border-right:1px solid var(--line);padding-right:8px}
+.echange .seq small{display:block;font-size:9px;color:var(--faint);font-weight:400;letter-spacing:1px}
+.echange .code{font-family:var(--mono);font-weight:700;font-size:14px;padding:2px 9px;border-radius:6px;display:inline-block}
+.echange .meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:6px}
+.echange .meta b{color:var(--amber);font-weight:600}
+.echange .desc{font-size:13px;color:#c3d0db;margin-top:5px}
+.cHIR{background:rgba(74,212,129,.14);color:var(--green)}
+.cTERM{background:rgba(255,107,107,.14);color:var(--red)}
+.cLOA{background:rgba(245,185,74,.14);color:var(--amber)}
+.cDTA{background:rgba(95,179,255,.14);color:var(--blue)}
+.cPG{background:rgba(169,139,255,.14);color:var(--violet)}
+
+/* ---------- rule explorer ---------- */
+.explorer{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:18px;margin:18px 0}
+.explorer .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.explorer .row{grid-template-columns:1fr}}
+.field{margin:8px 0}
+.field label{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:5px}
+.seg{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:var(--panel2);border:0;color:var(--muted);padding:9px;cursor:pointer;font-size:13px;transition:.15s}
+.seg button.on{background:var(--teal);color:var(--bg);font-weight:600}
+.verdict{margin-top:16px;border-radius:var(--rs);padding:14px 16px;font-size:14.5px;border:1px solid var(--line2)}
+.verdict.yes{background:rgba(74,212,129,.1);border-color:#2c7a4d}
+.verdict.no{background:rgba(255,107,107,.1);border-color:#8a3838}
+.verdict b{font-family:var(--mono)}
+
+/* ---------- quiz ---------- */
+.quiz{padding:26px 0 70px;max-width:760px;margin:0 auto}
+.qhead{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.qhead .mode{font-family:var(--mono);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:5px 12px;border-radius:99px}
+.qhead .mode.learn{background:rgba(245,185,74,.14);color:var(--amber)}
+.qhead .mode.exam{background:rgba(169,139,255,.14);color:var(--violet)}
+.qhead .prog{font-family:var(--mono);font-size:13px;color:var(--muted);margin-left:auto}
+.qhead .small{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.pbar{height:6px;background:var(--panel);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-bottom:22px}
+.pbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-d));width:0;transition:width .4s ease}
+.qcard{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+  border-radius:var(--r);padding:24px;animation:fade .3s ease}
+.qtopic{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--faint);text-transform:uppercase}
+.qtext{font-size:19px;margin:8px 0 18px;line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+  background:var(--panel);border:1px solid var(--line2);color:var(--ink);
+  padding:13px 15px;border-radius:var(--rs);cursor:pointer;font-size:15px;transition:.16s;position:relative}
+.opt:hover:not(:disabled){border-color:var(--teal-d);background:var(--panel2);transform:translateX(2px)}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt .key{font-family:var(--mono);font-weight:700;color:var(--faint);min-width:18px}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:var(--green);background:rgba(74,212,129,.13)}
+.opt.correct .key{color:var(--green)}
+.opt.wrong{border-color:var(--red);background:rgba(255,107,107,.12)}
+.opt.wrong .key{color:var(--red)}
+.opt.dim{opacity:.55}
+.opt .mark{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:700}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.025)}100%{transform:scale(1)}}
+.opt.pulse{animation:pop .45s ease}
+.feedback{margin-top:18px;border-radius:var(--rs);padding:14px 16px;font-size:14.5px;display:none;animation:fade .3s}
+.feedback.show{display:block}
+.feedback.ok{background:rgba(74,212,129,.1);border:1px solid #2c7a4d}
+.feedback.bad{background:rgba(255,107,107,.1);border:1px solid #8a3838}
+.feedback .ft{font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.feedback.ok .ft{color:var(--green)} .feedback.bad .ft{color:var(--red)}
+.feedback .exp{color:#cdd8e3}
+.qfoot{margin-top:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--teal);color:var(--bg);border:0;padding:12px 22px;border-radius:99px;
+  font-weight:600;font-size:14.5px;cursor:pointer;transition:.16s}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn.ghost{background:transparent;border:1px solid var(--line2);color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--teal-d)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.toggle{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-family:var(--mono)}
+.switch{width:42px;height:23px;border-radius:99px;background:var(--line2);position:relative;cursor:pointer;transition:.2s;border:0;flex:none}
+.switch.on{background:var(--teal)}
+.switch i{position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.2s}
+.switch.on i{left:21px}
+
+/* confetti */
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
+.confetti i{position:absolute;width:9px;height:14px;top:-20px;opacity:.95;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.4}}
+
+/* exam result */
+.result{text-align:center;padding:30px 20px;animation:fade .4s}
+.result .verdictbig{font-size:54px;font-family:var(--mono);font-weight:800;letter-spacing:-1px;margin:6px 0}
+.result .pass{color:var(--green)} .result .fail{color:var(--red)}
+.result .score{font-size:20px;color:var(--muted);font-family:var(--mono)}
+.ring{width:150px;height:150px;margin:8px auto 14px;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:30px;font-weight:700}
+.review{margin-top:26px;text-align:left}
+.review h3{font-size:18px;margin:0 0 12px}
+.ritem{border:1px solid var(--line);border-radius:var(--rs);padding:14px 16px;margin:10px 0;background:var(--panel)}
+.ritem.wrongq{border-left:3px solid var(--red)}
+.ritem.rightq{border-left:3px solid var(--green)}
+.ritem .rq{font-weight:600;margin-bottom:8px}
+.ritem .ro{font-size:13.5px;padding:5px 10px;border-radius:6px;margin:4px 0;font-family:var(--sans)}
+.ritem .ro.yourbad{background:rgba(255,107,107,.12);color:var(--red)}
+.ritem .ro.right{background:rgba(74,212,129,.12);color:var(--green)}
+.ritem .ro .k{font-family:var(--mono);font-weight:700;margin-right:8px}
+.ritem .rexp{font-size:13px;color:var(--muted);margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.examnum{font-family:var(--mono);font-size:12px;color:var(--faint)}
+
+.footer{border-top:1px solid var(--line);padding:24px 0;color:var(--faint);font-size:12.5px;font-family:var(--mono);text-align:center}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+.stepper{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:16px;margin:16px 0}
+.stepper .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.stepper .grid{grid-template-columns:1fr}}
+.stepper .pane{background:#070b10;border:1px solid var(--line);border-radius:var(--rs);padding:12px 14px;font-family:var(--mono);font-size:12px;line-height:1.7;white-space:pre;overflow:auto;min-height:150px}
+.stepper .paneLbl{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.stepper .hl{background:rgba(245,185,74,.22);outline:1px solid var(--amber);border-radius:3px}
+.stepper .emit{color:var(--green)}
+.stepper .tmpl{color:var(--teal)} .stepper .punc{color:var(--faint)} .stepper .tag{color:var(--violet)} .stepper .att{color:var(--amber)}
+.stepper .desc{margin:12px 0 6px;color:#cdd8e3;font-size:14px;min-height:42px}
+.stepper .stepctrl{display:flex;gap:10px;align-items:center;margin-top:8px}
+.stepper .stepctrl .num{font-family:var(--mono);font-size:12px;color:var(--faint);margin-left:auto}
+.mapdemo{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:16px;margin:16px 0}
+.mapdemo .keys{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.mapdemo .keys button{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border:1px solid var(--line2);color:var(--muted);padding:7px 12px;border-radius:99px;cursor:pointer;transition:.15s}
+.mapdemo .keys button:hover{border-color:var(--teal-d);color:var(--ink)}
+.mapdemo .keys button.on{background:var(--teal);color:var(--bg);border-color:var(--teal);font-weight:600}
+.mapdemo .out{font-family:var(--mono);font-size:13px;background:#070b10;border:1px solid var(--line);border-radius:var(--rs);padding:13px 15px;line-height:1.8;white-space:pre-wrap}
+.mapdemo .out .k{color:var(--amber)} .mapdemo .out .v{color:var(--green)} .mapdemo .out .d{color:var(--violet)} .mapdemo .out .c{color:var(--faint)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand" onclick="go('home')">
+      <span class="dot"></span>
+      <span>XSLT 3.0 <small>// Workday transforms</small></span>
+    </div>
+    <div class="nav" id="nav">
+      <button data-v="home" onclick="go('home')">Home</button>
+      <button data-v="guide" onclick="go('guide')">Study Guide</button>
+      <button data-v="learn" onclick="startLearn()">Learning</button>
+      <button data-v="exam" onclick="startExam()">Exam</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HOME ===================== -->
+<section id="view-home" class="view">
+  <div class="wrap">
+    <div class="hero">
+      <div class="kicker">Workday · Document Transformation &amp; Studio</div>
+      <h1>XSLT 3.0 for Workday</h1>
+      <p class="lead">A hands-on guide to XSLT&nbsp;3.0 in the Workday world: what changed from <b>2.0</b>,
+        a step-by-step look at how the processor <b>traverses and outputs</b>, and the features that matter for
+        real integrations — <b>maps (the hashmap)</b>, arrays, JSON, higher-order functions, streaming — plus
+        worked Workday <b>integration mapping</b> and <b>splitting</b> patterns.</p>
+      <div class="cards">
+        <div class="card cTeal" onclick="go('guide')">
+          <div class="ic">01 · REFERENCE</div>
+          <h3>Interactive Study Guide</h3>
+          <p>Every 3.0 feature with examples, an animated transform-traversal stepper, a live map-lookup demo, and Workday mapping &amp; splitting walk-throughs.</p>
+          <div class="go">Open the guide →</div>
+        </div>
+        <div class="card cAmber" onclick="startLearn()">
+          <div class="ic">02 · PRACTICE</div>
+          <h3>Quiz · Learning Mode</h3>
+          <p>Endless random questions. Instant feedback, a satisfying confirmation on correct answers, and the right answer revealed with an explanation when you miss.</p>
+          <div class="go">Start learning →</div>
+        </div>
+        <div class="card cViolet" onclick="startExam()">
+          <div class="ic">03 · ASSESS</div>
+          <h3>Quiz · Exam Mode</h3>
+          <p>25 random questions, no repeats. Pass at 20/25 (80%). Full review at the end marking every wrong answer against the correct one.</p>
+          <div class="go">Begin exam →</div>
+        </div>
+      </div>
+      <div class="stats">
+        <span><b id="qcount">300</b> questions in the bank</span>
+        <span>XSLT <b>2.0 → 3.0</b> compared</span>
+        <span>maps · arrays · JSON · streaming · HOF</span>
+        <span>100% offline</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GUIDE ===================== -->
+<section id="view-guide" class="view hidden">
+  <div class="wrap guide">
+    <nav class="side" id="guideNav">
+      <div class="grp">Orientation</div>
+      <a data-s="intro" class="active">XSLT 3.0 in Workday</a>
+      <a data-s="vs2">2.0 vs 3.0</a>
+      <div class="grp">How it runs</div>
+      <a data-s="traverse">Traversal &amp; output</a>
+      <a data-s="pushpull">Push vs pull</a>
+      <div class="grp">3.0 Features</div>
+      <a data-s="tvt">Text value templates</a>
+      <a data-s="hof">Higher-order functions</a>
+      <a data-s="maps">Maps (the hashmap)</a>
+      <a data-s="arrays">Arrays</a>
+      <a data-s="json">JSON</a>
+      <a data-s="iterate">xsl:iterate</a>
+      <a data-s="trycatch">Try / catch</a>
+      <a data-s="merge">xsl:merge</a>
+      <a data-s="streaming">Streaming</a>
+      <a data-s="packages">Packages &amp; more</a>
+      <div class="grp">Workday Patterns</div>
+      <a data-s="mapping">Integration mapping</a>
+      <a data-s="splitting">Splitting</a>
+      <a data-s="hashmapwd">HashMap in Workday</a>
+      <div class="grp">Reference</div>
+      <a data-s="cheat">Cheat sheet</a>
+      <a data-s="gotchas">Workday gotchas</a>
+    </nav>
+    <div class="content" id="guideContent"><!--SECTIONS--></div>
+  </div>
+</section>
+
+<!-- ===================== QUIZ ===================== -->
+<section id="view-quiz" class="view hidden">
+  <div class="wrap quiz" id="quizRoot"></div>
+</section>
+
+<div class="footer">XSLT 3.0 for Workday · single-file offline study app · 3.0 features, maps, streaming, integration mapping &amp; splitting</div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ============================================================
+   QUESTION BANK  — editable array; each: {id,question,options[],correctIndex,explanation,topic}
+   ============================================================ */
+const QUESTION_BANK = [{"id": 1, "question": "In what year did XSLT 3.0 become a W3C Recommendation?", "options": ["2017", "2007", "2014", "2021"], "correctIndex": 0, "explanation": "XSLT 3.0 reached W3C Recommendation status on 8 June 2017; XSLT 2.0 dates from 2007.", "topic": "Foundations"}, {"id": 2, "question": "Which XSLT/XPath processor underlies Workday's Document Transformation and Studio XSLT steps?", "options": ["Saxon", "libxslt", "Xalan", "MSXML"], "correctIndex": 0, "explanation": "Workday's XSLT transformations run on the Saxon engine.", "topic": "Foundations"}, {"id": 3, "question": "Where in Workday is custom XSLT 3.0 typically authored and stored?", "options": ["Outside Workday, then attached to an EIB / Connector DT integration", "Generated automatically by the tenant", "In Report Writer calculated fields", "Inside the Business Process Framework"], "correctIndex": 0, "explanation": "Workday does not generate or validate XSLT; you author it outside the tenant and attach it to an EIB, a Connector with Document Transformation, or a Studio XSLT step.", "topic": "Foundations"}, {"id": 4, "question": "Workday integration training highlights which XSLT 3.0 capability specifically for high-volume integrations?", "options": ["Streaming", "xsl:choose", "xsl:sort", "document()"], "correctIndex": 0, "explanation": "Streaming lets a stylesheet process very large documents without holding the whole tree in memory, which is the XSLT 3.0 feature Workday emphasizes for high-volume feeds.", "topic": "Foundations"}, {"id": 5, "question": "Which Workday integration types can consume a custom XSLT transformation?", "options": ["EIB, Connector with Document Transformation, and Workday Studio", "Only Workday Studio", "Only Core Connectors", "Only Report Writer"], "correctIndex": 0, "explanation": "Custom XSLT can be used by EIBs (with custom reports), Connector-with-Document-Transformation integrations, and Workday Studio XSLT steps.", "topic": "Foundations"}, {"id": 6, "question": "Does Workday generate or validate the XSLT you attach to an integration?", "options": ["No — the developer authors and validates it externally", "Yes, the tenant validates it on save", "Yes, it is auto-generated from the report", "Only for inbound EIBs"], "correctIndex": 0, "explanation": "Workday neither generates nor validates XSLT; correctness is the developer's responsibility, using external tooling.", "topic": "Foundations"}, {"id": 7, "question": "Workday's ETV attributes (e.g. etv:fixedLength) in a DT stylesheet are used to do what?", "options": ["Apply Workday-specific transformation/validation such as fixed-length formatting and error reporting", "Define streaming accumulators", "Declare XSLT packages", "Generate JSON output"], "correctIndex": 0, "explanation": "ETV = Extension for Transformation and Validation; attributes like etv:fixedLength format/validate fields (e.g. pad to 10 chars and flag truncation as an error) inside Workday DT.", "topic": "Foundations"}, {"id": 8, "question": "Why does Workday recommend a 'split-transform-aggregate' pattern for very large documents in Studio?", "options": ["Workday loads messages into memory as DOM objects, so large trees cause bottlenecks", "Because XSLT cannot loop", "Because Saxon cannot read large files", "Because EIBs reject files over 1KB"], "correctIndex": 0, "explanation": "Studio loads messages as in-memory DOM objects; splitting reduces DOM size so the server does not bottleneck or abort. (XSLT 3.0 streaming is the alternative for truly huge inputs.)", "topic": "Foundations"}, {"id": 9, "question": "XSLT 3.0 is designed to be used in conjunction with which XPath version for higher-order functions?", "options": ["XPath 3.0 (with selected XPath 3.1 features such as maps)", "XPath 1.0", "XPath 2.0 only", "No XPath"], "correctIndex": 0, "explanation": "XSLT 3.0 requires XPath 3.0 (higher-order functions) and incorporates the XPath 3.1 map functionality; full XPath 3.1 (arrays, JSON) is optional but commonly available in Saxon.", "topic": "Foundations"}, {"id": 10, "question": "In Saxon, which edition is required for XSLT 3.0 streaming and schema-awareness?", "options": ["Saxon-EE (Enterprise Edition)", "Saxon-HE (Home Edition)", "Any edition", "Saxon-PE only"], "correctIndex": 0, "explanation": "Streaming and schema-aware processing require Saxon-EE; Saxon-HE still provides maps, higher-order functions, XPath 3.1, and dynamic evaluation.", "topic": "Foundations"}, {"id": 11, "question": "In XSLT's processing model, what does xsl:apply-templates do?", "options": ["Selects a node sequence and lets the processor find the best-matching template for each ('push')", "Calls a named template by name", "Loops a fixed number of times", "Always copies the current node"], "correctIndex": 0, "explanation": "apply-templates pushes a selected node-set through template-rule matching; the processor picks the highest-priority matching template for each node.", "topic": "Traversal"}, {"id": 12, "question": "What is the difference between the 'push' and 'pull' styles in XSLT?", "options": ["Push uses apply-templates + match rules; pull uses for-each / call-template to drive output explicitly", "Push is XSLT 1.0 only; pull is XSLT 3.0 only", "They are identical", "Push streams; pull never streams"], "correctIndex": 0, "explanation": "Push style relies on template matching via apply-templates; pull style explicitly walks data with for-each or call-template.", "topic": "Traversal"}, {"id": 13, "question": "When no template matches a node that apply-templates selected, what happens by default in XSLT (default mode)?", "options": ["A built-in template rule applies — for elements it recurses; for text it copies the value", "The transform aborts", "The node is deleted silently with a warning", "The processor switches to pull mode"], "correctIndex": 0, "explanation": "Built-in template rules: elements/document nodes recurse via apply-templates; text and attribute nodes copy their string value; comments/PIs are discarded.", "topic": "Traversal"}, {"id": 14, "question": "How does an XSLT processor resolve a conflict when two templates match the same node with equal priority?", "options": ["It is a recoverable error; the processor typically uses the one declared last (or raises an error)", "It runs both and concatenates", "It always uses the first declared", "It skips the node"], "correctIndex": 0, "explanation": "Equal-priority matches are a conflict; the spec allows recovery by choosing the last in declaration order, though Saxon can be configured to report it as an error.", "topic": "Traversal"}, {"id": 15, "question": "Which attribute lets you give a template rule an explicit priority to break matching ties?", "options": ["priority", "weight", "rank", "order"], "correctIndex": 0, "explanation": "xsl:template/@priority sets an explicit numeric priority; higher wins over the default priority derived from the pattern's specificity.", "topic": "Traversal"}, {"id": 16, "question": "What is the 'context node' during template execution?", "options": ["The node currently being processed (the '.' in XPath)", "The root of the stylesheet", "The last node in the document", "The output document root"], "correctIndex": 0, "explanation": "The context node is the node currently matched/processed; '.' refers to it and relative XPath is evaluated against it.", "topic": "Traversal"}, {"id": 17, "question": "In XSLT 3.0, how do you define the identity transform most concisely?", "options": ["Declare xsl:mode with on-no-match='shallow-copy'", "Write a recursive xsl:for-each", "Use document('')", "Call xsl:result-document"], "correctIndex": 0, "explanation": "xsl:mode on-no-match='shallow-copy' makes the built-in rule copy each node shallowly and recurse, replacing the verbose XSLT 1.0/2.0 identity template.", "topic": "Traversal"}, {"id": 18, "question": "What does xsl:mode on-no-match='deep-copy' cause for unmatched nodes?", "options": ["The node and its whole subtree are copied to the output", "The node is skipped", "Only the node name is copied", "An error is raised"], "correctIndex": 0, "explanation": "deep-copy copies the unmatched node and all descendants; shallow-copy copies only the node and then processes children via the active mode.", "topic": "Traversal"}, {"id": 19, "question": "What does xsl:mode on-no-match='shallow-skip' do?", "options": ["Skips the unmatched node itself but still processes its children", "Skips the node and its children", "Copies the node deeply", "Aborts the run"], "correctIndex": 0, "explanation": "shallow-skip discards the node element/wrapper but continues applying templates to its children.", "topic": "Traversal"}, {"id": 20, "question": "What does xsl:mode on-no-match='text-only-copy' do (a common safe default)?", "options": ["Built-in rules copy text but ignore unmatched element markup", "Copies everything", "Deletes all text", "Streams the input"], "correctIndex": 0, "explanation": "text-only-copy (the classic default behavior) copies text nodes and recurses elements without copying the element tags themselves unless a template handles them.", "topic": "Traversal"}, {"id": 21, "question": "Is 'xsl:map / the map() data type' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Maps (key-value dictionaries) come from XPath 3.1 and are incorporated into XSLT 3.0.", "topic": "2.0 vs 3.0"}, {"id": 22, "question": "Is 'xsl:try and xsl:catch' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Recoverable error handling (try/catch) is new in XSLT 3.0.", "topic": "2.0 vs 3.0"}, {"id": 23, "question": "Is 'xsl:iterate' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Sequential iteration with carried parameters (running totals, streaming-friendly) is new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 24, "question": "Is 'xsl:merge' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Merging multiple pre-sorted inputs by key is new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 25, "question": "Is 'xsl:evaluate' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Dynamic evaluation of an XPath expression built at runtime is new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 26, "question": "Is 'xsl:assert' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Inline assertions for validation/debugging are new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 27, "question": "Is 'streaming (xsl:stream / streamable modes / accumulators)' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Streaming and accumulators are headline XSLT 3.0 features.", "topic": "2.0 vs 3.0"}, {"id": 28, "question": "Is 'packages (xsl:package / xsl:use-package)' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Stylesheet packages for modular reuse are new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 29, "question": "Is 'text value templates (expand-text='yes')' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Curly-brace text value templates in text nodes are new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 30, "question": "Is 'xsl:on-empty / xsl:on-non-empty / xsl:where-populated' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Conditional output suppression for empty results is new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 31, "question": "Is 'on-no-match='shallow-copy' identity' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "The one-line shallow-copy identity mode is new in 3.0.", "topic": "2.0 vs 3.0"}, {"id": 32, "question": "Is 'higher-order functions (function items, fn:for-each, fn:filter, fn:fold-left)' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Higher-order functions come from XPath 3.0, used heavily in XSLT 3.0.", "topic": "2.0 vs 3.0"}, {"id": 33, "question": "Is 'arrays (the array() type, array:* functions)' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "Arrays are an XPath 3.1 feature available to XSLT 3.0 (optionally).", "topic": "2.0 vs 3.0"}, {"id": 34, "question": "Is 'JSON functions (parse-json, json-to-xml, xml-to-json, json-doc)' available in XSLT 2.0 or introduced/incorporated with XSLT 3.0?", "options": ["Introduced/incorporated with XSLT 3.0", "Available since XSLT 1.0", "Available since XSLT 2.0", "Not part of any XSLT version"], "correctIndex": 0, "explanation": "JSON support comes from XPath 3.1 and is available in XSLT 3.0.", "topic": "2.0 vs 3.0"}, {"id": 35, "question": "Is 'xsl:for-each-group (group-by, group-adjacent, group-starting-with)' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "for-each-group is an XSLT 2.0 grouping construct (still core in 3.0). A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 36, "question": "Is 'xsl:result-document (multiple output documents / splitting files)' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "result-document for emitting multiple output files exists since XSLT 2.0. A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 37, "question": "Is 'xsl:analyze-string (regex matching)' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "analyze-string for regex is an XSLT 2.0 feature. A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 38, "question": "Is 'xsl:function (user-defined functions)' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "User-defined stylesheet functions arrived in XSLT 2.0. A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 39, "question": "Is 'tokenize() and replace() (regex string functions)' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "tokenize() and replace() are XPath 2.0 functions. A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 40, "question": "Is 'sequences and temporary trees' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "First-class sequences and usable temporary trees are XSLT/XPath 2.0. A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 41, "question": "Is 'tunnel parameters' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "Tunnel parameters were introduced in XSLT 2.0. A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 42, "question": "Is 'format-date() / format-dateTime()' a brand-new XSLT 3.0 feature, or did it already exist in XSLT 2.0?", "options": ["It already existed in XSLT 2.0", "It is brand-new in XSLT 3.0", "It only exists in XSLT 1.0", "It is not valid XSLT"], "correctIndex": 0, "explanation": "Date formatting functions are XSLT 2.0. A common interview trap is mislabeling these as 3.0 additions.", "topic": "2.0 vs 3.0"}, {"id": 43, "question": "Which statement best captures the headline goals of XSLT 3.0 over 2.0?", "options": ["Streaming (process without full in-memory tree) and packages (modular stylesheets), plus maps/HOF", "Removing template matching", "Dropping XPath support", "Making it XML-1.0-only"], "correctIndex": 0, "explanation": "The W3C framed 3.0 around streaming and packages, alongside XPath 3.0 higher-order functions and XPath 3.1 maps/arrays/JSON.", "topic": "2.0 vs 3.0"}, {"id": 44, "question": "Compared with XSLT 2.0, how does XSLT 3.0 let you avoid loading a 2 GB input into memory?", "options": ["Use streamable modes / xsl:stream / xsl:source-document with accumulators", "Use document() twice", "Use a larger xsl:for-each", "It cannot — split externally"], "correctIndex": 0, "explanation": "XSLT 3.0 streaming processes the input as it is read, so neither source nor result is fully held in memory.", "topic": "2.0 vs 3.0"}, {"id": 45, "question": "In XSLT 3.0, what is the closest equivalent to a HashMap / dictionary?", "options": ["A map (the map() type) created with xsl:map or map{...}", "A temporary tree", "An xsl:variable holding a string", "An xsl:key index"], "correctIndex": 0, "explanation": "The map() type is an immutable set of key-to-value associations — XSLT 3.0's HashMap equivalent.", "topic": "Maps"}, {"id": 46, "question": "Which function retrieves a value from a map by key?", "options": ["map:get($map, $key)", "map:find-key()", "map:lookup-value()", "map:select()"], "correctIndex": 0, "explanation": "map:get($map,$key) returns the value bound to $key (or empty if absent). The lookup operator $map($key) does the same.", "topic": "Maps"}, {"id": 47, "question": "Which expression also fetches a map entry, using the map as if it were a function?", "options": ["$map($key)", "$map[$key]", "$map->$key", "$map::$key"], "correctIndex": 0, "explanation": "A map is a function from key to value, so $map($key) is equivalent to map:get($map,$key).", "topic": "Maps"}, {"id": 48, "question": "Are XSLT 3.0 maps mutable (can you change an entry in place)?", "options": ["No — maps are immutable; map:put returns a NEW map with the change", "Yes, map:set changes it in place", "Only inside xsl:iterate", "Only streaming maps"], "correctIndex": 0, "explanation": "Maps are immutable. map:put($map,$k,$v) returns a new map; the original is unchanged.", "topic": "Maps"}, {"id": 49, "question": "Which function returns a new map containing all entries of an existing map plus one more?", "options": ["map:put($map, $key, $value)", "map:add()", "map:insert()", "map:append()"], "correctIndex": 0, "explanation": "map:put returns a new map = old entries plus (or overriding) the given key/value.", "topic": "Maps"}, {"id": 50, "question": "Which function tests whether a key exists in a map?", "options": ["map:contains($map, $key)", "map:has()", "map:exists-key()", "map:in()"], "correctIndex": 0, "explanation": "map:contains($map,$key) returns true/false for key presence.", "topic": "Maps"}, {"id": 51, "question": "Which function returns all the keys of a map?", "options": ["map:keys($map)", "map:names()", "map:entries()", "map:list()"], "correctIndex": 0, "explanation": "map:keys($map) returns the sequence of keys (in no guaranteed order).", "topic": "Maps"}, {"id": 52, "question": "Which function combines several maps into one (a common way to build a lookup table)?", "options": ["map:merge(...)", "map:join()", "map:union()", "map:concat()"], "correctIndex": 0, "explanation": "map:merge() combines a sequence of maps/entries into a single map, with a duplicates policy for clashing keys.", "topic": "Maps"}, {"id": 53, "question": "How do you build a map entry inside an xsl:map element?", "options": ["xsl:map-entry with key and select", "xsl:entry", "xsl:pair", "xsl:put"], "correctIndex": 0, "explanation": "Inside xsl:map you emit xsl:map-entry elements, each with a @key and a value (via @select or content).", "topic": "Maps"}, {"id": 54, "question": "A Workday DT must translate ISO country codes to a vendor's company codes. Why prefer a map over xsl:key here?", "options": ["A map is a self-contained, in-stylesheet lookup needing no source nodes and is easy to build from a sequence", "xsl:key cannot do lookups", "Maps are faster than every other option always", "xsl:key was removed in 3.0"], "correctIndex": 0, "explanation": "xsl:key indexes nodes in a source document; a map can hold the translation table directly in the stylesheet (or be built dynamically), ideal for code-to-code mapping without a side document.", "topic": "Maps"}, {"id": 55, "question": "What does map:merge((map{'US':'100'}, map{'US':'200'}), map{'duplicates':'use-last'}) return for key 'US'?", "options": ["'200' (use-last keeps the later value)", "'100'", "An error", "Both values"], "correctIndex": 0, "explanation": "With duplicates='use-last' the last value wins; other options include use-first, reject, combine, and use-any.", "topic": "Maps"}, {"id": 56, "question": "Which duplicates option on map:merge raises an error if two maps share a key?", "options": ["reject", "use-last", "combine", "use-any"], "correctIndex": 0, "explanation": "duplicates='reject' fails on a clashing key; 'combine' merges values into a sequence.", "topic": "Maps"}, {"id": 57, "question": "What is returned by map:get($m,$k) when the key is not present?", "options": ["An empty sequence", "Zero", "The string 'null'", "An error"], "correctIndex": 0, "explanation": "A missing key yields the empty sequence (), which you can test with exists()/empty() or supply a default.", "topic": "Maps"}, {"id": 58, "question": "How does an array differ from a sequence in XPath 3.1 / XSLT 3.0?", "options": ["An array is a single item that can contain members (including nested arrays); a sequence is flat and auto-flattens", "They are identical", "Arrays cannot hold strings", "Sequences support nesting, arrays do not"], "correctIndex": 0, "explanation": "Arrays are single items preserving structure and nesting; sequences flatten automatically. Arrays let you model rows/matrices.", "topic": "Arrays"}, {"id": 59, "question": "Which constructor curly-brace syntax builds an array?", "options": ["array{ 1, 2, 3 } or [ 1, 2, 3 ]", "map{ 1, 2, 3 }", "seq( 1, 2, 3 )", "<array>"], "correctIndex": 0, "explanation": "[1,2,3] (square-bracket) and array{...} (curly) both build arrays; array{} flattens its argument into members.", "topic": "Arrays"}, {"id": 60, "question": "Which function gets the Nth member of an array?", "options": ["array:get($a, $n) or $a($n)", "array:index()", "array:nth()", "array:member()"], "correctIndex": 0, "explanation": "array:get($a,$n) (1-based) or the function-call form $a($n) returns the Nth member.", "topic": "Arrays"}, {"id": 61, "question": "What is a 'higher-order function' in XSLT 3.0 / XPath 3.0?", "options": ["A function that takes another function as an argument or returns a function", "A function that only runs at the document root", "A streaming-only function", "A function with more than 3 arguments"], "correctIndex": 0, "explanation": "Higher-order functions accept or return function items, enabling fn:for-each, fn:filter, fn:fold-left, fn:sort with a callback.", "topic": "Higher-Order"}, {"id": 62, "question": "What does fn:filter($seq, $predicate) return?", "options": ["Items of $seq for which the predicate function returns true", "The first item only", "A sorted copy", "A map of the items"], "correctIndex": 0, "explanation": "filter() keeps items where the supplied boolean function returns true — a functional alternative to a predicate loop.", "topic": "Higher-Order"}, {"id": 63, "question": "What does fn:fold-left do?", "options": ["Reduces a sequence to a single accumulated value left-to-right using a 2-arg function", "Reverses a sequence", "Sorts a sequence", "Splits a string"], "correctIndex": 0, "explanation": "fold-left($seq,$zero,$f) threads an accumulator through the sequence (e.g. summing, building a map), left to right.", "topic": "Higher-Order"}, {"id": 64, "question": "How do you write an anonymous (inline) function in XPath 3.0?", "options": ["function($x) { $x * 2 }", "lambda $x => $x*2", "fn($x){...}", "def($x):"], "correctIndex": 0, "explanation": "Inline functions use function($params){ body }; you can also reference a named function with name#arity.", "topic": "Higher-Order"}, {"id": 65, "question": "What does the '#' in concat#3 or local:translate#2 denote?", "options": ["A named function reference with a specific arity (number of arguments)", "A comment", "A node count", "A streaming hint"], "correctIndex": 0, "explanation": "name#arity is a named function reference (a function item) you can pass to a higher-order function.", "topic": "Higher-Order"}, {"id": 66, "question": "What does fn:sort($seq, (), $keyFunction) let you do that xsl:sort does not?", "options": ["Sort a sequence functionally inside an XPath expression (e.g. inside a map build)", "Nothing different", "Sort only numbers", "Sort the source document in place"], "correctIndex": 0, "explanation": "fn:sort() (XPath 3.1) sorts within an expression using a key function, usable anywhere — not just as a child of for-each/apply-templates like xsl:sort.", "topic": "Higher-Order"}, {"id": 67, "question": "What problem does xsl:iterate solve that xsl:for-each does not?", "options": ["It processes items in order while carrying parameters forward (running totals), and is streamable", "It sorts faster", "It outputs JSON", "It defines packages"], "correctIndex": 0, "explanation": "xsl:iterate walks a sequence sequentially with xsl:param values updated each cycle via xsl:next-iteration — ideal for running totals and streaming.", "topic": "xsl:iterate"}, {"id": 68, "question": "Inside xsl:iterate, how do you set the parameter values for the next cycle?", "options": ["xsl:next-iteration with xsl:with-param", "xsl:continue", "xsl:set-param", "xsl:loop"], "correctIndex": 0, "explanation": "xsl:next-iteration/xsl:with-param supplies updated values for the carried xsl:param items on the following cycle.", "topic": "xsl:iterate"}, {"id": 69, "question": "Which child of xsl:iterate runs once after the sequence is exhausted?", "options": ["xsl:on-completion", "xsl:finally", "xsl:end", "xsl:after"], "correctIndex": 0, "explanation": "xsl:on-completion executes after the last item, useful for emitting a trailer/total.", "topic": "xsl:iterate"}, {"id": 70, "question": "Which element stops an xsl:iterate early?", "options": ["xsl:break", "xsl:exit", "xsl:stop", "xsl:return"], "correctIndex": 0, "explanation": "xsl:break terminates the iteration early and can emit a final result.", "topic": "xsl:iterate"}, {"id": 71, "question": "What is the purpose of xsl:try / xsl:catch in XSLT 3.0?", "options": ["To catch and recover from dynamic errors during transformation", "To define templates", "To stream input", "To declare variables"], "correctIndex": 0, "explanation": "try/catch wraps an expression; if it raises a recoverable dynamic error, the catch block runs instead.", "topic": "Error Handling"}, {"id": 72, "question": "Inside xsl:catch, which variables expose the error details?", "options": ["err:code, err:description, err:value, etc.", "error.message only", "$exception", "catch:info"], "correctIndex": 0, "explanation": "The err: namespace variables (err:code, err:description, err:module, err:line-number, err:value) describe the caught error.", "topic": "Error Handling"}, {"id": 73, "question": "Which xsl:catch attribute lets you restrict which error codes are caught?", "options": ["errors (a list of QName/wildcard codes)", "match", "code", "filter"], "correctIndex": 0, "explanation": "xsl:catch/@errors filters by error code (e.g. 'err:FOAR0001' or '*'); unmatched errors propagate.", "topic": "Error Handling"}, {"id": 74, "question": "A Workday DT parses a numeric string that might be blank. How can xsl:try help?", "options": ["Wrap the number() conversion in xsl:try and emit a default in xsl:catch", "It cannot help", "Use xsl:stream", "Use xsl:package"], "correctIndex": 0, "explanation": "Wrapping a risky conversion (or division) in try/catch lets you substitute a safe default instead of aborting the whole transform.", "topic": "Error Handling"}, {"id": 75, "question": "What does xsl:merge do?", "options": ["Merges multiple PRE-SORTED input sources by a common merge key", "Concatenates two strings", "Combines two maps", "Splits a file"], "correctIndex": 0, "explanation": "xsl:merge reads several sorted sources in parallel, grouping items that share a merge key — efficient join/merge without full in-memory sorting.", "topic": "xsl:merge"}, {"id": 76, "question": "In xsl:merge, what must be true of each input source for correct results?", "options": ["It must already be sorted by the merge key", "It must be JSON", "It must be a map", "It must be streamable only"], "correctIndex": 0, "explanation": "Each xsl:merge-source must be pre-sorted on the merge key; merge assumes ordered inputs.", "topic": "xsl:merge"}, {"id": 77, "question": "Which element groups the matched items within an xsl:merge?", "options": ["xsl:merge-action (over xsl:merge-source / xsl:merge-key)", "xsl:group", "xsl:join", "xsl:on-match"], "correctIndex": 0, "explanation": "xsl:merge contains xsl:merge-source(s) with xsl:merge-key, and an xsl:merge-action that fires per merge group.", "topic": "xsl:merge"}, {"id": 78, "question": "What is the core benefit of XSLT 3.0 streaming?", "options": ["Neither the source nor the result document is ever fully held in memory", "It makes templates match faster", "It auto-generates JSON", "It removes the need for XPath"], "correctIndex": 0, "explanation": "Streaming processes the input as a forward-only pass, so huge documents transform within bounded memory.", "topic": "Streaming"}, {"id": 79, "question": "Which declaration marks a mode as streamable?", "options": ["xsl:mode streamable='yes'", "xsl:stream='on'", "xsl:streaming", "@stream='yes' on the root"], "correctIndex": 0, "explanation": "xsl:mode streamable='yes' (or xsl:stream / xsl:source-document streamable='yes') requests guaranteed-streamable processing.", "topic": "Streaming"}, {"id": 80, "question": "What is an 'accumulator' in XSLT 3.0 streaming?", "options": ["A named, rule-based running value updated as nodes are read during a single pass", "A temporary tree", "A map of templates", "A package import"], "correctIndex": 0, "explanation": "xsl:accumulator defines pre/post rules that update a value as the streamed document is traversed, letting you compute totals without buffering.", "topic": "Streaming"}, {"id": 81, "question": "A streamable construct may access the streamed input how many times per node?", "options": ["Once, in document order (forward-only, single downward pass)", "Unlimited times", "Twice", "Only at the root"], "correctIndex": 0, "explanation": "Guaranteed-streamable code makes a single forward pass; you cannot freely revisit ancestors/preceding nodes, which is why some XPath is disallowed in streaming.", "topic": "Streaming"}, {"id": 82, "question": "Why might a normal (non-streaming) XPath like 'preceding-sibling::*' break under streaming?", "options": ["It requires looking backward, which a forward-only streamed pass cannot buffer", "It is not valid XPath", "It only works in XSLT 1.0", "It needs a map"], "correctIndex": 0, "explanation": "Backward/upward axes generally are not guaranteed-streamable because the data has already passed; accumulators or restructuring are used instead.", "topic": "Streaming"}, {"id": 83, "question": "Which Saxon edition is required to actually run streaming transformations?", "options": ["Saxon-EE", "Saxon-HE", "Saxon-PE", "Any edition"], "correctIndex": 0, "explanation": "Streaming is a Saxon-EE capability; HE supports maps and higher-order functions but not streaming.", "topic": "Streaming"}, {"id": 84, "question": "What does expand-text='yes' enable in XSLT 3.0?", "options": ["Curly-brace expressions {..} inside text nodes are evaluated (text value templates)", "Automatic JSON output", "Streaming", "Package imports"], "correctIndex": 0, "explanation": "With expand-text='yes', {expr} inside element text is evaluated like an attribute value template, cutting xsl:value-of clutter.", "topic": "Text Templates"}, {"id": 85, "question": "With expand-text='yes', how do you output a literal curly brace?", "options": ["Double it: {{ or }}", "Backslash-escape it", "Use &#123;", "It is impossible"], "correctIndex": 0, "explanation": "Doubling {{ or }} emits a literal brace, mirroring attribute value template escaping.", "topic": "Text Templates"}, {"id": 86, "question": "Where can expand-text be declared to apply broadly?", "options": ["On xsl:stylesheet (or any ancestor element) and it is inherited", "Only on xsl:text", "Only on the root output element", "Only inside xsl:template"], "correctIndex": 0, "explanation": "expand-text is inherited from any ancestor, so setting it on xsl:stylesheet enables TVTs everywhere unless overridden.", "topic": "Text Templates"}, {"id": 87, "question": "What does xsl:where-populated do?", "options": ["Suppresses its containing element if the produced content is effectively empty", "Counts populated rows", "Streams populated nodes", "Builds a map"], "correctIndex": 0, "explanation": "xsl:where-populated omits a wrapper element when its content turns out empty, avoiding empty tags in output.", "topic": "Empty Handling"}, {"id": 88, "question": "What does xsl:on-empty produce?", "options": ["Alternative content emitted only when the sibling content is empty", "An error on empty input", "Nothing ever", "A streamed default"], "correctIndex": 0, "explanation": "xsl:on-empty supplies fallback output (e.g. a placeholder) when the constructed sequence is empty; xsl:on-non-empty does the opposite.", "topic": "Empty Handling"}, {"id": 89, "question": "A vendor CSV must omit an optional address line entirely when blank (no empty delimiter run). Which 3.0 feature helps cleanly?", "options": ["xsl:where-populated / xsl:on-empty", "xsl:merge", "xsl:package", "xsl:evaluate"], "correctIndex": 0, "explanation": "These empty-handling instructions let you conditionally emit fields/wrappers without verbose xsl:if guards.", "topic": "Empty Handling"}, {"id": 90, "question": "Which function parses a JSON string into XDM maps and arrays?", "options": ["parse-json()", "json-read()", "from-json()", "json-parse()"], "correctIndex": 0, "explanation": "parse-json($string) returns maps/arrays/atomics; json-doc() does the same from a URI.", "topic": "JSON"}, {"id": 91, "question": "Which function serializes XDM maps/arrays into a JSON string?", "options": ["xml-to-json() or serialize() with method='json'", "to-json()", "json-write()", "map:json()"], "correctIndex": 0, "explanation": "xml-to-json() converts the XML JSON representation to text; serialize(...,map{'method':'json'}) serializes maps/arrays directly.", "topic": "JSON"}, {"id": 92, "question": "Which function converts a JSON string into the W3C XML representation of JSON?", "options": ["json-to-xml()", "parse-json()", "xml-to-json()", "json-doc()"], "correctIndex": 0, "explanation": "json-to-xml() yields an XML tree (map/array/string/number elements) you can process with normal XPath; parse-json() yields native maps/arrays.", "topic": "JSON"}, {"id": 93, "question": "Why is XSLT 3.0 JSON support increasingly relevant in modern Workday integrations?", "options": ["REST/JSON patterns (e.g. DCoD effective-change JSON) need parsing/producing JSON", "Because XML was removed", "Because EIBs only accept JSON", "Because Saxon dropped XML"], "correctIndex": 0, "explanation": "Modern Workday APIs and connectors (such as DCoD's JSON effective-change feed) make JSON parse/serialize functions valuable in transformation logic.", "topic": "JSON"}, {"id": 94, "question": "What problem do XSLT 3.0 packages (xsl:package) solve?", "options": ["Modular, independently-developed, reusable stylesheet components with controlled visibility", "Faster streaming", "JSON output", "Regex matching"], "correctIndex": 0, "explanation": "Packages let large stylesheets be split into reusable modules with explicit public/private interfaces.", "topic": "Packages"}, {"id": 95, "question": "Which instruction imports/uses another package's exposed components?", "options": ["xsl:use-package", "xsl:import", "xsl:include", "xsl:require"], "correctIndex": 0, "explanation": "xsl:use-package references a named package; xsl:expose/xsl:accept control which components cross the boundary.", "topic": "Packages"}, {"id": 96, "question": "Which visibility values control a package component's exposure?", "options": ["public, private, final, abstract (and hidden)", "open, closed", "read, write", "internal, external"], "correctIndex": 0, "explanation": "Component visibility can be public, private, final, abstract, or hidden, governing override and access across packages.", "topic": "Packages"}, {"id": 97, "question": "What does xsl:evaluate enable?", "options": ["Evaluating an XPath expression that is constructed dynamically at runtime (e.g. from config)", "Static type checking", "Streaming", "JSON parsing"], "correctIndex": 0, "explanation": "xsl:evaluate compiles and runs an XPath string built at runtime — handy for config-driven field mapping.", "topic": "Dynamic"}, {"id": 98, "question": "Why is xsl:evaluate powerful for a metadata-driven Workday mapping?", "options": ["Mapping rules (source XPath per target field) can live in data and be evaluated dynamically", "It makes templates match faster", "It removes the need for Saxon", "It only works on JSON"], "correctIndex": 0, "explanation": "You can store 'target field -> source XPath' as data and apply it with xsl:evaluate, avoiding hard-coded templates per field.", "topic": "Dynamic"}, {"id": 99, "question": "What does xsl:assert do (when assertions are enabled)?", "options": ["Raises an error if a test is false — used for validation/debugging", "Always outputs text", "Defines a package", "Streams nodes"], "correctIndex": 0, "explanation": "xsl:assert evaluates a test and fails with a message when false; it can be globally enabled/disabled.", "topic": "Dynamic"}, {"id": 100, "question": "Which instruction creates multiple output files (e.g. one per company) from a single transform?", "options": ["xsl:result-document", "xsl:split", "xsl:file", "xsl:output-many"], "correctIndex": 0, "explanation": "xsl:result-document (available since XSLT 2.0) directs output to a separate result tree/file — the basis of file splitting.", "topic": "Splitting"}, {"id": 101, "question": "To split a delimited string (e.g. 'A;B;C') into parts in XSLT, which function is used?", "options": ["tokenize()", "split()", "substring-parts()", "explode()"], "correctIndex": 0, "explanation": "tokenize($s,';') (XPath 2.0) splits a string by a regex/separator into a sequence — core to parsing delimited Workday data.", "topic": "Splitting"}, {"id": 102, "question": "A Workday feed must be split into one file per pay group. What is the standard approach?", "options": ["Group by pay group, then emit each group via xsl:result-document with a per-group href", "Call document() once per group", "Use a single xsl:value-of", "Use xsl:merge"], "correctIndex": 0, "explanation": "Group the workers (xsl:for-each-group group-by) and write each group to its own file with xsl:result-document using a dynamic @href.", "topic": "Splitting"}, {"id": 103, "question": "When splitting PECI output for Studio processing, what is a recommended split boundary?", "options": ["By effective sequence (each effective change)", "By random chunks", "By byte size only", "By alphabetical worker name"], "correctIndex": 0, "explanation": "Splitting PECI XML by effective sequence keeps each in-memory DOM small and aligns with how effective changes are processed.", "topic": "Splitting"}, {"id": 104, "question": "Which attribute of xsl:result-document sets the output destination?", "options": ["href", "file", "path", "dest"], "correctIndex": 0, "explanation": "xsl:result-document/@href names the output URI; it can be computed (e.g. concat of a company id) to fan out files.", "topic": "Splitting"}, {"id": 105, "question": "In a Workday outbound DT, what is the typical input the XSLT transforms?", "options": ["Workday report/RaaS XML (or connector XML output)", "A PDF", "A SQL result set", "A spreadsheet binary"], "correctIndex": 0, "explanation": "Outbound DT usually maps Workday report XML (custom report enabled as web service / connector output) into the vendor's required layout.", "topic": "Integration Mapping"}, {"id": 106, "question": "In a field-mapping stylesheet, how is a source element value placed into a target field?", "options": ["With xsl:value-of / a text value template selecting the source XPath", "By renaming the source file", "By editing the report definition", "Only with xsl:result-document"], "correctIndex": 0, "explanation": "You select the source node by XPath (value-of or {tvt}) and write it into the target structure/column.", "topic": "Integration Mapping"}, {"id": 107, "question": "How do you translate a Workday code to a vendor code during mapping (e.g. 'Regular' -> '01')?", "options": ["Look it up in a map (map:get) or via xsl:key against a lookup document", "Hard-delete the value", "Use xsl:result-document", "It cannot be done"], "correctIndex": 0, "explanation": "Code translation is a lookup: an in-stylesheet map (3.0) or an xsl:key index over a lookup doc resolves source code to target code.", "topic": "Integration Mapping"}, {"id": 108, "question": "A vendor CSV needs header, detail (one row per worker), and trailer with a count. Which pattern fits?", "options": ["Emit header text, loop/iterate workers for detail rows, then a trailer with count()/running total", "Three separate stylesheets", "Only xsl:merge", "Only streaming"], "correctIndex": 0, "explanation": "A header/detail/trailer layout is a classic pull pattern: static header, per-worker detail via for-each/iterate, trailer with the count or sum.", "topic": "Integration Mapping"}, {"id": 109, "question": "Why are attribute value templates and text value templates handy in mapping to delimited output?", "options": ["They inline source values directly into literal text/attributes, e.g. {wd:Amount},{wd:Code}", "They stream the file", "They define packages", "They sort rows"], "correctIndex": 0, "explanation": "AVTs (in attributes) and TVTs (in text, 3.0) let you build delimited rows compactly without many xsl:value-of elements.", "topic": "Integration Mapping"}, {"id": 110, "question": "In Workday report XML, repeating data (e.g. multiple allowances) usually appears as what?", "options": ["Repeated child elements you iterate over", "A single comma-joined attribute", "A JSON blob", "A binary field"], "correctIndex": 0, "explanation": "Report XML represents multi-instance data as repeated elements; you iterate them (for-each / for-each-group) to map each instance.", "topic": "Integration Mapping"}, {"id": 111, "question": "Which instruction groups nodes by a common key (e.g. all workers per department)?", "options": ["xsl:for-each-group group-by", "xsl:group-by", "xsl:partition", "xsl:bucket"], "correctIndex": 0, "explanation": "xsl:for-each-group with group-by='...' groups the population; current-grouping-key() and current-group() access each group.", "topic": "Grouping"}, {"id": 112, "question": "Which xsl:for-each-group mode groups runs of adjacent items sharing a value?", "options": ["group-adjacent", "group-by", "group-starting-with", "group-ending-with"], "correctIndex": 0, "explanation": "group-adjacent groups consecutive items with equal key; group-starting-with/ending-with use a pattern boundary.", "topic": "Grouping"}, {"id": 113, "question": "Inside xsl:for-each-group, which function returns the members of the current group?", "options": ["current-group()", "group-items()", "this-group()", "members()"], "correctIndex": 0, "explanation": "current-group() returns the sequence in the current group; current-grouping-key() returns its key.", "topic": "Grouping"}, {"id": 114, "question": "A 'distinct values' mapping (one output per unique code) is naturally done with…", "options": ["xsl:for-each-group group-by (or distinct-values())", "xsl:result-document", "xsl:try", "xsl:assert"], "correctIndex": 0, "explanation": "Grouping by the code yields one iteration per distinct value; distinct-values() is the simpler functional route when you only need the keys.", "topic": "Grouping"}, {"id": 115, "question": "A non-breaking space (U+00A0) from a Workday field corrupts a fixed-width vendor file. Where is this fixed?", "options": ["In the XSLT — normalize/replace the character during transform", "In the vendor system only", "By editing the worker record for everyone", "It cannot be fixed"], "correctIndex": 0, "explanation": "Use translate()/replace() in the stylesheet to strip or replace U+00A0 before serialization — a very common DT defect.", "topic": "Gotchas"}, {"id": 116, "question": "Why avoid 'rootless' XPath queries in Workday Studio per best practice?", "options": ["They evaluate against every node and can be very expensive", "They are invalid XSLT", "They only work in 1.0", "They force JSON output"], "correctIndex": 0, "explanation": "Rootless queries can scan the whole object; anchoring paths keeps evaluation efficient on large DOMs.", "topic": "Gotchas"}, {"id": 117, "question": "For a multi-gigabyte input, which is the more scalable XSLT 3.0 choice over split-transform-aggregate?", "options": ["Streaming with streamable modes / accumulators", "A bigger xsl:for-each", "Loading it twice with document()", "Converting to JSON first"], "correctIndex": 0, "explanation": "True streaming avoids building the full DOM at all, scaling beyond what in-memory split-transform-aggregate handles.", "topic": "Gotchas"}, {"id": 118, "question": "Which feature set is NOT available in Saxon-HE (so plan accordingly in Workday)?", "options": ["Streaming and schema-aware processing (need Saxon-EE)", "Maps", "Higher-order functions", "XPath 3.1"], "correctIndex": 0, "explanation": "Saxon-HE provides maps, HOF, and XPath 3.1, but streaming and schema-awareness require Saxon-EE.", "topic": "Gotchas"}, {"id": 119, "question": "What is a safe way to default a possibly-absent value during mapping?", "options": ["($maybe, 'DEFAULT')[1]  or  if (exists($maybe)) then $maybe else 'DEFAULT'", "Delete the field", "Use xsl:merge", "Use xsl:package"], "correctIndex": 0, "explanation": "The ($x,$default)[1] idiom returns the first existing item, a compact null-coalescing pattern.", "topic": "Gotchas"}, {"id": 120, "question": "In XSLT 3.0 / XPath 3.x, what does map:get() do?", "options": ["It returns the value for a key in a map", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:get() returns the value for a key in a map.", "topic": "Maps"}, {"id": 121, "question": "In XSLT 3.0 / XPath 3.x, what does map:put() do?", "options": ["It returns a new map with an added/updated entry", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:put() returns a new map with an added/updated entry.", "topic": "Maps"}, {"id": 122, "question": "In XSLT 3.0 / XPath 3.x, what does map:remove() do?", "options": ["It returns a new map without the given key(s)", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:remove() returns a new map without the given key(s).", "topic": "Maps"}, {"id": 123, "question": "In XSLT 3.0 / XPath 3.x, what does map:contains() do?", "options": ["It tests whether a key exists in a map", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:contains() tests whether a key exists in a map.", "topic": "Maps"}, {"id": 124, "question": "In XSLT 3.0 / XPath 3.x, what does map:keys() do?", "options": ["It returns all keys of a map", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:keys() returns all keys of a map.", "topic": "Maps"}, {"id": 125, "question": "In XSLT 3.0 / XPath 3.x, what does map:merge() do?", "options": ["It combines several maps/entries into one map", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:merge() combines several maps/entries into one map.", "topic": "Maps"}, {"id": 126, "question": "In XSLT 3.0 / XPath 3.x, what does map:size() do?", "options": ["It returns the number of entries in a map", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:size() returns the number of entries in a map.", "topic": "Maps"}, {"id": 127, "question": "In XSLT 3.0 / XPath 3.x, what does map:for-each() do?", "options": ["It applies a function to each key/value pair of a map", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "map:for-each() applies a function to each key/value pair of a map.", "topic": "Maps"}, {"id": 128, "question": "In XSLT 3.0 / XPath 3.x, what does array:get() do?", "options": ["It returns the Nth member of an array", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "array:get() returns the Nth member of an array.", "topic": "Arrays"}, {"id": 129, "question": "In XSLT 3.0 / XPath 3.x, what does array:size() do?", "options": ["It returns the number of members in an array", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "array:size() returns the number of members in an array.", "topic": "Arrays"}, {"id": 130, "question": "In XSLT 3.0 / XPath 3.x, what does array:append() do?", "options": ["It returns a new array with a member added at the end", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "array:append() returns a new array with a member added at the end.", "topic": "Arrays"}, {"id": 131, "question": "In XSLT 3.0 / XPath 3.x, what does array:flatten() do?", "options": ["It flattens nested arrays into a flat sequence", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "array:flatten() flattens nested arrays into a flat sequence.", "topic": "Arrays"}, {"id": 132, "question": "In XSLT 3.0 / XPath 3.x, what does fn:for-each() do?", "options": ["It applies a function to each item of a sequence", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "fn:for-each() applies a function to each item of a sequence.", "topic": "Higher-Order"}, {"id": 133, "question": "In XSLT 3.0 / XPath 3.x, what does fn:filter() do?", "options": ["It keeps items for which a predicate function is true", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "fn:filter() keeps items for which a predicate function is true.", "topic": "Higher-Order"}, {"id": 134, "question": "In XSLT 3.0 / XPath 3.x, what does fn:fold-left() do?", "options": ["It reduces a sequence to one value left-to-right", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "fn:fold-left() reduces a sequence to one value left-to-right.", "topic": "Higher-Order"}, {"id": 135, "question": "In XSLT 3.0 / XPath 3.x, what does fn:fold-right() do?", "options": ["It reduces a sequence to one value right-to-left", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "fn:fold-right() reduces a sequence to one value right-to-left.", "topic": "Higher-Order"}, {"id": 136, "question": "In XSLT 3.0 / XPath 3.x, what does fn:sort() do?", "options": ["It sorts a sequence using an optional key function", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "fn:sort() sorts a sequence using an optional key function.", "topic": "Higher-Order"}, {"id": 137, "question": "In XSLT 3.0 / XPath 3.x, what does parse-json() do?", "options": ["It parses a JSON string into maps/arrays", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "parse-json() parses a JSON string into maps/arrays.", "topic": "JSON"}, {"id": 138, "question": "In XSLT 3.0 / XPath 3.x, what does json-to-xml() do?", "options": ["It converts JSON text to the XML JSON representation", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "json-to-xml() converts JSON text to the XML JSON representation.", "topic": "JSON"}, {"id": 139, "question": "In XSLT 3.0 / XPath 3.x, what does xml-to-json() do?", "options": ["It serializes the XML JSON representation to JSON text", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "xml-to-json() serializes the XML JSON representation to JSON text.", "topic": "JSON"}, {"id": 140, "question": "In XSLT 3.0 / XPath 3.x, what does json-doc() do?", "options": ["It loads and parses JSON from a URI", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "json-doc() loads and parses JSON from a URI.", "topic": "JSON"}, {"id": 141, "question": "In XSLT 3.0 / XPath 3.x, what does tokenize() do?", "options": ["It splits a string into a sequence by a separator/regex", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "tokenize() splits a string into a sequence by a separator/regex.", "topic": "Splitting"}, {"id": 142, "question": "In XSLT 3.0 / XPath 3.x, what does analyze-string() do?", "options": ["It matches a string against a regex, separating matches/non-matches", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "analyze-string() matches a string against a regex, separating matches/non-matches.", "topic": "Splitting"}, {"id": 143, "question": "In XSLT 3.0 / XPath 3.x, what does serialize() do?", "options": ["It serializes a node/sequence to a string (XML/JSON/text)", "It declares a streamable mode", "It defines a stylesheet package", "It matches a template rule"], "correctIndex": 0, "explanation": "serialize() serializes a node/sequence to a string (XML/JSON/text).", "topic": "JSON"}, {"id": 144, "question": "What is the purpose of the xsl:iterate instruction?", "options": ["It processes a sequence sequentially, carrying parameters forward", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:iterate processes a sequence sequentially, carrying parameters forward.", "topic": "xsl:iterate"}, {"id": 145, "question": "What is the purpose of the xsl:try instruction?", "options": ["It begins a block whose dynamic errors can be caught", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:try begins a block whose dynamic errors can be caught.", "topic": "Error Handling"}, {"id": 146, "question": "What is the purpose of the xsl:catch instruction?", "options": ["It handles a dynamic error raised in an xsl:try", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:catch handles a dynamic error raised in an xsl:try.", "topic": "Error Handling"}, {"id": 147, "question": "What is the purpose of the xsl:merge instruction?", "options": ["It merges multiple pre-sorted inputs by a merge key", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:merge merges multiple pre-sorted inputs by a merge key.", "topic": "xsl:merge"}, {"id": 148, "question": "What is the purpose of the xsl:evaluate instruction?", "options": ["It evaluates a dynamically constructed XPath expression", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:evaluate evaluates a dynamically constructed XPath expression.", "topic": "Dynamic"}, {"id": 149, "question": "What is the purpose of the xsl:assert instruction?", "options": ["It fails with a message when a test is false", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:assert fails with a message when a test is false.", "topic": "Dynamic"}, {"id": 150, "question": "What is the purpose of the xsl:map instruction?", "options": ["It constructs a map from xsl:map-entry children", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:map constructs a map from xsl:map-entry children.", "topic": "Maps"}, {"id": 151, "question": "What is the purpose of the xsl:map-entry instruction?", "options": ["It defines a single key/value pair within a map", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:map-entry defines a single key/value pair within a map.", "topic": "Maps"}, {"id": 152, "question": "What is the purpose of the xsl:package instruction?", "options": ["It declares a reusable, independently-compiled stylesheet module", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:package declares a reusable, independently-compiled stylesheet module.", "topic": "Packages"}, {"id": 153, "question": "What is the purpose of the xsl:use-package instruction?", "options": ["It references components exposed by another package", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:use-package references components exposed by another package.", "topic": "Packages"}, {"id": 154, "question": "What is the purpose of the xsl:accumulator instruction?", "options": ["It defines a running value updated during a streamed pass", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:accumulator defines a running value updated during a streamed pass.", "topic": "Streaming"}, {"id": 155, "question": "What is the purpose of the xsl:where-populated instruction?", "options": ["It omits its wrapper element when the content is empty", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:where-populated omits its wrapper element when the content is empty.", "topic": "Empty Handling"}, {"id": 156, "question": "What is the purpose of the xsl:on-empty instruction?", "options": ["It emits fallback content only when the sequence is empty", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:on-empty emits fallback content only when the sequence is empty.", "topic": "Empty Handling"}, {"id": 157, "question": "What is the purpose of the xsl:result-document instruction?", "options": ["It directs output to a separate result tree / file", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:result-document directs output to a separate result tree / file.", "topic": "Splitting"}, {"id": 158, "question": "What is the purpose of the xsl:for-each-group instruction?", "options": ["It groups a sequence by key/adjacency for processing", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:for-each-group groups a sequence by key/adjacency for processing.", "topic": "Grouping"}, {"id": 159, "question": "What is the purpose of the xsl:analyze-string instruction?", "options": ["It applies a regex, handling matching and non-matching substrings", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:analyze-string applies a regex, handling matching and non-matching substrings.", "topic": "Splitting"}, {"id": 160, "question": "What is the purpose of the xsl:next-iteration instruction?", "options": ["It supplies updated parameter values for the next xsl:iterate cycle", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:next-iteration supplies updated parameter values for the next xsl:iterate cycle.", "topic": "xsl:iterate"}, {"id": 161, "question": "What is the purpose of the xsl:on-completion instruction?", "options": ["It runs once after an xsl:iterate finishes the sequence", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:on-completion runs once after an xsl:iterate finishes the sequence.", "topic": "xsl:iterate"}, {"id": 162, "question": "What is the purpose of the xsl:source-document instruction?", "options": ["It reads a (possibly streamed) input document for processing", "It outputs a literal namespace declaration", "It sets the processor version to 1.0", "It disables template matching"], "correctIndex": 0, "explanation": "xsl:source-document reads a (possibly streamed) input document for processing.", "topic": "Streaming"}, {"id": 163, "question": "True or false: Maps and the map() type are part of XSLT 3.0 (from XPath 3.1).", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — Maps and the map() type are part of XSLT 3.0 (from XPath 3.1). This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 164, "question": "True or false: xsl:result-document was introduced in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 1, "explanation": "False — xsl:result-document was introduced in XSLT 3.0. This already existed earlier (often XSLT 2.0 / XPath 2.0) — a common trap.", "topic": "2.0 vs 3.0"}, {"id": 165, "question": "True or false: Streaming is a defining new capability of XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — Streaming is a defining new capability of XSLT 3.0. This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 166, "question": "True or false: Higher-order functions require XPath 3.0 and are usable in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — Higher-order functions require XPath 3.0 and are usable in XSLT 3.0. This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 167, "question": "True or false: xsl:for-each-group is new in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 1, "explanation": "False — xsl:for-each-group This already existed earlier (often XSLT 2.0 / XPath 2.0) — a common trap.", "topic": "2.0 vs 3.0"}, {"id": 168, "question": "True or false: xsl:try/xsl:catch error handling is new in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — xsl:try/xsl:catch error handling This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 169, "question": "True or false: tokenize() is an XSLT 3.0-only function.", "options": ["True", "False"], "correctIndex": 1, "explanation": "False — tokenize() is an XSLT 3.0-only function. This already existed earlier (often XSLT 2.0 / XPath 2.0) — a common trap.", "topic": "2.0 vs 3.0"}, {"id": 170, "question": "True or false: Packages (xsl:package) are an XSLT 3.0 modularity feature.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — Packages (xsl:package) are an XSLT 3.0 modularity feature. This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 171, "question": "True or false: Text value templates (expand-text) are new in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — Text value templates (expand-text) are new in XSLT 3.0. This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 172, "question": "True or false: xsl:analyze-string regex matching is new in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 1, "explanation": "False — xsl:analyze-string regex matching This already existed earlier (often XSLT 2.0 / XPath 2.0) — a common trap.", "topic": "2.0 vs 3.0"}, {"id": 173, "question": "True or false: JSON functions like parse-json come from XPath 3.1 and are available in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — JSON functions like parse-json come from XPath 3.1 and are available in XSLT 3.0. This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 174, "question": "True or false: xsl:iterate with carried parameters is an XSLT 3.0 feature.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — xsl:iterate with carried parameters is an XSLT 3.0 feature. This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 175, "question": "True or false: User-defined xsl:function was first introduced in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 1, "explanation": "False — User-defined xsl:function was first introduced in XSLT 3.0. This already existed earlier (often XSLT 2.0 / XPath 2.0) — a common trap.", "topic": "2.0 vs 3.0"}, {"id": 176, "question": "True or false: Arrays (array() type) are an XPath 3.1 feature usable in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — Arrays (array() type) are an XPath 3.1 feature usable in XSLT 3.0. This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 177, "question": "True or false: The one-line shallow-copy identity (xsl:mode on-no-match='shallow-copy') is new in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — The one-line shallow-copy identity (xsl:mode on-no-match='shallow-copy') This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 178, "question": "True or false: xsl:merge for merging sorted inputs is new in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — xsl:merge for merging sorted inputs This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 179, "question": "True or false: Tunnel parameters were introduced in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 1, "explanation": "False — Tunnel parameters were introduced in XSLT 3.0. This already existed earlier (often XSLT 2.0 / XPath 2.0) — a common trap.", "topic": "2.0 vs 3.0"}, {"id": 180, "question": "True or false: xsl:evaluate for dynamic XPath is new in XSLT 3.0.", "options": ["True", "False"], "correctIndex": 0, "explanation": "Correct — xsl:evaluate for dynamic XPath This is indeed an XSLT 3.0 addition.", "topic": "2.0 vs 3.0"}, {"id": 181, "question": "Given map $m := map{'01':'Regular','02':'Bonus'}, what does $m('02') return?", "options": ["'Bonus'", "'Regular'", "'02'", "an empty sequence"], "correctIndex": 0, "explanation": "The function-call form $m('02') looks up key '02' and returns 'Bonus'.", "topic": "Maps"}, {"id": 182, "question": "What does map:merge( for $w in //Worker return map{ $w/@id : $w/Name } ) build?", "options": ["A map from each worker id to that worker's Name (a lookup index)", "A sequence of names", "A single concatenated string", "An array of workers"], "correctIndex": 0, "explanation": "Iterating to produce per-worker single-entry maps and merging them yields an id-to-Name lookup map — the idiomatic 'build a HashMap' pattern.", "topic": "Maps"}, {"id": 183, "question": "With expand-text='yes', what does <Row>{@id},{Name}</Row> produce for id='7', Name='Asha'?", "options": ["<Row>7,Asha</Row>", "<Row>{@id},{Name}</Row>", "<Row>,</Row>", "an error"], "correctIndex": 0, "explanation": "Text value templates evaluate {@id} and {Name} inline, producing the delimited text.", "topic": "Text Templates"}, {"id": 184, "question": "What does tokenize('A;B;;C', ';') return?", "options": ["('A','B','','C') — four items including an empty string", "('A','B','C')", "'A;B;;C'", "('A','B','C','')"], "correctIndex": 0, "explanation": "tokenize keeps empty fields between consecutive separators, so the empty token between B and C is preserved.", "topic": "Splitting"}, {"id": 185, "question": "What does string-join(('A','B','C'), ',') return?", "options": ["'A,B,C'", "('A','B','C')", "'ABC'", "'A,B,C,'"], "correctIndex": 0, "explanation": "string-join concatenates the sequence with the separator — the inverse of tokenize, used to build delimited rows.", "topic": "Integration Mapping"}, {"id": 186, "question": "In xsl:iterate over amounts, with xsl:param name='total' select='0' and xsl:next-iteration setting total to $total + current, what is computed?", "options": ["A running total across the sequence", "The maximum amount", "A sorted list", "Nothing — iterate cannot carry state"], "correctIndex": 0, "explanation": "Carrying $total forward each cycle accumulates a sum; xsl:on-completion can emit the final total.", "topic": "xsl:iterate"}, {"id": 187, "question": "A transform divides by a count that can be zero. Wrapping it in xsl:try with xsl:catch select=\"0\" achieves what?", "options": ["Returns 0 instead of aborting on the division error", "Speeds up the divide", "Streams the input", "Builds a package"], "correctIndex": 0, "explanation": "try/catch substitutes a safe fallback (0) for the dynamic error, keeping the run alive.", "topic": "Error Handling"}, {"id": 188, "question": "Which is the correct shallow-copy identity skeleton in XSLT 3.0?", "options": ["<xsl:mode on-no-match='shallow-copy'/> with targeted override templates", "<xsl:template match='/'><xsl:value-of select='.'/></xsl:template>", "<xsl:stream/>", "<xsl:package/>"], "correctIndex": 0, "explanation": "Declare the mode as shallow-copy, then add templates only for the nodes you want to change — everything else copies through.", "topic": "Traversal"}, {"id": 189, "question": "To output one file per Company from a single source, the @href on xsl:result-document is typically…", "options": ["computed dynamically, e.g. concat($company,'.csv')", "a fixed single filename", "always 'output.xml'", "omitted"], "correctIndex": 0, "explanation": "A computed @href lets each group write to its own destination file.", "topic": "Splitting"}, {"id": 190, "question": "current-grouping-key() inside xsl:for-each-group group-by='Department' returns…", "options": ["the Department value of the current group", "the count of groups", "the first worker", "the whole sequence"], "correctIndex": 0, "explanation": "current-grouping-key() gives the key for the current group; current-group() gives its members.", "topic": "Grouping"}, {"id": 191, "question": "Which is the most memory-safe way to process a 5 GB Workday extract that only needs per-record totals?", "options": ["A streamable mode with an xsl:accumulator (single forward pass)", "Load fully and use xsl:for-each", "Call document() repeatedly", "Convert to a map first"], "correctIndex": 0, "explanation": "Accumulators update during the streamed pass without buffering the tree, ideal for aggregate-only logic on huge inputs.", "topic": "Streaming"}, {"id": 192, "question": "To pass a code-translation function into fn:for-each so each item is mapped, you supply…", "options": ["a function item (inline function or name#arity reference)", "a template name as a string", "an xsl:key", "a result-document"], "correctIndex": 0, "explanation": "Higher-order functions take function items: an inline function($x){...} or a named reference like local:map-code#1.", "topic": "Higher-Order"}, {"id": 193, "question": "Which XPath returns the first non-empty of two values (null-coalescing)?", "options": ["($primary, $fallback)[1]", "$primary or $fallback", "coalesce($primary,$fallback)", "$primary ?? $fallback"], "correctIndex": 0, "explanation": "($a,$b)[1] returns $a if it exists, else $b — the standard XPath idiom (there is no coalesce/?? operator).", "topic": "Gotchas"}, {"id": 194, "question": "Why can xsl:merge be more efficient than sorting a giant joined set in memory?", "options": ["It consumes pre-sorted inputs in parallel, so it needn't hold/sort everything at once", "It compresses the files", "It uses JSON", "It runs on the database"], "correctIndex": 0, "explanation": "Merging ordered streams avoids a full in-memory sort, which matters for large multi-source joins.", "topic": "xsl:merge"}, {"id": 195, "question": "A vendor needs JSON out of a Workday report XML. A reasonable XSLT 3.0 approach is…", "options": ["Build maps/arrays and serialize with method='json' (or via xml-to-json)", "Rename the .xml file to .json", "Use xsl:result-document with no content", "It is impossible in XSLT"], "correctIndex": 0, "explanation": "Construct the JSON model as maps/arrays then serialize as JSON, or build the XML JSON representation and call xml-to-json().", "topic": "JSON"}, {"id": 196, "question": "In a header/detail/trailer CSV, the trailer record count is best produced with…", "options": ["count() of the detail sequence (or a running total via iterate)", "a hard-coded number", "xsl:try", "xsl:package"], "correctIndex": 0, "explanation": "count(...) over the same population that produced detail rows gives an accurate trailer count.", "topic": "Integration Mapping"}, {"id": 197, "question": "Which statement about maps vs xsl:key is most accurate?", "options": ["xsl:key indexes nodes in source documents; maps are standalone key/value structures in the stylesheet", "They are identical", "Maps can only hold numbers", "xsl:key was removed in 3.0"], "correctIndex": 0, "explanation": "Use xsl:key to index existing source nodes for fast lookup; use a map when the table is self-contained or built on the fly.", "topic": "Maps"}, {"id": 198, "question": "expand-text='yes' is most useful when…", "options": ["producing lots of text/CSV output with inline {expressions}", "streaming binary files", "declaring packages", "matching templates"], "correctIndex": 0, "explanation": "TVTs shine for text-heavy output (delimited files), replacing many xsl:value-of elements with inline {expr}.", "topic": "Text Templates"}, {"id": 199, "question": "Which XSLT 3.0 construct is GUARANTEED-streamable-friendly for sequential aggregation?", "options": ["xsl:iterate", "xsl:for-each with backward axes", "document() loops", "xsl:result-document fan-out"], "correctIndex": 0, "explanation": "xsl:iterate's forward, parameter-carrying model aligns with streaming, unlike constructs needing random access.", "topic": "Streaming"}, {"id": 200, "question": "To validate that every detail row has a non-empty Employee ID during development, you could use…", "options": ["xsl:assert test='string-length(EmpID) gt 0'", "xsl:result-document", "xsl:merge", "xsl:package"], "correctIndex": 0, "explanation": "xsl:assert fails with a message when its test is false, catching bad data early when assertions are enabled.", "topic": "Dynamic"}, {"id": 201, "question": "Which best describes processing order of xsl:apply-templates with multiple xsl:sort children?", "options": ["Selected nodes are sorted by the sort keys before templates are applied", "Templates run first, then output is sorted", "Sorting is ignored", "Only the first node is processed"], "correctIndex": 0, "explanation": "xsl:sort reorders the selected sequence prior to template application, so output follows sorted order.", "topic": "Traversal"}, {"id": 202, "question": "A map value can itself be a map or sequence. This lets you model…", "options": ["nested/structured lookups (e.g. country -> {code, name, currency})", "only flat strings", "streaming", "regex"], "correctIndex": 0, "explanation": "Map values are arbitrary XDM values, so nested maps/sequences model structured records.", "topic": "Maps"}, {"id": 203, "question": "Which is true about xsl:result-document inside a streaming transform?", "options": ["It can fan output to multiple files while reading the input as a stream", "It disables streaming", "It only works on JSON", "It needs Saxon-HE"], "correctIndex": 0, "explanation": "result-document can write multiple outputs during a streamed pass, a common high-volume splitting pattern.", "topic": "Splitting"}, {"id": 204, "question": "The cleanest way to drop an optional element entirely when its value is blank is…", "options": ["wrap it in xsl:where-populated", "an empty xsl:result-document", "xsl:merge", "a second stylesheet"], "correctIndex": 0, "explanation": "xsl:where-populated removes the wrapper when content is empty, avoiding empty tags or stray delimiters.", "topic": "Empty Handling"}, {"id": 205, "question": "Which XPath 3.1 feature lets you keep a 2-D structure (rows of columns) without flattening?", "options": ["arrays", "maps only", "sequences", "temporary trees"], "correctIndex": 0, "explanation": "Arrays preserve nesting/structure (sequences auto-flatten), so an array of arrays models a grid.", "topic": "Arrays"}, {"id": 206, "question": "fn:fold-left((1,2,3,4), 0, function($acc,$x){ $acc + $x }) returns…", "options": ["10", "24", "4", "(1,2,3,4)"], "correctIndex": 0, "explanation": "fold-left sums by threading the accumulator: ((((0+1)+2)+3)+4) = 10.", "topic": "Higher-Order"}, {"id": 207, "question": "fn:filter((1,2,3,4,5), function($x){ $x mod 2 = 0 }) returns…", "options": ["(2,4)", "(1,3,5)", "(2,4,6)", "5"], "correctIndex": 0, "explanation": "filter keeps items where the predicate is true — the even numbers 2 and 4.", "topic": "Higher-Order"}, {"id": 208, "question": "Which approach drives mapping rules from configuration data rather than hard-coded templates?", "options": ["Store target->source XPath as data and run it with xsl:evaluate", "Write one template per field", "Use xsl:try", "Use xsl:merge"], "correctIndex": 0, "explanation": "xsl:evaluate executes XPath strings supplied at runtime, enabling metadata-driven mapping.", "topic": "Dynamic"}, {"id": 209, "question": "In Workday DT, the etv:fixedLength attribute on a target field does what when the value is too long?", "options": ["Formats to the fixed length and can flag truncation as an error", "Silently ignores it", "Streams the field", "Builds a map"], "correctIndex": 0, "explanation": "etv:fixedLength enforces a fixed width and Workday's ETV can report truncation as an error during DT.", "topic": "Foundations"}, {"id": 210, "question": "Which is a correct reason to choose Connector + Document Transformation over a raw EIB for a complex vendor file?", "options": ["DT stitches XSLT to a connector for richer, reusable transformation of connector XML", "EIBs cannot output files", "DT does not use XSLT", "EIBs cannot use XSLT at all"], "correctIndex": 0, "explanation": "Both can use XSLT; Connector+DT suits richer connector-sourced data and reusable transformation, while EIB+custom report suits simpler cases.", "topic": "Foundations"}, {"id": 211, "question": "What does array:flatten([1,[2,3],[[4]]]) yield?", "options": ["the sequence (1,2,3,4)", "an array of arrays", "10", "([1],[2,3])"], "correctIndex": 0, "explanation": "array:flatten recursively unwraps members into a flat sequence.", "topic": "Arrays"}, {"id": 212, "question": "Which is the safest pattern to look up a code and fall back to the original if unmapped?", "options": ["(map:get($lut,$code), $code)[1]", "map:get($lut,$code) only", "$code only", "map:remove($lut,$code)"], "correctIndex": 0, "explanation": "If the lookup misses (empty), the original $code is used as the fallback via the [1] idiom.", "topic": "Integration Mapping"}, {"id": 213, "question": "Which XSLT 3.0 element would emit a grand-total trailer exactly once after an xsl:iterate?", "options": ["xsl:on-completion", "xsl:on-empty", "xsl:catch", "xsl:fallback"], "correctIndex": 0, "explanation": "xsl:on-completion fires after the sequence is exhausted, the right place for a trailer/total.", "topic": "xsl:iterate"}, {"id": 214, "question": "For a Workday→vendor feed where the vendor may add fields over time, packages help by…", "options": ["isolating reusable mapping components with controlled visibility for safer change", "streaming faster", "removing XPath", "auto-generating JSON"], "correctIndex": 0, "explanation": "Packaging mapping logic into modules with public/private interfaces makes large stylesheets more maintainable as requirements evolve.", "topic": "Packages"}, {"id": 215, "question": "Which describes the relationship between XSLT 3.0 and XPath 3.1 maps/arrays/JSON?", "options": ["XSLT 3.0 mandates maps (from XPath 3.1) and optionally supports arrays and JSON functions", "XSLT 3.0 forbids XPath 3.1", "Maps are XSLT-only, not XPath", "Arrays are required, maps optional"], "correctIndex": 0, "explanation": "The spec incorporates the XPath 3.1 map functionality; arrays and JSON are optional XPath 3.1 additions commonly available in Saxon.", "topic": "2.0 vs 3.0"}, {"id": 216, "question": "A template matches ps:Position and uses etv attributes to pad Position_ID to 10 chars. This is an example of…", "options": ["field-level formatting/validation during Workday Document Transformation", "streaming", "package import", "JSON serialization"], "correctIndex": 0, "explanation": "Matching the element and applying ETV formatting (fixed length + truncation error) is a standard Workday DT mapping/validation task.", "topic": "Integration Mapping"}, {"id": 217, "question": "Maps in XSLT 3.0 are immutable. What does map:put($m,$k,$v) return?", "options": ["A NEW map with the entry added/updated; the original is unchanged", "Nothing; it mutates $m in place", "A boolean", "The old value at $k"], "correctIndex": 0, "explanation": "Maps are immutable, so map:put yields a new map and leaves the original intact.", "topic": "Maps"}, {"id": 218, "question": "Which lookup forms both retrieve key 'EUR' from map variable $m?", "options": ["$m?EUR  and  $m('EUR')", "$m.EUR and $m->EUR", "$m[EUR] and $m{EUR}", "get($m,EUR) only"], "correctIndex": 0, "explanation": "The ? lookup operator and function-call syntax both read a map entry.", "topic": "Maps"}, {"id": 219, "question": "map:get returns the empty sequence for a missing key. A safe default is written as:", "options": ["(map:get($m,$k), 'DEFAULT')[1]", "map:get($m,$k) or 'DEFAULT'", "map:get($m,$k,'DEFAULT')", "default(map:get($m,$k))"], "correctIndex": 0, "explanation": "Coalesce with a sequence and take [1]: (lookup, 'DEFAULT')[1] yields the default when the lookup is empty.", "topic": "Integration Mapping"}, {"id": 220, "question": "To build a lookup map from <row from='..' to='..'/> config entries you would:", "options": ["map:merge( config//row ! map:entry(@from, @to) )", "copy-of the rows", "sort the rows", "tokenize the file"], "correctIndex": 0, "explanation": "Turn each row into a map:entry and map:merge them into one lookup map.", "topic": "Integration Mapping"}, {"id": 221, "question": "A Workday pay-component-to-vendor-earning crosswalk with 200 codes is cleanest as:", "options": ["A map keyed by component ID", "A 200-branch xsl:choose", "200 named templates", "A deeply nested xsl:if"], "correctIndex": 0, "explanation": "A map scales cleanly; a 200-branch choose is unmaintainable.", "topic": "Integration Mapping"}, {"id": 222, "question": "Array members are 1-based. array:get($a, 1) returns:", "options": ["The first member", "The last member", "The size", "An error"], "correctIndex": 0, "explanation": "Arrays index from 1; array:get($a,1) is the first member.", "topic": "Arrays"}, {"id": 223, "question": "count($array) returns what, and why?", "options": ["1 — an array is a single item in the sequence model", "The number of members", "0", "An error"], "correctIndex": 0, "explanation": "An array is one item; use array:size for member count. count() sees a single array item.", "topic": "Arrays"}, {"id": 224, "question": "Sequences flatten but arrays do not. So [ (1,2), (3,4) ] has how many members?", "options": ["2 (each a 2-item sequence)", "4", "1", "0"], "correctIndex": 0, "explanation": "The array has 2 members, each being a 2-item sequence; arrays preserve that nesting.", "topic": "Arrays"}, {"id": 225, "question": "parse-json('{\"a\":[1,2]}') yields which XDM shape?", "options": ["A map whose 'a' key holds an array of two numbers", "A single string", "An XML element", "A node-set"], "correctIndex": 0, "explanation": "JSON objects become maps and JSON arrays become arrays under parse-json.", "topic": "JSON"}, {"id": 226, "question": "xml-to-json() requires the input XML to be:", "options": ["In the XPath-functions JSON vocabulary (map/array/string/number elements)", "Any arbitrary XML", "HTML", "A Workday report"], "correctIndex": 0, "explanation": "xml-to-json consumes the standard fn: JSON XML representation; arbitrary XML must first be shaped to it.", "topic": "JSON"}, {"id": 227, "question": "An inline function squaring its argument is written:", "options": ["function($x) { $x * $x }", "fn:square($x)", "lambda($x)", "def square($x)"], "correctIndex": 0, "explanation": "function($x){ ... } is an anonymous function item in XSLT 3.0.", "topic": "Higher-Order"}, {"id": 228, "question": "fold-left(1..5, 0, function($acc,$x){ $acc + $x }) evaluates to:", "options": ["15", "5", "120", "0"], "correctIndex": 0, "explanation": "It sums 1..5 with accumulator starting at 0 → 15.", "topic": "Higher-Order"}, {"id": 229, "question": "filter(1..10, function($x){ $x mod 2 = 0 }) returns:", "options": ["2,4,6,8,10", "1,3,5,7,9", "all ten", "empty"], "correctIndex": 0, "explanation": "filter keeps items where the predicate is true — the even numbers.", "topic": "Higher-Order"}, {"id": 230, "question": "With expand-text='yes', the element <p>Hi {$name}</p> outputs:", "options": ["Hi followed by the value of $name", "the literal text Hi {$name}", "an error", "Hi {name}"], "correctIndex": 0, "explanation": "Text value templates evaluate {$name} inline when expand-text is enabled.", "topic": "Text Templates"}, {"id": 231, "question": "Under expand-text, to print a literal { you write:", "options": ["{{", "\{", "&lcub;", "[{]"], "correctIndex": 0, "explanation": "Doubled braces escape to a literal brace.", "topic": "Text Templates"}, {"id": 232, "question": "xsl:iterate differs from xsl:for-each because it:", "options": ["Carries running parameters forward via xsl:next-iteration", "Cannot loop", "Sorts automatically", "Only works on attributes"], "correctIndex": 0, "explanation": "xsl:iterate threads accumulator params through items (streamable), unlike stateless for-each.", "topic": "xsl:iterate"}, {"id": 233, "question": "To emit a grand total after an xsl:iterate finishes, use:", "options": ["xsl:on-completion", "xsl:break", "xsl:fallback", "xsl:otherwise"], "correctIndex": 0, "explanation": "xsl:on-completion runs once iteration ends, ideal for totals/footers.", "topic": "xsl:iterate"}, {"id": 234, "question": "In xsl:catch, $err:description gives:", "options": ["A human-readable error message", "The line number only", "The output so far", "The map of variables"], "correctIndex": 0, "explanation": "xsl:catch exposes $err:code, $err:description, $err:value, etc.", "topic": "Error Handling"}, {"id": 235, "question": "xsl:merge requires its sources to be:", "options": ["Sorted by the merge key", "JSON", "Streamed", "Maps"], "correctIndex": 0, "explanation": "Merge assumes each source is pre-sorted on the merge key.", "topic": "xsl:merge"}, {"id": 236, "question": "Processing starts at the document node by applying:", "options": ["The template that matches '/' (or a named initial template)", "the last template", "every template at once", "xsl:output"], "correctIndex": 0, "explanation": "The processor invokes the template matching the document node, or a specified initial named template.", "topic": "Traversal"}, {"id": 237, "question": "apply-templates is 'push'; the pull-style equivalent is:", "options": ["xsl:for-each with xsl:value-of", "xsl:apply-imports", "xsl:next-match", "xsl:character-map"], "correctIndex": 0, "explanation": "Pull style explicitly walks the source with for-each/value-of.", "topic": "Traversal"}, {"id": 238, "question": "Template conflicts are resolved by:", "options": ["Import precedence, then priority, then document order", "string length", "random choice", "alphabetical match pattern"], "correctIndex": 0, "explanation": "Import precedence first, then priority, then last in document order.", "topic": "Traversal"}, {"id": 239, "question": "The default template rule for a text node:", "options": ["Copies the text value to the output", "Deletes it", "Wraps it in <text>", "Skips it"], "correctIndex": 0, "explanation": "The built-in rule for text nodes copies their string value; for elements it recurses to children.", "topic": "Traversal"}, {"id": 240, "question": "Selected nodes without xsl:sort are processed in:", "options": ["Document order", "reverse order", "key order", "random order"], "correctIndex": 0, "explanation": "Document order is the default processing order.", "topic": "Traversal"}, {"id": 241, "question": "Serialization of the result tree is governed by:", "options": ["xsl:output", "xsl:template", "xsl:mode", "xsl:param"], "correctIndex": 0, "explanation": "xsl:output controls method, encoding, indentation, etc.", "topic": "Traversal"}, {"id": 242, "question": "To split a multi-worker file into one file per worker, route each worker through:", "options": ["xsl:result-document", "xsl:copy-of", "xsl:message", "xsl:number"], "correctIndex": 0, "explanation": "xsl:result-document writes each worker to its own secondary output.", "topic": "Splitting"}, {"id": 243, "question": "For STREAMED splitting (huge input, single pass), XSLT 3.0 provides:", "options": ["xsl:fork", "xsl:split", "xsl:divide", "xsl:chunk"], "correctIndex": 0, "explanation": "xsl:fork lets multiple branches consume one streamed pass.", "topic": "Splitting"}, {"id": 244, "question": "Grouping records by pay group before per-group output uses:", "options": ["xsl:for-each-group", "xsl:partition", "xsl:bucket", "xsl:cluster"], "correctIndex": 0, "explanation": "xsl:for-each-group (group-by/group-adjacent/etc.) groups before output.", "topic": "Splitting"}, {"id": 245, "question": "Workday's split-transform-aggregate pattern primarily protects against:", "options": ["Large DOM objects exhausting memory / aborting the run", "Invalid XML", "Slow networks", "Missing schemas"], "correctIndex": 0, "explanation": "It keeps in-memory DOM sizes small, the core Workday performance concern.", "topic": "Splitting"}, {"id": 246, "question": "Is 'map { } constructor' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "map { } constructor is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 247, "question": "Is 'array [ ] constructor' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "array [ ] constructor is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 248, "question": "Is 'parse-json()' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "parse-json() is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 249, "question": "Is 'xsl:stream / streaming' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:stream / streaming is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 250, "question": "Is 'xsl:try' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:try is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 251, "question": "Is 'xsl:iterate' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:iterate is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 252, "question": "Is 'expand-text text value templates' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "expand-text text value templates is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 253, "question": "Is 'xsl:package' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:package is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 254, "question": "Is 'standard higher-order functions' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "standard higher-order functions is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 255, "question": "Is 'xsl:evaluate' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:evaluate is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 256, "question": "Is 'xsl:assert' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:assert is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 257, "question": "Is 'xsl:accumulator' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:accumulator is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 258, "question": "Is 'xsl:merge' available in standard XSLT 2.0?", "options": ["No — it is new in XSLT 3.0", "Yes, it is a 2.0 feature"], "correctIndex": 0, "explanation": "xsl:merge is an XSLT 3.0 addition, not present in standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 259, "question": "map:keys() is part of which family?", "options": ["map: (map operations)", "array: (array operations)", "higher-order functions"], "correctIndex": 0, "explanation": "map:keys() belongs to map: (map operations).", "topic": "Functions"}, {"id": 260, "question": "map:merge() is part of which family?", "options": ["array: (array operations)", "map: (map operations)", "higher-order functions"], "correctIndex": 1, "explanation": "map:merge() belongs to map: (map operations).", "topic": "Functions"}, {"id": 261, "question": "map:contains() is part of which family?", "options": ["array: (array operations)", "higher-order functions", "map: (map operations)"], "correctIndex": 2, "explanation": "map:contains() belongs to map: (map operations).", "topic": "Functions"}, {"id": 262, "question": "map:size() is part of which family?", "options": ["higher-order functions", "map: (map operations)", "array: (array operations)"], "correctIndex": 1, "explanation": "map:size() belongs to map: (map operations).", "topic": "Functions"}, {"id": 263, "question": "map:for-each() is part of which family?", "options": ["array: (array operations)", "higher-order functions", "map: (map operations)"], "correctIndex": 2, "explanation": "map:for-each() belongs to map: (map operations).", "topic": "Functions"}, {"id": 264, "question": "array:flatten() is part of which family?", "options": ["map: (map operations)", "array: (array operations)", "higher-order functions"], "correctIndex": 1, "explanation": "array:flatten() belongs to array: (array operations).", "topic": "Functions"}, {"id": 265, "question": "array:append() is part of which family?", "options": ["higher-order functions", "map: (map operations)", "array: (array operations)"], "correctIndex": 2, "explanation": "array:append() belongs to array: (array operations).", "topic": "Functions"}, {"id": 266, "question": "array:subarray() is part of which family?", "options": ["array: (array operations)", "higher-order functions", "map: (map operations)"], "correctIndex": 0, "explanation": "array:subarray() belongs to array: (array operations).", "topic": "Functions"}, {"id": 267, "question": "array:join() is part of which family?", "options": ["map: (map operations)", "array: (array operations)", "higher-order functions"], "correctIndex": 1, "explanation": "array:join() belongs to array: (array operations).", "topic": "Functions"}, {"id": 268, "question": "for-each-pair() is part of which family?", "options": ["array: (array operations)", "higher-order functions", "map: (map operations)"], "correctIndex": 1, "explanation": "for-each-pair() belongs to higher-order functions.", "topic": "Functions"}, {"id": 269, "question": "fold-right() is part of which family?", "options": ["array: (array operations)", "higher-order functions", "map: (map operations)"], "correctIndex": 1, "explanation": "fold-right() belongs to higher-order functions.", "topic": "Functions"}, {"id": 270, "question": "function-arity() is part of which family?", "options": ["array: (array operations)", "map: (map operations)", "higher-order functions"], "correctIndex": 2, "explanation": "function-arity() belongs to higher-order functions.", "topic": "Functions"}, {"id": 271, "question": "Is 'xsl:where-populated (skip empty wrappers)' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "xsl:where-populated (skip empty wrappers) belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 272, "question": "Is 'xsl:source-document streamable' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "xsl:source-document streamable belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 273, "question": "Is 'xsl:override within a package' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "xsl:override within a package belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 274, "question": "Is 'xsl:expose visibility control' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "xsl:expose visibility control belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 275, "question": "Is 'static parameters (static='yes')' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "static parameters (static='yes') belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 276, "question": "Is 'shadow attributes (_name)' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "shadow attributes (_name) belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 277, "question": "Is 'use-when conditional compilation' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "use-when conditional compilation belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 278, "question": "Is 'random-number-generator()' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "random-number-generator() belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 279, "question": "Is 'fn:sort() key function' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "fn:sort() key function belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 280, "question": "Is 'fn:apply()' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "fn:apply() belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 281, "question": "Is 'map:find()' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "map:find() belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 282, "question": "Is 'array:reverse()' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "array:reverse() belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 283, "question": "Is 'array:for-each()' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "array:for-each() belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 284, "question": "Is 'xsl:next-iteration' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "xsl:next-iteration belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 285, "question": "Is 'xsl:break with select' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "xsl:break with select belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 286, "question": "Is 'snapshot() in streaming' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "snapshot() in streaming belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 287, "question": "Is 'fn:contains-token()' an XSLT 3.0 / XPath 3.1 feature absent from standard XSLT 2.0?", "options": ["Yes", "No"], "correctIndex": 0, "explanation": "fn:contains-token() belongs to XSLT 3.0 / XPath 3.1, not standard 2.0.", "topic": "2.0 vs 3.0"}, {"id": 288, "question": "What does map:remove($m,$k) do?", "options": ["Returns a new map without key $k", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "map:remove($m,$k) returns a new map without key $k.", "topic": "Maps"}, {"id": 289, "question": "What does map:entry($k,$v) do?", "options": ["Builds a single-entry map", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "map:entry($k,$v) builds a single-entry map.", "topic": "Maps"}, {"id": 290, "question": "What does array:subarray($a,2,3) do?", "options": ["Extracts 3 members starting at position 2", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "array:subarray($a,2,3) extracts 3 members starting at position 2.", "topic": "Arrays"}, {"id": 291, "question": "What does array:join((a,b)) do?", "options": ["Concatenates arrays into one", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "array:join((a,b)) concatenates arrays into one.", "topic": "Arrays"}, {"id": 292, "question": "What does json-doc($href) do?", "options": ["Reads and parses a json resource", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "json-doc($href) reads and parses a JSON resource.", "topic": "JSON"}, {"id": 293, "question": "What does serialize($x,map{'method':'json'}) do?", "options": ["Produces a json string from maps/arrays", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "serialize($x,map{'method':'json'}) produces a JSON string from maps/arrays.", "topic": "JSON"}, {"id": 294, "question": "What does for-each-pair($a,$b,$f) do?", "options": ["Applies $f to paired items of two sequences", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "for-each-pair($a,$b,$f) applies $f to paired items of two sequences.", "topic": "Higher-Order"}, {"id": 295, "question": "What does function-lookup($name,$arity) do?", "options": ["Obtains a function item by name and arity", "Sorts the document", "Validates a schema", "Aborts the run"], "correctIndex": 0, "explanation": "function-lookup($name,$arity) obtains a function item by name and arity.", "topic": "Higher-Order"}];
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function setNav(v){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));}
+function go(v){
+  document.querySelectorAll('.view').forEach(s=>s.classList.add('hidden'));
+  document.getElementById('view-'+(v==='learn'||v==='exam'?'quiz':v)).classList.remove('hidden');
+  setNav(v);
+  window.scrollTo({top:0,behavior:'instant'});
+}
+document.getElementById('qcount').textContent = QUESTION_BANK.length;
+
+/* ============================================================
+   STUDY GUIDE CONTENT
+   ============================================================ */
+const SECTIONS = {
+intro:`<h2>XSLT 3.0 in the Workday world <span class="tag">orientation</span></h2>
+<p class="lead2">XSLT is how Workday reshapes data during integrations — most visibly in <b>Document Transformation (DT)</b> steps and in <b>Workday Studio</b> XSLT components, both running on the <b>Saxon</b> engine. This guide covers XSLT&nbsp;3.0's features and, crucially, how they differ from the 2.0 most Workday content is written against.</p>
+<h3>The honest Workday picture</h3>
+<ul class="clean">
+<li>Workday's published Studio guidance says to <b>use XSLT 2.0</b> with the Saxon transformation factory in XSLT steps for compatibility.</li>
+<li>Modern Saxon builds are themselves <b>XSLT 3.0 processors</b> — so 3.0 constructs (maps, higher-order functions, text value templates) are often available, but <b>streaming and schema-awareness require Saxon-EE</b>.</li>
+<li>Because the baseline is 2.0, <b>verify the engine/edition</b> in your specific surface (DT vs Studio) before relying on a 3.0-only construct.</li>
+<li>Workday loads messages into memory as <b>DOM objects</b>, so it recommends a <b>split-transform-aggregate</b> pattern for large documents. Streaming is the 3.0 answer to that same memory problem.</li>
+</ul>
+<div class="callout key"><span class="lbl">Why this matters</span>The same payroll/HCM XML you already transform (PECI to CSV, RaaS to a vendor layout) gets dramatically cleaner with 3.0 maps and text value templates — provided your processor supports them. This guide shows the features, then the Workday-specific mapping and splitting patterns.</div>
+<div class="callout tip"><span class="lbl">One-liner</span>"XSLT 3.0 keeps everything from 2.0 and adds maps, arrays, JSON, standard higher-order functions, streaming, packages, try/catch, and text value templates."</div>`,
+
+vs2:`<h2>XSLT 2.0 vs 3.0 at a glance</h2>
+<p class="lead2">XSLT 3.0 (W3C Recommendation, <b>2017</b>) is a superset of 2.0 (<b>2007</b>). Everything you know from 2.0 still works; 3.0 adds capabilities aimed at large documents, modularity, and richer data handling.</p>
+<table class="t">
+<tr><th>Capability</th><th>XSLT 2.0</th><th>XSLT 3.0</th></tr>
+<tr><td>Maps (key/value "hashmap")</td><td>No</td><td><b>Yes</b> — <code>map { }</code>, <code>map:*</code></td></tr>
+<tr><td>Arrays (nested, non-flattening)</td><td>No</td><td><b>Yes</b> — <code>[ ]</code>, <code>array:*</code> (XPath 3.1)</td></tr>
+<tr><td>JSON</td><td>No</td><td><b>Yes</b> — <code>parse-json</code>, <code>json-to-xml</code>, <code>xml-to-json</code></td></tr>
+<tr><td>Higher-order functions</td><td>Extension only (Saxon-PE)</td><td><b>Standard</b> — inline <code>function(){ }</code>, <code>fold-left</code>…</td></tr>
+<tr><td>Text value templates</td><td>No (use xsl:value-of)</td><td><b>Yes</b> — <code>expand-text="yes"</code> with { }</td></tr>
+<tr><td>Streaming</td><td>No</td><td><b>Yes</b> — <code>xsl:mode streamable</code> (Saxon-EE)</td></tr>
+<tr><td>Try / catch</td><td>No</td><td><b>Yes</b> — <code>xsl:try</code> / <code>xsl:catch</code></td></tr>
+<tr><td>Sequential accumulation</td><td>Recursion</td><td><b>Yes</b> — <code>xsl:iterate</code></td></tr>
+<tr><td>Merge sorted inputs</td><td>No</td><td><b>Yes</b> — <code>xsl:merge</code></td></tr>
+<tr><td>Modularity</td><td>include / import</td><td><b>Packages</b> — <code>xsl:package</code>, visibility</td></tr>
+<tr><td>Dynamic XPath / assertions</td><td>No</td><td><b>Yes</b> — <code>xsl:evaluate</code>, <code>xsl:assert</code></td></tr>
+<tr><td>for-each-group, regex, sequences, user functions</td><td>Yes</td><td>Yes (unchanged)</td></tr>
+</table>
+<div class="callout warn"><span class="lbl">Don't over-claim</span><code>for-each-group</code>, <code>xsl:function</code>, regex (<code>matches/replace/tokenize</code>), sequences and temporary trees are all <b>2.0</b> features — not 3.0 novelties. Knowing which is which is a common interview check.</div>`,
+
+traverse:`<h2>How XSLT traverses &amp; outputs <span class="tag">step through it</span></h2>
+<p class="lead2">XSLT is declarative, but underneath there's a concrete order of operations. The processor builds a tree, starts at the root, matches templates, and <b>pushes</b> nodes onward — producing the result tree as it goes, which is then serialized.</p>
+<h3>The processing model</h3>
+<ul class="clean">
+<li>Parse the source into an <b>XDM tree</b>.</li>
+<li>Begin at the <b>document node</b> by applying the matching template (or a named initial template).</li>
+<li><code>xsl:apply-templates</code> selects nodes (default: children, in <b>document order</b>) and the processor picks the <b>best-matching template</b> for each.</li>
+<li>Conflicts resolve by <b>import precedence → priority → document order</b>.</li>
+<li><b>Built-in rules</b>: elements recurse to children; text nodes copy their value.</li>
+<li>The <b>result tree</b> is serialized per <code>xsl:output</code> (method, encoding, indent).</li>
+</ul>
+<h3>Watch it run</h3>
+<p>Step through a tiny transform. On the left, the current node being processed is highlighted in the source; on the right, the output grows as templates fire.</p>
+<div class="stepper" id="travStepper"></div>
+<div class="callout tip"><span class="lbl">Read the order</span>Notice apply-templates pushes <code>emp</code> nodes in document order, and each one independently matches the <code>emp</code> template — that "push" is what makes XSLT compose so cleanly.</div>`,
+
+pushpull:`<h2>Push vs pull</h2>
+<p class="lead2">There are two ways to drive a transform. Real stylesheets mix both; knowing the difference explains a lot of behavior.</p>
+<h3>Push (template matching)</h3>
+<p>You write templates that <i>match</i> patterns and let the processor decide which fires for each pushed node. Flexible and recursive — ideal when the input shape varies.</p>
+<div class="codeblock"><span class="c1">&lt;xsl:template</span> <span class="c2">match="emp"</span><span class="c1">&gt;</span>
+  <span class="c3">&lt;row&gt;</span>...<span class="c3">&lt;/row&gt;</span>
+<span class="c1">&lt;/xsl:template&gt;</span>
+<span class="c5">&lt;!-- driven by --&gt;</span> <span class="c1">&lt;xsl:apply-templates</span> <span class="c2">select="emp"</span><span class="c1">/&gt;</span></div>
+<h3>Pull (explicit fetch)</h3>
+<p>You walk the source yourself with <code>xsl:for-each</code> and pull values with <code>xsl:value-of</code>. Predictable and linear — ideal for fixed, table-like output such as a vendor CSV.</p>
+<div class="codeblock"><span class="c1">&lt;xsl:for-each</span> <span class="c2">select="emp"</span><span class="c1">&gt;</span>
+  <span class="c3">&lt;row&gt;</span><span class="c1">&lt;xsl:value-of</span> <span class="c2">select="pay"</span><span class="c1">/&gt;</span><span class="c3">&lt;/row&gt;</span>
+<span class="c1">&lt;/xsl:for-each&gt;</span></div>
+<div class="callout key"><span class="lbl">Workday tip</span>Flat vendor files are usually cleanest in pull style; complex, branching HCM data is usually cleaner in push style. With 3.0 text value templates, the pull form gets even terser.</div>`,
+
+tvt:`<h2>Text value templates <span class="tag">3.0</span></h2>
+<p class="lead2">Turn on <code>expand-text="yes"</code> and you can drop <b>{ }</b> expressions straight into element text — no more wrapping every value in <code>xsl:value-of</code>.</p>
+<h3>2.0 way vs 3.0 way</h3>
+<div class="codeblock"><span class="c5">&lt;!-- 2.0 --&gt;</span>
+<span class="c3">&lt;line&gt;</span><span class="c1">&lt;xsl:value-of</span> <span class="c2">select="@id"</span><span class="c1">/&gt;</span>,<span class="c1">&lt;xsl:value-of</span> <span class="c2">select="name"</span><span class="c1">/&gt;</span><span class="c3">&lt;/line&gt;</span>
+
+<span class="c5">&lt;!-- 3.0 with expand-text="yes" --&gt;</span>
+<span class="c3">&lt;line&gt;</span>{@id},{name}<span class="c3">&lt;/line&gt;</span></div>
+<ul class="clean">
+<li>Set <code>expand-text="yes"</code> on <code>xsl:stylesheet</code> (global) or on any element (local).</li>
+<li>Escape a literal brace by <b>doubling</b> it: <code>{{</code> and <code>}}</code>.</li>
+<li>Any XPath works inside: <code>{format-number(pay,'#,##0.00')}</code>.</li>
+</ul>
+<div class="callout tip"><span class="lbl">Workday use</span>Building a delimited vendor line becomes one readable template line instead of a stack of value-of calls — fewer places for a stray delimiter or non-breaking space to hide.</div>`,
+
+hof:`<h2>Higher-order functions <span class="tag">3.0</span></h2>
+<p class="lead2">Functions are now first-class values. You can pass them, return them, and apply built-ins like <code>filter</code>, <code>fold-left</code>, and <code>for-each</code> — standard in 3.0 (a Saxon-PE extension back in 2.0).</p>
+<div class="codeblock"><span class="c5">// inline function (lambda)</span>
+<span class="c4">function</span>($x) { $x * $x }
+
+<span class="c5">// sum a sequence</span>
+fold-left(1 to 5, 0, <span class="c4">function</span>($acc,$x){ $acc + $x })   <span class="c5">=&gt; 15</span>
+
+<span class="c5">// keep even numbers</span>
+filter(1 to 10, <span class="c4">function</span>($x){ $x mod 2 = 0 })       <span class="c5">=&gt; 2,4,6,8,10</span>
+
+<span class="c5">// map a function over items</span>
+for-each(("a","bb"), <span class="c4">function</span>($s){ string-length($s) }) <span class="c5">=&gt; 1,2</span></div>
+<table class="t"><tr><th>Function</th><th>Purpose</th></tr>
+<tr><td><code>filter($seq,$p)</code></td><td>Keep items where predicate is true</td></tr>
+<tr><td><code>fold-left/right</code></td><td>Reduce a sequence to one value</td></tr>
+<tr><td><code>for-each($seq,$f)</code></td><td>Apply a function to each item</td></tr>
+<tr><td><code>for-each-pair</code></td><td>Combine two sequences pairwise</td></tr>
+<tr><td><code>sort($seq,(),$key)</code></td><td>Sort by a key function (3.1)</td></tr>
+<tr><td><code>function-lookup</code></td><td>Get a function item by name + arity</td></tr>
+</table>
+<div class="callout key"><span class="lbl">Workday use</span>Compute a running gross, dedupe codes, or transform a list of allowances without writing recursive named templates.</div>`,
+
+maps:`<h2>Maps — the "hashmap" <span class="tag">3.0</span></h2>
+<p class="lead2">Maps are XSLT 3.0's key/value structure — the direct analog of a hashmap/dictionary. They are <b>immutable</b>: every "modify" returns a new map. They power clean lookups (crosswalks), which is exactly what integration mapping needs.</p>
+<h3>Construct &amp; read</h3>
+<div class="codeblock"><span class="c5">// constructor</span>
+<span class="c4">map</span> { <span class="c2">"Married"</span>:<span class="c6">"M"</span>, <span class="c2">"Single"</span>:<span class="c6">"S"</span>, <span class="c2">"Divorced"</span>:<span class="c6">"D"</span> }
+
+<span class="c5">// read a value — three equivalent forms</span>
+map:get($m, <span class="c2">"Married"</span>)      <span class="c5">=&gt; "M"</span>
+$m(<span class="c2">"Married"</span>)              <span class="c5">=&gt; "M"</span>
+$m?Married                  <span class="c5">=&gt; "M"  (? lookup operator)</span></div>
+<h3>Core functions</h3>
+<table class="t"><tr><th>Function</th><th>Returns</th></tr>
+<tr><td><code>map:get($m,$k)</code></td><td>Value (or empty if missing)</td></tr>
+<tr><td><code>map:put($m,$k,$v)</code></td><td>A <b>new</b> map with the entry set</td></tr>
+<tr><td><code>map:contains($m,$k)</code></td><td>Boolean</td></tr>
+<tr><td><code>map:keys($m)</code> / <code>map:size($m)</code></td><td>All keys / count</td></tr>
+<tr><td><code>map:merge((...))</code></td><td>One map from many (build a lookup)</td></tr>
+<tr><td><code>map:remove($m,$k)</code></td><td>A new map without that key</td></tr>
+<tr><td><code>map:for-each($m,$f)</code></td><td>Apply f($k,$v) to every entry</td></tr>
+</table>
+<h3>Defaulting a missing key</h3>
+<div class="codeblock"><span class="c5">// map:get returns empty for an unknown key — coalesce a default</span>
+(map:get($m, $code), <span class="c6">"UNKNOWN"</span>)[1]</div>
+<div class="callout key"><span class="lbl">Try it</span>The live map-lookup demo is in the <b>Integration mapping</b> section — click a Workday value and watch <code>map:get</code> resolve it (with a default for unmapped values).</div>
+<div class="callout warn"><span class="lbl">Immutability</span>Because maps don't mutate, build your lookup once (often via <code>map:merge</code>) and reuse it; <code>map:put</code> in a loop creates a chain of new maps.</div>`,
+
+arrays:`<h2>Arrays <span class="tag">3.0 / XPath 3.1</span></h2>
+<p class="lead2">Arrays are ordered, <b>nestable</b> collections. Unlike sequences (which always flatten), an array is a single item that keeps its structure — essential for JSON, where arrays nest freely.</p>
+<div class="codeblock"><span class="c5">// two ways to build</span>
+[1, 2, 3]
+<span class="c4">array</span> { 1, 2, 3 }
+
+<span class="c5">// access is 1-based</span>
+$a(2)                <span class="c5">=&gt; 2nd member</span>
+array:get($a, 2)     <span class="c5">=&gt; 2nd member</span>
+
+<span class="c5">// nesting is preserved</span>
+[ (1,2), (3,4) ]     <span class="c5">=&gt; an array with 2 MEMBERS (each a 2-item sequence)</span>
+count([ (1,2),(3,4) ]) <span class="c5">=&gt; 1  (an array is one item)</span>
+array:size([...])    <span class="c5">=&gt; member count</span></div>
+<table class="t"><tr><th>Function</th><th>Purpose</th></tr>
+<tr><td><code>array:size</code></td><td>Member count</td></tr>
+<tr><td><code>array:get</code></td><td>Member at position (1-based)</td></tr>
+<tr><td><code>array:append</code> / <code>array:join</code></td><td>Add a member / concatenate arrays</td></tr>
+<tr><td><code>array:flatten</code></td><td>Unpack to a flat sequence</td></tr>
+<tr><td><code>array:subarray</code></td><td>Slice</td></tr>
+<tr><td><code>array:for-each</code> / <code>array:filter</code></td><td>Map / filter members</td></tr>
+</table>
+<div class="callout tip"><span class="lbl">When to reach for one</span>Most Workday XML work stays in sequences; arrays earn their place when you're handling JSON (REST vendors) where nested structure must survive.</div>`,
+
+json:`<h2>JSON <span class="tag">3.0</span></h2>
+<p class="lead2">XSLT 3.0 reads and writes JSON natively — vital when a vendor speaks REST. JSON objects become <b>maps</b>; JSON arrays become <b>arrays</b>.</p>
+<table class="t"><tr><th>Function</th><th>Does</th></tr>
+<tr><td><code>parse-json($s)</code></td><td>JSON string → maps &amp; arrays</td></tr>
+<tr><td><code>json-to-xml($s)</code></td><td>JSON string → XML (fn: map/array/string…)</td></tr>
+<tr><td><code>xml-to-json($node)</code></td><td>That XML form → JSON string</td></tr>
+<tr><td><code>json-doc($href)</code></td><td>Read + parse a JSON resource</td></tr>
+<tr><td><code>serialize($x,map{'method':'json'})</code></td><td>maps/arrays → JSON string</td></tr>
+</table>
+<div class="codeblock"><span class="c5">// parse, then navigate with map/array lookups</span>
+<span class="c4">let</span> $j := parse-json('{"emp":{"id":1,"codes":["A","B"]}}')
+<span class="c4">return</span> $j?emp?id           <span class="c5">=&gt; 1</span>
+       , $j?emp?codes?1     <span class="c5">=&gt; "A"</span></div>
+<div class="callout key"><span class="lbl">Workday use</span>A REST payroll vendor returns JSON; <code>parse-json</code> gives you structured maps/arrays to reshape — far cleaner than string surgery. To send JSON outbound, build maps/arrays and <code>serialize</code> with method json.</div>`,
+
+iterate:`<h2>xsl:iterate <span class="tag">3.0</span></h2>
+<p class="lead2">A sequential loop that carries <b>running parameters</b> forward — the clean, streamable replacement for accumulator-style recursion (e.g., running totals).</p>
+<div class="codeblock"><span class="c1">&lt;xsl:iterate</span> <span class="c2">select="line"</span><span class="c1">&gt;</span>
+  <span class="c1">&lt;xsl:param</span> <span class="c2">name="total"</span> <span class="c2">select="0"</span><span class="c1">/&gt;</span>
+  <span class="c1">&lt;xsl:on-completion&gt;</span>
+    <span class="c3">&lt;grandTotal&gt;</span>{$total}<span class="c3">&lt;/grandTotal&gt;</span>
+  <span class="c1">&lt;/xsl:on-completion&gt;</span>
+  <span class="c3">&lt;running&gt;</span>{$total + amount}<span class="c3">&lt;/running&gt;</span>
+  <span class="c1">&lt;xsl:next-iteration&gt;</span>
+    <span class="c1">&lt;xsl:with-param</span> <span class="c2">name="total"</span> <span class="c2">select="$total + amount"</span><span class="c1">/&gt;</span>
+  <span class="c1">&lt;/xsl:next-iteration&gt;</span>
+<span class="c1">&lt;/xsl:iterate&gt;</span></div>
+<ul class="clean">
+<li><code>xsl:param</code> declares the running state; <code>xsl:next-iteration</code> updates it.</li>
+<li><code>xsl:break</code> stops early (optionally emitting a result).</li>
+<li><code>xsl:on-completion</code> emits a final result (totals, footer) when the loop ends.</li>
+</ul>
+<div class="callout key"><span class="lbl">Workday use</span>Running gross/net subtotals across payroll lines, sequence numbering, or building a control-total footer — without recursion.</div>`,
+
+trycatch:`<h2>Try / catch <span class="tag">3.0</span></h2>
+<p class="lead2">Structured error handling so one bad value degrades gracefully instead of failing the whole transform.</p>
+<div class="codeblock"><span class="c1">&lt;xsl:try&gt;</span>
+  <span class="c3">&lt;amount&gt;</span>{xs:decimal(raw)}<span class="c3">&lt;/amount&gt;</span>
+  <span class="c1">&lt;xsl:catch&gt;</span>
+    <span class="c3">&lt;amount</span> <span class="c2">error="{$err:code}"</span><span class="c3">&gt;</span>0<span class="c3">&lt;/amount&gt;</span>
+    <span class="c1">&lt;xsl:message&gt;</span>Bad amount: {$err:description}<span class="c1">&lt;/xsl:message&gt;</span>
+  <span class="c1">&lt;/xsl:catch&gt;</span>
+<span class="c1">&lt;/xsl:try&gt;</span></div>
+<p>Inside <code>xsl:catch</code> you get <code>$err:code</code>, <code>$err:description</code>, <code>$err:value</code>, and more. You can also set <code>rollback-output</code> so partial output from the failed block is discarded.</p>
+<div class="callout key"><span class="lbl">Workday use</span>A single worker with a malformed date or amount won't abort the run — you emit a safe placeholder and log a message for follow-up, mirroring the spirit of Payee Validation's OMIT/INCLUDE choices at the data level.</div>`,
+
+merge:`<h2>xsl:merge <span class="tag">3.0</span></h2>
+<p class="lead2">Combine multiple <b>pre-sorted</b> inputs by a merge key — useful when reconciling two ordered feeds (e.g., a prior file and a delta) without nested loops.</p>
+<div class="codeblock"><span class="c1">&lt;xsl:merge&gt;</span>
+  <span class="c1">&lt;xsl:merge-source</span> <span class="c2">name="old"</span> <span class="c2">select="$old/emp"</span><span class="c1">&gt;</span>
+    <span class="c1">&lt;xsl:merge-key</span> <span class="c2">select="@id"</span><span class="c1">/&gt;</span>
+  <span class="c1">&lt;/xsl:merge-source&gt;</span>
+  <span class="c1">&lt;xsl:merge-source</span> <span class="c2">name="new"</span> <span class="c2">select="$new/emp"</span><span class="c1">&gt;</span>
+    <span class="c1">&lt;xsl:merge-key</span> <span class="c2">select="@id"</span><span class="c1">/&gt;</span>
+  <span class="c1">&lt;/xsl:merge-source&gt;</span>
+  <span class="c1">&lt;xsl:merge-action&gt;</span>
+    <span class="c3">&lt;emp</span> <span class="c2">id="{current-merge-key()}"</span><span class="c3">/&gt;</span>
+  <span class="c1">&lt;/xsl:merge-action&gt;</span>
+<span class="c1">&lt;/xsl:merge&gt;</span></div>
+<div class="callout warn"><span class="lbl">Pre-sort required</span>Each merge source must already be sorted on the merge key. <code>current-merge-group()</code> gives you the matching items across sources for that key.</div>`,
+
+streaming:`<h2>Streaming <span class="tag">3.0 · Saxon-EE</span></h2>
+<p class="lead2">Streaming processes a document <b>without holding the whole tree in memory</b> — the headline reason XSLT 3.0 exists, and a direct answer to Workday's large-DOM caution. Note: streaming needs <b>Saxon-EE</b>.</p>
+<div class="codeblock"><span class="c1">&lt;xsl:mode</span> <span class="c2">streamable="yes"</span><span class="c1">/&gt;</span>
+<span class="c1">&lt;xsl:template</span> <span class="c2">match="emp"</span><span class="c1">&gt;</span>
+  <span class="c3">&lt;row&gt;</span>{@id}<span class="c3">&lt;/row&gt;</span>   <span class="c5">&lt;!-- single downward pass --&gt;</span>
+<span class="c1">&lt;/xsl:template&gt;</span></div>
+<ul class="clean">
+<li><b>Guaranteed-streamable</b> code makes a single, forward-only pass and never revisits nodes already streamed past.</li>
+<li><b>Consuming</b> expressions advance through the stream; <b>motionless</b> ones (literals, attributes of the current node) don't move position.</li>
+<li><code>snapshot()</code> captures a node with its ancestors/attributes so you can use it after the stream moves on.</li>
+<li><code>xsl:accumulator</code> computes running values during the walk — a natural pair with streaming.</li>
+</ul>
+<div class="callout warn"><span class="lbl">Workday reality</span>Workday's documented answer to big files is split-transform-aggregate (keep DOM small). True streaming depends on Saxon-EE being the engine — confirm before designing around it; otherwise apply the split pattern (next section).</div>`,
+
+packages:`<h2>Packages &amp; other 3.0 niceties</h2>
+<p class="lead2">XSLT 3.0 improves modularity and adds a few sharp tools for larger, reusable stylesheets.</p>
+<h3>Packages</h3>
+<ul class="clean">
+<li><code>xsl:package</code> defines a reusable unit with a name and version; <code>xsl:use-package</code> consumes it.</li>
+<li>Components carry <b>visibility</b>: <code>public</code>, <code>private</code>, <code>final</code>, or <code>abstract</code>.</li>
+<li><code>xsl:expose</code> adjusts visibility; <code>xsl:override</code> replaces a component when using a package.</li>
+</ul>
+<h3>Other additions</h3>
+<table class="t"><tr><th>Tool</th><th>Use</th></tr>
+<tr><td><code>xsl:evaluate</code></td><td>Run an XPath supplied as a string at runtime (often disabled by default for security)</td></tr>
+<tr><td><code>xsl:assert</code></td><td>Raise a dynamic error if a test fails (debugging/validation; ignored unless enabled)</td></tr>
+<tr><td>Static params <code>static="yes"</code></td><td>Compile-time values, enabling <code>use-when</code> and shadow attributes</td></tr>
+<tr><td>Shadow attributes <code>_name="{...}"</code></td><td>Compute an attribute at compile time</td></tr>
+<tr><td><code>xsl:where-populated</code></td><td>Skip emitting an empty wrapper element</td></tr>
+</table>
+<div class="callout key"><span class="lbl">Workday use</span>Packages are handy when several integrations share crosswalk maps and helper functions — define once, reuse with controlled visibility.</div>`,
+
+mapping:`<h2>Integration mapping in Workday <span class="tag">pattern</span></h2>
+<p class="lead2">Integration mapping = converting Workday values into a vendor's codes (a crosswalk). In XSLT 3.0 this is a <b>map</b> lookup — clean, central, and easy to default. Click a value below to watch it resolve.</p>
+<div class="mapdemo" id="mapDemo"></div>
+<h3>The pattern, step by step</h3>
+<div class="codeblock"><span class="c5">// 1. build the crosswalk once (inline, or from a config doc)</span>
+<span class="c4">&lt;xsl:variable</span> <span class="c2">name="genderMap"</span> <span class="c2">select="</span>
+   <span class="c2">map{ 'Male':'M', 'Female':'F', 'Undeclared':'U' }"</span><span class="c4">/&gt;</span>
+
+<span class="c5">// 2. look up per record, with a documented default</span>
+<span class="c1">&lt;xsl:template</span> <span class="c2">match="wd:Worker"</span> <span class="c2">expand-text="yes"</span><span class="c1">&gt;</span>
+  <span class="c3">&lt;Gender&gt;</span>{ (map:get($genderMap, wd:Gender), 'X')[1] }<span class="c3">&lt;/Gender&gt;</span>
+<span class="c1">&lt;/xsl:template&gt;</span></div>
+<h3>Building the map from a config document</h3>
+<div class="codeblock"><span class="c5">// each &lt;row from=".." to=".."/&gt; becomes a map entry, merged into one map</span>
+<span class="c4">&lt;xsl:variable</span> <span class="c2">name="lookup"</span> <span class="c2">select="</span>
+  <span class="c2">map:merge( doc('config.xml')//row ! map:entry(@from, @to) )"</span><span class="c4">/&gt;</span></div>
+<div class="callout key"><span class="lbl">Why a map beats xsl:choose</span>A 200-branch <code>xsl:choose</code> is unmaintainable; a map externalizes the crosswalk, scales cleanly, and is trivial to default or load from config. For unmapped values, emit a clear default or raise <code>xsl:message</code>/<code>xsl:assert</code> so gaps are visible, never silently blank.</div>
+<div class="callout warn"><span class="lbl">DCoD note</span>If you're on DCoD (REST/JSON, no built-in transformation), this mapping happens in the <i>vendor</i> system, not Workday — DCoD returns raw data. PECI/WECI keep the transformation in Workday via DT/XSLT.</div>`,
+
+splitting:`<h2>Splitting in Workday <span class="tag">pattern</span></h2>
+<p class="lead2">Workday loads messages as DOM objects, so big documents are split into smaller pieces, transformed, then re-aggregated — the documented <b>split-transform-aggregate</b> pattern. XSLT gives you several ways to split.</p>
+<h3>Split a multi-worker file into one file per worker</h3>
+<div class="codeblock"><span class="c1">&lt;xsl:for-each</span> <span class="c2">select="//wd:Worker"</span><span class="c1">&gt;</span>
+  <span class="c1">&lt;xsl:result-document</span> <span class="c2">href="out/{wd:Worker_ID}.xml"</span><span class="c1">&gt;</span>
+    <span class="c1">&lt;xsl:copy-of</span> <span class="c2">select="."</span><span class="c1">/&gt;</span>
+  <span class="c1">&lt;/xsl:result-document&gt;</span>
+<span class="c1">&lt;/xsl:for-each&gt;</span></div>
+<h3>Split a PECI effective stack by sequence</h3>
+<p>The PECI guidance to "split the XML by effective sequence" maps directly to grouping each worker's <code>peci:Effective_Change</code> elements:</p>
+<div class="codeblock"><span class="c1">&lt;xsl:for-each-group</span> <span class="c2">select="peci:Effective_Change"</span>
+                   <span class="c2">group-by="@peci:Sequence"</span><span class="c1">&gt;</span>
+  <span class="c3">&lt;sequence</span> <span class="c2">n="{current-grouping-key()}"</span><span class="c3">&gt;</span>
+    <span class="c1">&lt;xsl:apply-templates</span> <span class="c2">select="current-group()"</span><span class="c1">/&gt;</span>
+  <span class="c3">&lt;/sequence&gt;</span>
+<span class="c1">&lt;/xsl:for-each-group&gt;</span></div>
+<h3>Streaming split (huge inputs, Saxon-EE)</h3>
+<p><code>xsl:fork</code> lets several branches consume one streamed pass, so you can route different parts of a massive file in a single read.</p>
+<table class="t"><tr><th>Tool</th><th>Role in splitting</th></tr>
+<tr><td><code>xsl:result-document</code></td><td>Write each chunk to its own output</td></tr>
+<tr><td><code>xsl:for-each-group</code></td><td>Group by key (pay group, sequence) before output</td></tr>
+<tr><td><code>xsl:fork</code></td><td>Streamed multi-branch split in one pass</td></tr>
+</table>
+<div class="callout key"><span class="lbl">Aggregate</span>After splitting and transforming small chunks (small DOMs = no memory blowup), the aggregate step recombines them into the final file the vendor receives.</div>`,
+
+hashmapwd:`<h2>HashMap in Workday — a worked example</h2>
+<p class="lead2">Putting it together: a reusable Workday <b>country → vendor payroll code</b> hashmap, assembled from config, used across a transform, with a safe default. This is the single most common real use of maps in Workday XSLT.</p>
+<h3>1 · Define the hashmap (from a config document)</h3>
+<div class="codeblock"><span class="c5">&lt;!-- config.xml --&gt;</span>
+<span class="c3">&lt;codes&gt;</span>
+  <span class="c3">&lt;c</span> <span class="c2">country="BR"</span> <span class="c2">vendor="BRA-01"</span><span class="c3">/&gt;</span>
+  <span class="c3">&lt;c</span> <span class="c2">country="CA"</span> <span class="c2">vendor="CAN-07"</span><span class="c3">/&gt;</span>
+  <span class="c3">&lt;c</span> <span class="c2">country="US"</span> <span class="c2">vendor="USA-12"</span><span class="c3">/&gt;</span>
+<span class="c3">&lt;/codes&gt;</span>
+
+<span class="c4">&lt;xsl:variable</span> <span class="c2">name="vendorByCountry"</span> <span class="c2">select="</span>
+  <span class="c2">map:merge( doc('config.xml')//c ! map:entry(@country, @vendor) )"</span><span class="c4">/&gt;</span></div>
+<h3>2 · Use it (with default + visibility on gaps)</h3>
+<div class="codeblock"><span class="c1">&lt;xsl:template</span> <span class="c2">match="wd:Worker"</span> <span class="c2">expand-text="yes"</span><span class="c1">&gt;</span>
+  <span class="c4">&lt;xsl:variable</span> <span class="c2">name="vc"</span>
+     <span class="c2">select="(map:get($vendorByCountry, wd:Country), 'UNMAPPED')[1]"</span><span class="c4">/&gt;</span>
+  <span class="c1">&lt;xsl:if</span> <span class="c2">test="$vc = 'UNMAPPED'"</span><span class="c1">&gt;</span>
+    <span class="c1">&lt;xsl:message&gt;</span>No vendor code for country {wd:Country}<span class="c1">&lt;/xsl:message&gt;</span>
+  <span class="c1">&lt;/xsl:if&gt;</span>
+  <span class="c3">&lt;VendorCode&gt;</span>{$vc}<span class="c3">&lt;/VendorCode&gt;</span>
+<span class="c1">&lt;/xsl:template&gt;</span></div>
+<h3>3 · Inspect / extend the map</h3>
+<div class="codeblock">map:size($vendorByCountry)        <span class="c5">=&gt; 3</span>
+map:keys($vendorByCountry)        <span class="c5">=&gt; "BR","CA","US"</span>
+map:contains($vendorByCountry,"BR") <span class="c5">=&gt; true</span>
+<span class="c5">// add at runtime (returns a NEW map — immutable)</span>
+map:put($vendorByCountry, "MX", "MEX-03")</div>
+<div class="callout key"><span class="lbl">Why this is the go-to</span>One central, immutable lookup; O(1)-style retrieval; trivially loaded from config so business users can maintain the crosswalk without touching XSLT; and unmapped values are logged, not silently dropped.</div>
+<div class="callout warn"><span class="lbl">Engine check</span>Maps require an XSLT 3.0 processor. Confirm your DT/Studio Saxon build supports 3.0 before shipping a map-based transform; otherwise fall back to a keyed <code>xsl:key</code> lookup (a 2.0-compatible alternative).</div>`,
+
+cheat:`<h2>Cheat sheet</h2>
+<h3>Maps</h3>
+<p><code>map { k:v }</code> · <code>map:get</code> · <code>$m?key</code> · <code>$m("key")</code> · <code>map:put</code> (new map) · <code>map:merge</code> · <code>map:keys</code> · <code>map:size</code> · <code>map:contains</code> · <code>map:remove</code> · <code>map:for-each</code></p>
+<h3>Arrays</h3>
+<p><code>[1,2,3]</code> · <code>array { }</code> · <code>$a(1)</code> (1-based) · <code>array:size</code> · <code>array:get</code> · <code>array:append</code> · <code>array:flatten</code> · <code>array:subarray</code> · <code>array:for-each</code></p>
+<h3>JSON</h3>
+<p><code>parse-json</code> · <code>json-to-xml</code> · <code>xml-to-json</code> · <code>json-doc</code> · <code>serialize($x, map{'method':'json'})</code></p>
+<h3>Higher-order</h3>
+<p><code>function($x){ }</code> · <code>filter</code> · <code>fold-left</code> / <code>fold-right</code> · <code>for-each</code> · <code>for-each-pair</code> · <code>sort</code> · <code>function-lookup</code></p>
+<h3>Instructions new in 3.0</h3>
+<p><code>xsl:iterate</code> / <code>xsl:next-iteration</code> / <code>xsl:on-completion</code> / <code>xsl:break</code> · <code>xsl:try</code> / <code>xsl:catch</code> · <code>xsl:merge</code> · <code>xsl:mode streamable</code> / <code>xsl:fork</code> · <code>xsl:package</code> / <code>xsl:use-package</code> · <code>xsl:evaluate</code> · <code>xsl:assert</code> · <code>xsl:where-populated</code> · <code>expand-text="yes"</code></p>
+<h3>Processing model</h3>
+<p>document node → matching template → <code>apply-templates</code> (push, document order) → conflict by import precedence / priority / order → built-in rules recurse → serialize per <code>xsl:output</code>.</p>`,
+
+gotchas:`<h2>Workday gotchas</h2>
+<table class="t"><tr><th>Symptom / risk</th><th>Cause</th><th>Fix</th></tr>
+<tr><td>3.0 construct (map/stream) fails</td><td>Engine running as 2.0, or HE without EE for streaming</td><td>Confirm Saxon version/edition for that surface before relying on it</td></tr>
+<tr><td>Vendor parser breaks mid-file</td><td>Stray non-breaking space (U+00A0) or stray delimiter in a field</td><td>Normalize/replace the character in the XSLT (e.g., translate/replace)</td></tr>
+<tr><td>Server aborts on a huge document</td><td>Large in-memory DOM object</td><td>Apply split-transform-aggregate; consider streaming if Saxon-EE</td></tr>
+<tr><td>Unmapped value emitted blank</td><td>map:get returned empty for a missing key</td><td>Coalesce a default; log via xsl:message / xsl:assert</td></tr>
+<tr><td>Same-day Base Pay edits collapse</td><td>Base Pay is effective-dated (top-of-stack keeps latest by entry moment)</td><td>Expected; use all-stacks logic if every edit is needed</td></tr>
+<tr><td>Recursive custom function loops forever</td><td>Rootless XPath / unbounded recursion</td><td>Prefer xsl:iterate or simple expressions; bound recursion</td></tr>
+<tr><td>xpathF.text limits</td><td>1,000,000-character limit in Studio</td><td>Avoid; break into simpler expressions / XSLT steps</td></tr>
+</table>
+<div class="callout tip"><span class="lbl">Rule of thumb</span>Teach the 3.0 feature, but ship only what your engine supports. Maps and text value templates are usually safe on modern Saxon; streaming and packages need verification.</div>`
+};
+
+/* render guide sections */
+(function(){
+  let html='';
+  for(const k in SECTIONS){html+=`<div class="sec${k==='intro'?' active':''}" id="sec-${k}">${SECTIONS[k]}</div>`;}
+  document.getElementById('guideContent').innerHTML=html;
+})();
+document.querySelectorAll('#guideNav a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    document.querySelectorAll('#guideNav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sec-'+a.dataset.s).classList.add('active');
+    document.querySelector('.content').scrollIntoView({behavior:'smooth',block:'start'});
+    if(a.dataset.s==='traverse') renderTrav(0);
+    if(a.dataset.s==='mapping') renderMapDemo();
+  });
+});
+
+/* ---- traversal stepper ---- */
+const TRAV_SRC = [
+  {k:'doc',   t:'<span class="punc">(document node /)</span>'},
+  {k:'emps',  t:'<span class="tag">&lt;emps&gt;</span>'},
+  {k:'emp1',  t:'  <span class="tag">&lt;emp <span class="att">id</span>="1"&gt;</span><span class="tag">&lt;name&gt;</span>Asha<span class="tag">&lt;/name&gt;</span><span class="tag">&lt;pay&gt;</span>72000<span class="tag">&lt;/pay&gt;</span><span class="tag">&lt;/emp&gt;</span>'},
+  {k:'emp2',  t:'  <span class="tag">&lt;emp <span class="att">id</span>="2"&gt;</span><span class="tag">&lt;name&gt;</span>Ravi<span class="tag">&lt;/name&gt;</span><span class="tag">&lt;pay&gt;</span>65000<span class="tag">&lt;/pay&gt;</span><span class="tag">&lt;/emp&gt;</span>'},
+  {k:'emps2', t:'<span class="tag">&lt;/emps&gt;</span>'}
+];
+const TRAV_STEPS = [
+  {desc:'Parse the source into a tree and start at the document node ( / ). Nothing emitted yet.',
+   cur:['doc'], out:''},
+  {desc:'The template match="/emps" fires. It writes the <rows> wrapper open, then calls apply-templates select="emp" — pushing the emp nodes in document order.',
+   cur:['emps','emps2'], out:'<span class="tag">&lt;rows&gt;</span>'},
+  {desc:'First pushed node: emp id="1". It matches the emp template, which (with expand-text) emits one row from {@id},{name},{pay}.',
+   cur:['emp1'], out:'<span class="tag">&lt;rows&gt;</span>\n  <span class="emit">&lt;row&gt;1,Asha,72000&lt;/row&gt;</span>'},
+  {desc:'Next pushed node: emp id="2". Same emp template fires independently — that is the "push" model composing cleanly.',
+   cur:['emp2'], out:'<span class="tag">&lt;rows&gt;</span>\n  <span class="emit">&lt;row&gt;1,Asha,72000&lt;/row&gt;</span>\n  <span class="emit">&lt;row&gt;2,Ravi,65000&lt;/row&gt;</span>'},
+  {desc:'All pushed nodes processed — control returns to the /emps template, which closes </rows>. The result tree is then serialized per xsl:output.',
+   cur:[], out:'<span class="tag">&lt;rows&gt;</span>\n  <span class="emit">&lt;row&gt;1,Asha,72000&lt;/row&gt;</span>\n  <span class="emit">&lt;row&gt;2,Ravi,65000&lt;/row&gt;</span>\n<span class="tag">&lt;/rows&gt;</span>'}
+];
+let travI = 0;
+function renderTrav(i){
+  travI = Math.max(0, Math.min(TRAV_STEPS.length-1, i));
+  const host = document.getElementById('travStepper'); if(!host) return;
+  const st = TRAV_STEPS[travI];
+  const srcLines = TRAV_SRC.map(n =>
+    '<span class="'+(st.cur.includes(n.k)?'hl':'')+'">'+n.t+'</span>').join('\n');
+  host.innerHTML =
+    '<div class="grid">'+
+      '<div><div class="paneLbl">Source · current node highlighted</div><div class="pane">'+srcLines+'</div></div>'+
+      '<div><div class="paneLbl">Output so far</div><div class="pane">'+(st.out||'<span class="punc">(empty)</span>')+'</div></div>'+
+    '</div>'+
+    '<div class="desc">'+st.desc+'</div>'+
+    '<div class="stepctrl">'+
+      '<button class="btn ghost" onclick="renderTrav('+(travI-1)+')" '+(travI===0?'disabled':'')+'>← Prev</button>'+
+      '<button class="btn" onclick="renderTrav('+(travI+1)+')" '+(travI===TRAV_STEPS.length-1?'disabled':'')+'>Next step →</button>'+
+      '<button class="btn ghost" onclick="renderTrav(0)">Restart</button>'+
+      '<span class="num">Step '+(travI+1)+' of '+TRAV_STEPS.length+'</span>'+
+    '</div>'+
+    '<div class="codeblock" style="margin-top:14px"><span class="c5">&lt;!-- the stylesheet driving this --&gt;</span>\n'+
+    '<span class="c1">&lt;xsl:template</span> <span class="c2">match="/emps"</span><span class="c1">&gt;</span>\n'+
+    '  <span class="c3">&lt;rows&gt;</span> <span class="c1">&lt;xsl:apply-templates</span> <span class="c2">select="emp"</span><span class="c1">/&gt;</span> <span class="c3">&lt;/rows&gt;</span>\n'+
+    '<span class="c1">&lt;/xsl:template&gt;</span>\n'+
+    '<span class="c1">&lt;xsl:template</span> <span class="c2">match="emp"</span> <span class="c2">expand-text="yes"</span><span class="c1">&gt;</span>\n'+
+    '  <span class="c3">&lt;row&gt;</span>{@id},{name},{pay}<span class="c3">&lt;/row&gt;</span>\n'+
+    '<span class="c1">&lt;/xsl:template&gt;</span></div>';
+}
+
+/* ---- integration mapping: live map lookup demo ---- */
+const MAP_ENTRIES = {Married:'M', Single:'S', Divorced:'D', Widowed:'W'};
+const MAP_KEYS = ['Married','Single','Divorced','Widowed','Separated'];
+let mapSel = 'Married';
+function renderMapDemo(){
+  const host = document.getElementById('mapDemo'); if(!host) return;
+  const entriesStr = Object.entries(MAP_ENTRIES)
+    .map(([k,v]) => '<span class="k">"'+k+'"</span>:<span class="v">"'+v+'"</span>').join(', ');
+  const hit = Object.prototype.hasOwnProperty.call(MAP_ENTRIES, mapSel);
+  const resolved = hit ? MAP_ENTRIES[mapSel] : '';
+  let out =
+    '<span class="c">(: the crosswalk map :)</span>\n'+
+    'map { '+entriesStr+' }\n\n'+
+    '<span class="c">(: lookup :)</span>\n'+
+    'map:get($m, <span class="k">"'+mapSel+'"</span>)  =&gt;  '+
+       (hit ? '<span class="v">"'+resolved+'"</span>'
+            : '<span class="c">() (empty — key not in map)</span>')+'\n\n'+
+    '<span class="c">(: with documented default :)</span>\n'+
+    '(map:get($m,<span class="k">"'+mapSel+'"</span>), <span class="d">"X"</span>)[1]  =&gt;  '+
+       (hit ? '<span class="v">"'+resolved+'"</span>'
+            : '<span class="d">"X"</span>  <span class="c">(default used)</span>');
+  const btns = MAP_KEYS.map(k =>
+    '<button class="'+(k===mapSel?'on':'')+'" onclick="pickMap(\''+k+'\')">'+k+'</button>').join('');
+  host.innerHTML =
+    '<div class="paneLbl" style="font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint)">Workday value → vendor code</div>'+
+    '<div class="keys">'+btns+'</div>'+
+    '<div class="out">'+out+'</div>'+
+    '<div style="font-size:12.5px;color:var(--faint);margin-top:8px;font-family:var(--mono)">'+
+      (hit ? 'Mapped value — map:get returns the vendor code.'
+           : '"'+mapSel+'" is not in the map → map:get is empty, so the default "X" is used (and you would log it).')+
+    '</div>';
+}
+function pickMap(k){ mapSel = k; renderMapDemo(); }
+
+/* ============================================================
+   QUIZ ENGINE
+   ============================================================ */
+let soundOn=true;
+function beep(ok){
+  if(!soundOn) return;
+  try{
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    if(ok){o.frequency.setValueAtTime(660,ac.currentTime);o.frequency.setValueAtTime(880,ac.currentTime+.08);}
+    else{o.frequency.setValueAtTime(220,ac.currentTime);o.frequency.setValueAtTime(160,ac.currentTime+.1);}
+    g.gain.setValueAtTime(.08,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.32);
+    o.start(); o.stop(ac.currentTime+.33);
+  }catch(e){}
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function sample(arr,n){return shuffle(arr).slice(0,n);}
+function letter(i){return String.fromCharCode(65+i);}
+
+/* shuffle a question's options, preserving correctness */
+function prepQ(q){
+  const idx=q.options.map((_,i)=>i);
+  const order=shuffle(idx);
+  return {
+    id:q.id, topic:q.topic, question:q.question,
+    options:order.map(i=>q.options[i]),
+    correctIndex:order.indexOf(q.correctIndex),
+    explanation:q.explanation
+  };
+}
+
+/* ---------- LEARNING MODE ---------- */
+let learnLast=-1;
+function startLearn(){go('learn');renderLearn();}
+function nextLearnQ(){
+  let i; do{i=Math.floor(Math.random()*QUESTION_BANK.length);}while(QUESTION_BANK.length>1&&i===learnLast);
+  learnLast=i; return prepQ(QUESTION_BANK[i]);
+}
+function renderLearn(){
+  const q=nextLearnQ();
+  const root=document.getElementById('quizRoot');
+  root.innerHTML=`
+    <div class="qhead">
+      <span class="mode learn">Learning Mode</span>
+      <span class="small">no score · endless practice</span>
+      <span class="prog">#${q.id}</span>
+    </div>
+    <div class="qcard">
+      <div class="qtopic">${q.topic}</div>
+      <div class="qtext">${q.question}</div>
+      <div class="opts" id="opts"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="qfoot">
+        <button class="btn hidden" id="nextBtn" onclick="renderLearn()">Next question →</button>
+        <button class="btn ghost" onclick="go('home')">Home</button>
+        <div class="toggle">sound <button class="switch ${soundOn?'on':''}" id="sndL" onclick="toggleSnd('sndL')"><i></i></button></div>
+      </div>
+    </div>`;
+  const opts=document.getElementById('opts');
+  q.options.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.innerHTML=`<span class="key">${letter(i)}</span><span>${o}</span>`;
+    b.onclick=()=>answerLearn(q,i,b);
+    opts.appendChild(b);
+  });
+}
+function answerLearn(q,i,btn){
+  const opts=[...document.querySelectorAll('#opts .opt')];
+  opts.forEach((b,k)=>{b.disabled=true; if(k!==i&&k!==q.correctIndex)b.classList.add('dim');});
+  const fb=document.getElementById('fb');
+  if(i===q.correctIndex){
+    btn.classList.add('correct','pulse'); beep(true); burstConfetti();
+    fb.className='feedback ok show';
+    fb.innerHTML=`<div class="ft">✓ Correct${pickPraise()}</div><div class="exp">${q.explanation||''}</div>`;
+  }else{
+    btn.classList.add('wrong'); opts[q.correctIndex].classList.add('correct'); beep(false);
+    fb.className='feedback bad show';
+    fb.innerHTML=`<div class="ft">✗ Not quite — correct answer is ${letter(q.correctIndex)}</div><div class="exp">${q.explanation||''}</div>`;
+  }
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+const PRAISE=['!',' — nailed it.',' — exactly.',' — sharp.',' — spot on.'];
+function pickPraise(){return PRAISE[Math.floor(Math.random()*PRAISE.length)];}
+
+/* ---------- EXAM MODE ---------- */
+let exam=null;
+function startExam(){
+  go('exam');
+  exam={set:sample(QUESTION_BANK,25).map(prepQ),idx:0,answers:[]};
+  renderExamQ();
+}
+function renderExamQ(){
+  const q=exam.set[exam.idx];
+  const pct=Math.round((exam.idx)/exam.set.length*100);
+  const root=document.getElementById('quizRoot');
+  root.innerHTML=`
+    <div class="qhead">
+      <span class="mode exam">Exam Mode</span>
+      <span class="small">pass ≥ 20 / 25</span>
+      <span class="prog">Question ${exam.idx+1} of ${exam.set.length}</span>
+    </div>
+    <div class="pbar"><i style="width:${pct}%"></i></div>
+    <div class="qcard">
+      <div class="qtopic">${q.topic}</div>
+      <div class="qtext">${q.question}</div>
+      <div class="opts" id="opts"></div>
+      <div class="qfoot">
+        <button class="btn" id="examNext" disabled onclick="examNext()">${exam.idx===exam.set.length-1?'Finish exam':'Next →'}</button>
+        <button class="btn ghost" onclick="if(confirm('Quit this exam?'))go('home')">Quit</button>
+        <div class="toggle">sound <button class="switch ${soundOn?'on':''}" id="sndE" onclick="toggleSnd('sndE')"><i></i></button></div>
+      </div>
+    </div>`;
+  const opts=document.getElementById('opts');
+  q.options.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.innerHTML=`<span class="key">${letter(i)}</span><span>${o}</span>`;
+    b.onclick=()=>pickExam(i);
+    opts.appendChild(b);
+  });
+}
+function pickExam(i){
+  exam.cur=i;
+  document.querySelectorAll('#opts .opt').forEach((b,k)=>{
+    b.classList.toggle('correct',false);
+    b.style.outline=k===i?'2px solid var(--teal)':'none';
+    b.style.outlineOffset='1px';
+  });
+  document.getElementById('examNext').disabled=false;
+}
+function examNext(){
+  exam.answers[exam.idx]=exam.cur; exam.cur=undefined;
+  if(exam.idx<exam.set.length-1){exam.idx++;renderExamQ();}
+  else finishExam();
+}
+function finishExam(){
+  let correct=0;
+  exam.set.forEach((q,i)=>{if(exam.answers[i]===q.correctIndex)correct++;});
+  const pass=correct>=20;
+  const pct=Math.round(correct/exam.set.length*100);
+  const circ=2*Math.PI*64, off=circ*(1-correct/exam.set.length);
+  const root=document.getElementById('quizRoot');
+  let review=exam.set.map((q,i)=>{
+    const your=exam.answers[i], ok=your===q.correctIndex;
+    const optHtml=q.options.map((o,k)=>{
+      let cls='ro';
+      if(k===q.correctIndex)cls+=' right';
+      else if(k===your&&!ok)cls+=' yourbad';
+      const tag=k===q.correctIndex?' ✓ correct':(k===your&&!ok?' ✗ your answer':'');
+      return `<div class="${cls}"><span class="k">${letter(k)}</span>${o}${tag?`<b style="font-family:var(--mono);font-size:11px"> ${tag}</b>`:''}</div>`;
+    }).join('');
+    return `<div class="ritem ${ok?'rightq':'wrongq'}">
+      <div class="examnum">Q${i+1} · ${q.topic} · ${ok?'correct':'incorrect'}</div>
+      <div class="rq">${q.question}</div>${optHtml}
+      ${q.explanation?`<div class="rexp">${q.explanation}</div>`:''}</div>`;
+  }).join('');
+  root.innerHTML=`
+    <div class="result">
+      <div class="ring">
+        <svg width="150" height="150"><circle cx="75" cy="75" r="64" stroke="var(--line)" stroke-width="10" fill="none"/>
+        <circle cx="75" cy="75" r="64" stroke="${pass?'var(--green)':'var(--red)'}" stroke-width="10" fill="none"
+          stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/></svg>
+        <div class="lbl" style="color:${pass?'var(--green)':'var(--red)'}">${pct}%</div>
+      </div>
+      <div class="verdictbig ${pass?'pass':'fail'}">${pass?'PASS':'FAIL'}</div>
+      <div class="score">${correct} / ${exam.set.length} correct ${pass?'✅':'— need 20 to pass'}</div>
+      <div class="qfoot" style="justify-content:center;margin-top:20px">
+        <button class="btn" onclick="startExam()">Start a new exam</button>
+        <button class="btn ghost" onclick="go('home')">Home</button>
+      </div>
+      <div class="review"><h3>Full review</h3>${review}</div>
+    </div>`;
+  if(pass)burstConfetti(true); beep(pass);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- shared UI ---------- */
+function toggleSnd(id){soundOn=!soundOn;const s=document.getElementById(id);if(s)s.classList.toggle('on',soundOn);}
+function burstConfetti(big){
+  const c=document.getElementById('confetti');
+  const cols=['#3dd6c4','#f5b94a','#a98bff','#4ad481','#5fb3ff'];
+  const n=big?80:26;
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i');
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=cols[Math.floor(Math.random()*cols.length)];
+    p.style.animationDuration=(1+Math.random()*1.3)+'s';
+    p.style.transform='rotate('+Math.random()*360+'deg)';
+    c.appendChild(p);
+    setTimeout(()=>p.remove(),2600);
+  }
+}
+go('home');
+</script>
+</body>
+</html>

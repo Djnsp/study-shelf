@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concrete Mathematics — 36-Week Learning Tracker</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --accent: #2a78d6;
+    --accent-deep: #1c5cab;
+    --accent-soft: #cde2fb;
+    --good: #006300;
+    --border: rgba(11,11,11,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --accent: #3987e5;
+      --accent-deep: #86b6ef;
+      --accent-soft: #184f95;
+      --good: #0ca30c;
+      --border: rgba(255,255,255,0.10);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    line-height: 1.55;
+    padding: 24px 16px 80px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  header.hero {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    margin-bottom: 20px;
+  }
+  .hero h1 { font-size: 26px; letter-spacing: -0.02em; }
+  .hero .sub { color: var(--text-secondary); margin-top: 4px; font-size: 14.5px; }
+  .hero-stats { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 20px; align-items: flex-end; }
+  .stat .num { font-size: 40px; font-weight: 700; line-height: 1; }
+  .stat .lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+  .overall-meter { flex: 1 1 260px; min-width: 220px; padding-bottom: 6px; }
+  .meter { height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; }
+  .meter > i { display: block; height: 100%; width: 0%; background: var(--accent); border-radius: 4px; transition: width .25s ease; }
+  .meter-lbl { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+
+  .howto {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 22px; margin-bottom: 20px; font-size: 14px; color: var(--text-secondary);
+  }
+  .howto strong { color: var(--text-primary); }
+  .howto p + p { margin-top: 8px; }
+
+  section.phase {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .phase-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--grid); cursor: pointer; }
+  .phase-head:hover { background: color-mix(in srgb, var(--accent) 4%, var(--surface-1)); }
+  .phase-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .phase-top h2 { font-size: 17px; }
+  .phase-top .weeks { font-size: 12.5px; color: var(--text-muted); white-space: nowrap; }
+  .phase-goal { font-size: 13.5px; color: var(--text-secondary); margin-top: 3px; }
+  .phase-meter { margin-top: 12px; }
+  .phase-body { display: none; padding: 4px 22px 18px; }
+  section.phase.open .phase-body { display: block; }
+  .chev { color: var(--text-muted); font-size: 12px; margin-right: 6px; display: inline-block; transition: transform .15s; }
+  section.phase.open .chev { transform: rotate(90deg); }
+
+  .block { margin-top: 16px; }
+  .block h3 { font-size: 14px; display: flex; justify-content: space-between; gap: 10px; }
+  .block h3 .tag { font-weight: 400; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .block .why { font-size: 13px; color: var(--text-secondary); margin: 3px 0 8px; }
+  ul.tasks { list-style: none; }
+  ul.tasks li { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--grid); font-size: 14px; }
+  ul.tasks li:last-child { border-bottom: 0; }
+  ul.tasks input[type=checkbox] { width: 16px; height: 16px; margin-top: 3px; accent-color: var(--accent); flex: none; cursor: pointer; }
+  ul.tasks label { cursor: pointer; color: var(--text-primary); }
+  ul.tasks li.done label { color: var(--text-muted); text-decoration: line-through; text-decoration-color: var(--baseline); }
+  .note { font-size: 12.5px; color: var(--text-muted); }
+  .warn { border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface-1)); padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 13px; color: var(--text-secondary); margin: 10px 0; }
+
+  .save-row { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; margin-top: 20px; }
+  .save-row h2 { font-size: 15px; margin-bottom: 6px; }
+  .save-row p { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+  .save-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .save-controls input[type=text] {
+    flex: 1 1 240px; padding: 8px 10px; border: 1px solid var(--baseline); border-radius: 8px;
+    background: var(--page); color: var(--text-primary); font-size: 13px; font-family: ui-monospace, monospace;
+  }
+  button {
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--baseline);
+    background: var(--surface-1); color: var(--text-primary); font-size: 13px; cursor: pointer;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:hover { filter: brightness(0.97); }
+  .flash { font-size: 12.5px; color: var(--good); margin-top: 8px; min-height: 1em; }
+  footer { text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 28px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Concrete Mathematics — Learning Tracker</h1>
+    <div class="sub">Graham · Knuth · Patashnik, 2nd edition — a 36-week plan at 15+ hrs/week, built for a start from high-school math. Goal: ready for <em>The Art of Computer Programming</em>, Vol. 1.</div>
+    <div class="hero-stats">
+      <div class="stat"><div class="num" id="pctNum">0%</div><div class="lbl">Overall complete</div></div>
+      <div class="stat"><div class="num" id="doneNum">0</div><div class="lbl">of <span id="totalNum">0</span> tasks</div></div>
+      <div class="overall-meter">
+        <div class="meter-lbl"><span>Progress</span><span id="phaseNow">Phase 0</span></div>
+        <div class="meter"><i id="overallBar"></i></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="howto">
+    <p><strong>Weekly rhythm (≈15 hrs):</strong> 6 hrs reading (two 3-hr sittings, pencil in hand — rederive every equation), 6 hrs exercises, 2 hrs reviewing/redoing what you missed, 1 hr playing: write tiny programs to test formulas on small cases.</p>
+    <p><strong>Exercise policy (from the book's own preface):</strong> do <strong>every Warmup</strong>, at least half the <strong>Basics</strong>, and 2–3 <strong>Homework exercises</strong> per chapter. All answers are in Appendix A (p. 497) — check only <em>after</em> a serious attempt. Skip Exam/Bonus/Research problems on a first pass.</p>
+    <p><strong>Rule of thumb:</strong> stuck on a section &gt; 2 days → do the warmups anyway, mark it, move on, and revisit at the phase checkpoint. Momentum beats completeness on a first read.</p>
+  </div>
+
+  <div id="phases"></div>
+
+  <div class="save-row">
+    <h2>Save / restore your progress</h2>
+    <p>Ticks live only on this open page. Before you close it, click <strong>Copy progress code</strong> and paste the code somewhere safe (notes app, email to yourself). Next time, paste it below and click Restore.</p>
+    <div class="save-controls">
+      <button class="primary" id="btnExport">Copy progress code</button>
+      <input type="text" id="codeBox" placeholder="paste progress code here…" spellcheck="false">
+      <button id="btnImport">Restore</button>
+      <button id="btnReset">Reset all</button>
+    </div>
+    <div class="flash" id="flash"></div>
+  </div>
+
+  <footer>Page references are to the 2nd edition (1994). Dedicated to Leonhard Euler — and to your future self reading Knuth.</footer>
+</div>
+
+<script>
+const PLAN = [
+{
+  id:"p0", title:"Phase 0 — Foundations before the book", weeks:"Weeks 1–6",
+  goal:"Close the gap between high-school math and page 1. The book assumes fluent algebra, comfort with proofs (especially induction), and a first exposure to calculus ideas.",
+  blocks:[
+    {h:"Weeks 1–2 · Proofs, logic, induction", tag:"Book of Proof (Hammack, free online)",
+     why:"Induction is the engine of Chapter 1 and everything after. This is the single highest-payoff prerequisite.",
+     tasks:[
+      "Read Book of Proof: logic & sets chapters (Ch 1–2); do a handful of exercises from each",
+      "Read the direct-proof and contrapositive chapters (Ch 4–5)",
+      "Read the induction chapter (Ch 10) slowly — do at least 10 induction exercises",
+      "Prove by induction: 1+2+…+n = n(n+1)/2, sum of odd numbers = n², 2ⁿ > n for n≥1"
+     ]},
+    {h:"Weeks 3–4 · Algebra fluency & sequences", tag:"Khan Academy / any precalculus source",
+     why:"You need to push symbols around without friction: exponents, logs, factorials, Σ-notation, geometric series.",
+     tasks:[
+      "Master exponent & logarithm laws (log of product, power, change of base) — drill until automatic",
+      "Learn Σ (summation) and Π (product) notation; write out small examples by hand",
+      "Derive and memorize the geometric-series sum, arithmetic-series sum",
+      "Get comfortable with factorials and n-choose-k; compute Pascal's triangle to row 10 by hand",
+      "Practice manipulating inequalities and absolute values"
+     ]},
+    {h:"Weeks 5–6 · A first taste of calculus", tag:"3Blue1Brown 'Essence of Calculus' + Khan Academy",
+     why:"You don't need a full calculus course. You need limits, derivatives, and infinite series as concepts — Chapter 2 builds a discrete analog of calculus, and Chapter 9 leans on limits.",
+     tasks:[
+      "Watch all of 3Blue1Brown's Essence of Calculus series",
+      "Learn limits informally: what 1/n → 0 means; growth comparison of log n, n, n², 2ⁿ",
+      "Learn what a derivative is and compute d/dx of xⁿ, eˣ, ln x",
+      "Understand convergence vs divergence: geometric series converges, harmonic series diverges",
+      "Set up Python (or any language) and write a loop that checks a formula against brute force — you'll reuse this habit constantly"
+     ]},
+  ],
+  warn:"Checkpoint before moving on: you can write a clean induction proof unaided, sum a geometric series from scratch, and explain why the harmonic series diverges. If any of these feel shaky, take an extra week — Phase 1 depends on all three."
+},
+{
+  id:"p1", title:"Phase 1 — Recurrences, Sums, Floors", weeks:"Weeks 7–14",
+  goal:"The heart of the book's method: name a quantity, find its recurrence, solve it in closed form. Chapter 2 is the most important chapter in the book.",
+  blocks:[
+    {h:"Weeks 7–8 · Chapter 1: Recurrent Problems", tag:"pp. 1–20",
+     why:"Three famous puzzles (Tower of Hanoi, lines in the plane, Josephus problem) teach the look-guess-prove cycle.",
+     tasks:[
+      "Read §1.1 Tower of Hanoi; rederive Tₙ = 2ⁿ−1 yourself, then prove it by induction",
+      "Read §1.2 Lines in the Plane; work the pizza-cutting recurrence by hand for n = 1..5",
+      "Read §1.3 Josephus Problem; verify the cyclic-shift solution on small cases with a short program",
+      "Do all Chapter 1 warmups (ex. 1–6) and at least 5 more exercises; check against Appendix A",
+      "Write a half-page summary: what is a recurrence, what is a closed form, what is the repertoire method"
+     ]},
+    {h:"Weeks 9–11 · Chapter 2: Sums", tag:"pp. 21–66 · the keystone chapter",
+     why:"Sums are to algorithms what integrals are to physics. The perturbation method and finite calculus here get used in every later chapter — give it three full weeks.",
+     tasks:[
+      "Read §2.1–2.2 notation & recurrences; learn Iverson brackets [P] — the book uses them everywhere",
+      "Read §2.3 manipulation of sums: distributive, associative, commutative laws; index shifting drills",
+      "Read §2.4–2.5 multiple sums & general methods; master the perturbation method on Σk·2ᵏ",
+      "Read §2.6 finite and infinite calculus: falling powers x^n̲, the Δ operator, summation by parts",
+      "Read §2.7 infinite sums; understand when rearranging is legal",
+      "Do all warmups (ex. 1–7), then at least 8 of exercises 8–30",
+      "Mini-project: derive Σk², Σk³, and Σk·Hₖ using finite calculus, verify each numerically"
+     ]},
+    {h:"Weeks 12–13 · Chapter 3: Integer Functions", tag:"pp. 67–101",
+     why:"Floors, ceilings, and mod — the bread and butter of algorithm analysis (binary representations, spectra, recurrences with ⌊n/2⌋).",
+     tasks:[
+      "Read §3.1–3.2 floors/ceilings and applications; memorize the ⌊x⌋/⌈x⌉ inequality rules",
+      "Read §3.3 floor/ceiling recurrences (the Knuth-style ⌊n/2⌋ recurrences)",
+      "Read §3.4 the binary 'mod' operation and §3.5 floor/ceiling sums",
+      "Do all warmups and at least 6 more exercises",
+      "Program check: verify the spectrum identities for √2 and 2+√2 up to n = 50"
+     ]},
+    {h:"Week 14 · Checkpoint & consolidation", tag:"review week",
+     why:"Spaced review cements the material and exposes gaps while they're still cheap to fix.",
+     tasks:[
+      "Redo from scratch (no notes) the 5 hardest exercises you met in Chapters 1–3",
+      "Attempt 2 Exam-level problems drawing on Ch 1–3; compare with Appendix A",
+      "Rewrite your formula sheet: recurrence-solving toolkit, sum-manipulation laws, floor/ceiling identities"
+     ]},
+  ],
+  warn:"If Chapter 2 §2.6 (finite calculus) doesn't click, reread it after finishing Chapter 3 — nearly everyone needs two passes. It becomes the most-used tool in the book."
+},
+{
+  id:"p2", title:"Phase 2 — Number Theory & Binomial Coefficients", weeks:"Weeks 15–22",
+  goal:"The combinatorial core. Chapter 5 is the longest and richest chapter — Knuth calls binomial coefficients the most important quantities in discrete math.",
+  blocks:[
+    {h:"Weeks 15–17 · Chapter 4: Number Theory", tag:"pp. 102–152",
+     why:"Divisibility, primes, gcd, and modular arithmetic — directly needed for TAOCP's Euclid's-algorithm analysis and Volume 2's arithmetic.",
+     tasks:[
+      "Read §4.1–4.3 divisibility, primes, prime examples (Mersenne numbers, factorial factors)",
+      "Read §4.4–4.5 factorial factors & relative primality; learn the Stern–Brocot tree",
+      "Read §4.6–4.7 congruences and independent residues (Chinese Remainder Theorem)",
+      "Read §4.8–4.9 applications, Euler's φ and Möbius μ functions",
+      "Do all warmups and at least 8 more exercises",
+      "Program: implement gcd, extended gcd, and φ(n); verify the identity Σ_{d\\n} φ(d) = n"
+     ]},
+    {h:"Weeks 18–21 · Chapter 5: Binomial Coefficients (core)", tag:"pp. 153–204 · §5.1–5.4",
+     why:"The top-ten identities in Table 174 must become reflexes. This is the chapter that pays the biggest dividends in TAOCP.",
+     tasks:[
+      "Read §5.1 basic identities slowly; hand-derive all entries of Table 174 (the 'top ten')",
+      "Read §5.2 basic practice — the worked examples are the real lesson; cover the page and try each before reading the solution",
+      "Read §5.3 tricks of the trade (inversion, generating-function previews)",
+      "Read §5.4 generating functions for binomial coefficients; derive the Vandermonde convolution two ways",
+      "Do all warmups (ex. 1–8) and at least 10 of the basics/homework exercises",
+      "Flashcards: drill the top-ten identities until you can state each from either side"
+     ]},
+    {h:"Optional on first pass · §5.5–5.8 Hypergeometrics", tag:"pp. 204–241 · skim only",
+     why:"Hypergeometric machinery and Gosper/Zeilberger summation are powerful but not needed for TAOCP Vol 1. Skim for awareness; return after finishing the book if curious.",
+     tasks:[
+      "Skim §5.5–5.6 to learn what a hypergeometric series is and why it unifies the identities",
+      "Skim §5.8 mechanical summation — know that algorithms exist that do these sums automatically"
+     ]},
+    {h:"Week 22 · Checkpoint", tag:"review week",
+     why:"Chapter 5 fluency is the best predictor of a smooth ride through the rest of the book.",
+     tasks:[
+      "Closed-book test: write out the top-ten binomial identities and the key gcd/congruence facts",
+      "Redo the 5 hardest exercises from Chapters 4–5",
+      "Attempt 2 Exam-level problems spanning Ch 4–5"
+     ]},
+  ],
+  warn:"Pacing reality check: you are now ~halfway through the plan. If you're running 2–3 weeks behind schedule, that is normal for this book — adjust the calendar, not the exercise policy."
+},
+{
+  id:"p3", title:"Phase 3 — Special Numbers & Generating Functions", weeks:"Weeks 23–29",
+  goal:"Meet the recurring cast of TAOCP — Stirling, harmonic, Fibonacci numbers — then learn the single most powerful technique in the book: generating functions.",
+  blocks:[
+    {h:"Weeks 23–25 · Chapter 6: Special Numbers", tag:"pp. 257–319",
+     why:"Stirling numbers count the ways algorithms partition and permute; harmonic numbers appear in nearly every average-case analysis in TAOCP.",
+     tasks:[
+      "Read §6.1–6.2 Stirling numbers (both kinds) and Eulerian numbers; hand-build the small triangles",
+      "Read §6.3–6.4 harmonic numbers and harmonic summation — the Hₙ ≈ ln n + γ approximation matters for TAOCP",
+      "Read §6.5 Bernoulli numbers (lighter pass is fine) and §6.6 Fibonacci numbers thoroughly",
+      "Skim §6.7 continuants",
+      "Do all warmups and at least 8 more exercises",
+      "Program: compute Hₙ and compare against ln n + γ for n = 10, 100, 1000"
+     ]},
+    {h:"Weeks 26–28 · Chapter 7: Generating Functions", tag:"pp. 320–380",
+     why:"The 'most important idea in the whole book' by the authors' own account: turn a sequence into a power series and recurrences dissolve into algebra.",
+     tasks:[
+      "Read §7.1 domino theory & change — the concrete warm-up that makes the abstraction land",
+      "Read §7.2–7.3 basic maneuvers and solving recurrences; solve the Fibonacci recurrence to get Binet's formula yourself",
+      "Read §7.4–7.5 special generating functions and convolutions; derive the Catalan numbers",
+      "Read §7.6 exponential generating functions; skim §7.7 Dirichlet GFs",
+      "Do all warmups and at least 8 more exercises",
+      "Mini-project: use a GF to count the ways to make change for a dollar; verify by program"
+     ]},
+    {h:"Week 29 · Checkpoint", tag:"review week",
+     why:"GFs need to settle. A week of mixed problems makes the technique yours instead of the book's.",
+     tasks:[
+      "Solve 3 fresh recurrences end-to-end with generating functions, no notes",
+      "Redo the hardest Ch 6–7 exercises you flagged",
+      "One-page cheat sheet: the GF dictionary (sequence ↔ series operations)"
+     ]},
+  ],
+  warn:"If partial fractions from algebra are rusty, review them before §7.3 — they are the workhorse for extracting coefficients."
+},
+{
+  id:"p4", title:"Phase 4 — Probability, Asymptotics & the TAOCP bridge", weeks:"Weeks 30–36",
+  goal:"The finishing tools: average-case analysis (Knuth's signature move) and Big-O asymptotics — then step directly into TAOCP Volume 1.",
+  blocks:[
+    {h:"Weeks 30–31 · Chapter 8: Discrete Probability", tag:"pp. 381–438",
+     why:"Expectation, variance, and probability generating functions are exactly how TAOCP analyzes average running time. §8.5 (hashing) is a genuine TAOCP-style analysis.",
+     tasks:[
+      "Read §8.1–8.2 definitions, mean and variance; internalize linearity of expectation",
+      "Read §8.3 probability generating functions — this ties directly back to Chapter 7",
+      "Read §8.4 flipping coins (waiting-time problems)",
+      "Read §8.5 hashing — study it as your first real algorithm analysis",
+      "Do all warmups and at least 6 more exercises",
+      "Program: simulate the coupon-collector / dice problems and check against your computed expectations"
+     ]},
+    {h:"Weeks 32–34 · Chapter 9: Asymptotics", tag:"pp. 439–496",
+     why:"Big-O and friends — the language every TAOCP analysis is written in. §9.1–9.3 are essential; §9.5–9.6 (Euler's summation formula) can be a lighter pass.",
+     tasks:[
+      "Read §9.1 the hierarchy of growth rates; be able to rank log log n, log n, n^0.1, n/log n, 2^√(log n) …",
+      "Read §9.2–9.3 O-notation and O-manipulation; do the manipulation drills carefully — this is where sloppiness bites",
+      "Read §9.4 two asymptotic tricks (bootstrapping, trading tails)",
+      "Read §9.5 Euler's summation formula at survey depth; see how Stirling's approximation falls out",
+      "Do all warmups and at least 6 more exercises",
+      "Derive: Hₙ = ln n + γ + O(1/n) and n! ~ √(2πn)(n/e)ⁿ (following the text is fine — reproduce the argument)"
+     ]},
+    {h:"Weeks 35–36 · Capstone & transition to TAOCP", tag:"graduation",
+     why:"Consolidate, then open Knuth Volume 1 with the preparation the book was written to provide.",
+     tasks:[
+      "Full-book review: rebuild your master formula sheet from memory, then patch gaps",
+      "Attempt 3 Exam-level problems mixing chapters (sums + binomials + asymptotics)",
+      "Read TAOCP Vol 1 §1.1 (Algorithms) and §1.2.1 (Induction) — notice how familiar it now feels",
+      "Skim TAOCP §1.2.2–1.2.11 mapping each subsection to the CM chapter that covered it",
+      "Decide your MMIX strategy: read the MMIX fascicle alongside TAOCP, or follow the analyses in pseudocode first",
+      "Celebrate. Seriously — finishing this book from a high-school start is a major achievement."
+     ]},
+  ],
+  warn:"After Concrete Mathematics, TAOCP Vol 1 Chapter 1 will read as a terse summary of what you already know. The genuinely new work there is MMIX assembly and the data-structures material of Chapter 2."
+}
+];
+
+const $ = s => document.querySelector(s);
+const state = new Set();
+let allIds = [];
+
+function build(){
+  const root = $("#phases");
+  PLAN.forEach((ph, pi) => {
+    const sec = document.createElement("section");
+    sec.className = "phase" + (pi === 0 ? " open" : "");
+    sec.id = ph.id;
+    let blocksHtml = "";
+    ph.blocks.forEach((b, bi) => {
+      const items = b.tasks.map((t, ti) => {
+        const id = `${ph.id}-${bi}-${ti}`;
+        allIds.push(id);
+        return `<li data-id="${id}"><input type="checkbox" id="${id}"><label for="${id}">${t}</label></li>`;
+      }).join("");
+      blocksHtml += `<div class="block"><h3>${b.h}<span class="tag">${b.tag}</span></h3><div class="why">${b.why}</div><ul class="tasks">${items}</ul></div>`;
+    });
+    sec.innerHTML = `
+      <div class="phase-head">
+        <div class="phase-top"><h2><span class="chev">▶</span>${ph.title}</h2><span class="weeks">${ph.weeks}</span></div>
+        <div class="phase-goal">${ph.goal}</div>
+        <div class="phase-meter">
+          <div class="meter-lbl"><span id="lbl-${ph.id}">0 of 0</span><span id="pct-${ph.id}">0%</span></div>
+          <div class="meter"><i id="bar-${ph.id}"></i></div>
+        </div>
+      </div>
+      <div class="phase-body">${blocksHtml}<div class="warn">${ph.warn}</div></div>`;
+    root.appendChild(sec);
+    sec.querySelector(".phase-head").addEventListener("click", () => sec.classList.toggle("open"));
+  });
+  root.addEventListener("change", e => {
+    if (e.target.type !== "checkbox") return;
+    const id = e.target.id;
+    e.target.checked ? state.add(id) : state.delete(id);
+    e.target.closest("li").classList.toggle("done", e.target.checked);
+    refresh();
+  });
+  $("#totalNum").textContent = allIds.length;
+  refresh();
+}
+
+function refresh(){
+  let done = 0;
+  PLAN.forEach(ph => {
+    const ids = allIds.filter(i => i.startsWith(ph.id + "-"));
+    const d = ids.filter(i => state.has(i)).length;
+    done += d;
+    const pct = ids.length ? Math.round(100 * d / ids.length) : 0;
+    $("#bar-" + ph.id).style.width = pct + "%";
+    $("#pct-" + ph.id).textContent = pct + "%";
+    $("#lbl-" + ph.id).textContent = `${d} of ${ids.length}`;
+  });
+  const pct = Math.round(100 * done / allIds.length);
+  $("#pctNum").textContent = pct + "%";
+  $("#doneNum").textContent = done;
+  $("#overallBar").style.width = pct + "%";
+  const current = PLAN.find(ph => allIds.filter(i => i.startsWith(ph.id + "-")).some(i => !state.has(i)));
+  $("#phaseNow").textContent = current ? current.title.split("—")[0].trim() : "Complete 🎉";
+}
+
+function exportCode(){
+  const bits = allIds.map(id => state.has(id) ? "1" : "0").join("");
+  const code = "CM2-" + btoa(bits).replace(/=+$/,"");
+  const box = $("#codeBox");
+  box.value = code;
+  box.select();
+  try { document.execCommand("copy"); flash("Progress code copied — paste it somewhere safe."); }
+  catch(e){ flash("Code shown in the box — copy it manually."); }
+}
+
+function importCode(){
+  const raw = $("#codeBox").value.trim();
+  if (!raw.startsWith("CM2-")) return flash("That doesn't look like a progress code.", true);
+  try {
+    const bits = atob(raw.slice(4));
+    state.clear();
+    allIds.forEach((id, i) => { if (bits[i] === "1") state.add(id); });
+    allIds.forEach(id => {
+      const cb = document.getElementById(id);
+      cb.checked = state.has(id);
+      cb.closest("li").classList.toggle("done", cb.checked);
+    });
+    refresh();
+    flash("Progress restored.");
+  } catch(e){ flash("Couldn't read that code.", true); }
+}
+
+function resetAll(){
+  state.clear();
+  allIds.forEach(id => {
+    const cb = document.getElementById(id);
+    cb.checked = false;
+    cb.closest("li").classList.remove("done");
+  });
+  refresh();
+  flash("Cleared.");
+}
+
+function flash(msg, bad){
+  const f = $("#flash");
+  f.textContent = msg;
+  f.style.color = bad ? "var(--text-secondary)" : "var(--good)";
+  setTimeout(() => { f.textContent = ""; }, 4000);
+}
+
+$("#btnExport").addEventListener("click", exportCode);
+$("#btnImport").addEventListener("click", importCode);
+$("#btnReset").addEventListener("click", resetAll);
+build();
+</script>
+</body>
+</html>

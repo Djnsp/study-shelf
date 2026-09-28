@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workday Extend — End-to-End Application Blueprint</title>
+<style>
+:root{
+  --bg:#0B0F14; --bg-2:#0E141B;
+  --panel:#121A23; --panel-2:#16202B; --panel-3:#0F161E;
+  --line:#222C39; --line-soft:#1A222E;
+  --t-100:#EBEFF5; --t-300:#AEBBCB; --t-500:#76849A; --t-600:#5C6A7E;
+  --brass:#D2A24A; --brass-dim:#A07E37; --brass-soft:rgba(210,162,74,.14);
+  --ok:#5FB98E; --ok-bg:rgba(95,185,142,.13);
+  --rev:#E0B04A; --rev-bg:rgba(224,176,74,.13);
+  --rej:#E07C6B; --rej-bg:rgba(224,124,107,.13);
+  --mono:"SF Mono","JetBrains Mono","Cascadia Code",ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
+  --sans:"Helvetica Neue",Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --maxw:1240px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{
+  margin:0; background:var(--bg); color:var(--t-300);
+  font-family:var(--sans); font-size:16px; line-height:1.66;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:34px 34px; background-position:center -1px;
+}
+::selection{background:var(--brass-soft);color:var(--t-100)}
+
+/* ---------- Cover ---------- */
+.cover{border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.cover-inner{max-width:var(--maxw);margin:0 auto;padding:64px 32px 46px;position:relative}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--brass);display:flex;align-items:center;gap:14px;margin:0 0 26px}
+.eyebrow::before{content:"";width:34px;height:2px;background:var(--brass)}
+.cover h1{font-family:var(--sans);font-weight:800;color:var(--t-100);
+  font-size:clamp(30px,5vw,52px);line-height:1.04;letter-spacing:-.022em;margin:0 0 18px;max-width:18ch}
+.cover .sub{font-size:clamp(15px,2vw,18px);color:var(--t-300);max-width:60ch;margin:0 0 34px;font-weight:400}
+.meta{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  width:max-content;max-width:100%;background:var(--panel-3)}
+.meta div{padding:11px 18px;border-right:1px solid var(--line)}
+.meta div:last-child{border-right:0}
+.meta .k{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--t-600);margin-bottom:3px}
+.meta .v{font-family:var(--mono);font-size:12.5px;color:var(--t-100);letter-spacing:.02em}
+.fidelity{margin-top:30px;border-left:2px solid var(--brass);background:linear-gradient(90deg,var(--brass-soft),transparent 70%);
+  padding:14px 20px;border-radius:0 8px 8px 0;font-size:14px;color:var(--t-300);max-width:78ch}
+.fidelity b{color:var(--brass);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  display:block;margin-bottom:5px;font-weight:600}
+
+/* ---------- Layout ---------- */
+.layout{max-width:var(--maxw);margin:0 auto;padding:0 32px;display:grid;grid-template-columns:236px 1fr;gap:48px;align-items:start}
+.toc{position:sticky;top:0;align-self:start;padding:44px 0;max-height:100vh;overflow:auto}
+.toc-h{font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--t-600);margin:0 0 16px}
+.toc a{display:block;color:var(--t-500);text-decoration:none;font-size:13px;line-height:1.4;padding:7px 0 7px 16px;
+  border-left:1px solid var(--line-soft);transition:color .15s,border-color .15s}
+.toc a .n{font-family:var(--mono);color:var(--brass-dim);font-size:11px;margin-right:8px}
+.toc a:hover{color:var(--t-300)}
+.toc a.active{color:var(--t-100);border-left-color:var(--brass)}
+.toc a.active .n{color:var(--brass)}
+
+/* ---------- Document body ---------- */
+.doc{padding:44px 0 100px;min-width:0;counter-reset:sec}
+.doc h2{counter-increment:sec;font-family:var(--sans);font-weight:800;color:var(--t-100);
+  font-size:clamp(22px,3vw,30px);letter-spacing:-.018em;line-height:1.12;
+  margin:64px 0 22px;padding-top:30px;border-top:1px solid var(--line);position:relative}
+.doc h2:first-child{margin-top:8px;border-top:0;padding-top:0}
+.doc h2::before{content:"\00A7 " counter(sec,decimal-leading-zero);display:block;
+  font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--brass);
+  margin-bottom:12px;-webkit-text-fill-color:var(--brass)}
+.doc h3{font-family:var(--sans);font-weight:700;color:var(--t-100);font-size:18px;letter-spacing:-.01em;margin:38px 0 12px}
+.doc h4{font-family:var(--mono);font-weight:600;color:var(--brass-dim);font-size:13px;letter-spacing:.05em;margin:26px 0 10px}
+.doc p{margin:0 0 16px}
+.doc strong{color:var(--t-100);font-weight:650}
+.doc a{color:var(--brass);text-decoration:none;border-bottom:1px solid var(--brass-dim)}
+.doc a:hover{border-bottom-color:var(--brass)}
+.doc ul,.doc ol{margin:0 0 18px;padding-left:22px}
+.doc li{margin:0 0 9px}
+.doc ul li::marker{color:var(--brass-dim)}
+.doc ol li::marker{color:var(--brass-dim);font-family:var(--mono);font-size:13px}
+.doc hr{border:0;border-top:1px solid var(--line);margin:40px 0}
+
+/* inline code */
+.doc :not(pre)>code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);
+  color:#E4C98C;border:1px solid var(--line-soft);border-radius:5px;padding:.1em .4em;white-space:nowrap}
+
+/* spec-note blockquote */
+.doc blockquote{margin:22px 0;border-left:2px solid var(--brass);
+  background:linear-gradient(90deg,var(--brass-soft),transparent 70%);
+  padding:14px 20px;border-radius:0 8px 8px 0;color:var(--t-300);font-size:14.5px}
+.doc blockquote p{margin:0}
+.doc blockquote strong{color:var(--brass)}
+
+/* tables */
+.doc .tbl-wrap{overflow-x:auto;margin:0 0 22px;border:1px solid var(--line);border-radius:10px;background:var(--panel-3)}
+.doc table{border-collapse:collapse;width:100%;font-size:14px}
+.doc thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--t-500);text-align:left;font-weight:600;padding:13px 16px;
+  border-bottom:1px solid var(--line);background:var(--panel)}
+.doc tbody td{padding:13px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--t-300)}
+.doc tbody tr:last-child td{border-bottom:0}
+.doc tbody tr:hover td{background:rgba(255,255,255,.012)}
+.doc tbody td:first-child{color:var(--t-100)}
+
+/* code blocks */
+.code{margin:0 0 22px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel-3)}
+.code-bar{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+.code-lang{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--brass);font-weight:600}
+.code-copy{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--line);color:var(--t-500);border-radius:5px;
+  padding:4px 10px;cursor:pointer;transition:.15s}
+.code-copy:hover{border-color:var(--brass-dim);color:var(--brass)}
+.code-copy.done{color:var(--ok);border-color:var(--ok)}
+.code pre{margin:0;padding:18px 16px;overflow-x:auto}
+.doc pre code{font-family:var(--mono);font-size:12.8px;line-height:1.62;color:#C9D6E5;
+  background:none;border:0;padding:0;white-space:pre}
+
+/* ---------- Signature: blueprint figure ---------- */
+.fig{margin:30px 0;border:1px solid var(--brass-dim);border-radius:12px;background:
+  linear-gradient(rgba(210,162,74,.04) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(210,162,74,.04) 1px,transparent 1px),var(--panel-3);
+  background-size:24px 24px,24px 24px,auto;position:relative;overflow:hidden}
+.fig-cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:var(--brass);
+  padding:12px 18px;border-bottom:1px solid rgba(210,162,74,.25);background:rgba(210,162,74,.05)}
+.fig-body{padding:22px 18px;overflow-x:auto}
+.fig .ascii{margin:0;background:none}
+.fig .ascii code{font-family:var(--mono);font-size:12px;line-height:1.32;color:#CBD6E2;white-space:pre}
+.fig-marks span{position:absolute;width:9px;height:9px;border:1.5px solid var(--brass-dim);opacity:.6}
+.fig-marks span:nth-child(1){top:8px;left:8px;border-right:0;border-bottom:0}
+.fig-marks span:nth-child(2){top:8px;right:8px;border-left:0;border-bottom:0}
+.fig-marks span:nth-child(3){bottom:8px;left:8px;border-right:0;border-top:0}
+.fig-marks span:nth-child(4){bottom:8px;right:8px;border-left:0;border-top:0}
+
+/* status pills (demonstrates the app's own conditional formatting) */
+.pill{font-family:var(--mono);font-size:.78em;letter-spacing:.06em;font-weight:600;
+  padding:.12em .5em;border-radius:5px;border:1px solid;white-space:nowrap}
+.pill.ok{color:var(--ok);background:var(--ok-bg);border-color:rgba(95,185,142,.35)}
+.pill.rev{color:var(--rev);background:var(--rev-bg);border-color:rgba(224,176,74,.35)}
+.pill.rej{color:var(--rej);background:var(--rej-bg);border-color:rgba(224,124,107,.35)}
+
+/* footer */
+.foot{max-width:var(--maxw);margin:0 auto;padding:26px 32px 60px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--t-600);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:3px}
+
+@media (max-width:1000px){
+  .layout{grid-template-columns:1fr;gap:0;padding:0 22px}
+  .toc{display:none}
+  .cover-inner{padding:48px 22px 38px}
+  .foot{padding:26px 22px 50px}
+}
+</style>
+</head>
+<body>
+<header class="cover">
+  <div class="cover-inner">
+    <p class="eyebrow">Architecture Blueprint · Workday Extend Full-Stack</p>
+    <h1>Workday Extend — End-to-End Application Blueprint</h1>
+    <p class="sub">Reference build: Global Contingent Worker Compliance Orchestrator — “CW Compliance Hub”</p>
+    <div class="meta">
+      <div><div class="k">Artifact</div><div class="v">Reference Build</div></div>
+      <div><div class="k">Domain</div><div class="v">Contingent Compliance</div></div>
+      <div><div class="k">Stack</div><div class="v">CBO · PMD · Orchestrate · SMD</div></div>
+      <div><div class="k">Sections</div><div class="v">05</div></div>
+    </div>
+    <div class="fidelity"><b>Fidelity Note</b>PMD page schemas and the Orchestrate orchestration JSON shape are version-dependent and partly tooling-generated. Everything here is <em>logically</em> production-shaped — correct topology, correct script-library namespaces, correct security mapping — but reconcile exact key names against your tenant’s active Extend SDK before deploying. Where shape ≠ exact contract, it’s flagged inline.</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <p class="toc-h">Contents</p>
+    <div id="toc-list"></div>
+  </nav>
+  <main class="doc">
+<h2 id="1-application-concept">1. APPLICATION CONCEPT</h2>
+<h3 id="11-business-use-case">1.1 Business use case</h3>
+<p>A <strong>Global Contingent Worker (CW) Compliance Orchestrator</strong>. When an organization engages a contingent worker (contractor, SOW resource, agency temp), several jurisdiction-dependent compliance gates must clear <em>before</em> the worker is contracted and provisioned: criminal/background screening, sanctions &amp; watchlist (OFAC/PEP) screening, right-to-work / identity verification, and document validity (visa, work permit, certifications). Today this is email-and-spreadsheet glue across HR ops, legal, the staffing vendor, and 2–4 external screening providers.</p>
+<p>This app collapses that into a single Extend application that:
+- Ingests a worker context from Workday (Worker / Contingent Worker WDBOs).
+- Resolves <strong>which</strong> screenings are mandatory based on the worker's country (a config-driven jurisdiction rules engine).
+- Fans those screenings out <strong>in parallel</strong> to external providers via Orchestrate, with retry/backoff and failure routing.
+- <strong>Aggregates</strong> the multi-vendor results into a single composite compliance disposition (<code>CLEARED</code> / <code>REVIEW</code> / <code>REJECTED</code>).
+- Conditionally drives the downstream action: contract the worker (Workday SOAP <code>Contract_Contingent_Worker</code>), spawn a remediation task, or hard-stop.
+- Surfaces the whole lifecycle in a rich PMD UI with jurisdiction-aware sections, live document-expiry validation, and color-coded disposition badges.</p>
+<p><strong>Why this scenario:</strong> it forces genuine use of <em>every</em> requested capability. Parallelism and aggregation aren't bolted on — they're intrinsic to "screen against N providers and reconcile." Conditional PMD rendering is intrinsic to "US needs E-Verify, Germany needs a different set." That's the point: the architecture is driven by the domain, not by a feature checklist.</p>
+<h3 id="12-personas-end-to-end-workflow">1.2 Personas &amp; end-to-end workflow</h3>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>Touchpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>HR Ops Coordinator</strong></td>
+<td>Initiates a case from a worker, monitors progress, uploads/maintains documents</td>
+</tr>
+<tr>
+<td><strong>Compliance Officer</strong></td>
+<td>Owns <code>REVIEW</code> dispositions, sees raw screening detail (PII-gated), approves/rejects</td>
+</tr>
+<tr>
+<td><strong>Hiring Manager</strong></td>
+<td>Read-only summary of <em>their</em> worker's case status (no PII, no raw screening)</td>
+</tr>
+<tr>
+<td><strong>Compliance Admin</strong></td>
+<td>Maintains the Jurisdiction Rules config</td>
+</tr>
+<tr>
+<td><strong>Integration System User (ISU)</strong></td>
+<td>The headless identity the orchestration runs as</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Flow:</strong>
+1. HR Ops opens <strong>New Case</strong>, selects a worker → app pre-fills worker context from WDBOs and derives jurisdiction.
+2. App shows the jurisdiction-specific required screenings + a document checklist. Coordinator uploads/attaches required docs; PMD validates expiry in-grid.
+3. On submit, PMD guards completeness, persists the <code>ComplianceCase</code> (+ child <code>ComplianceDocument</code> rows), and triggers the <strong>Orchestrate</strong> flow.
+4. Orchestrate fans out screenings in parallel, retries transient failures, aggregates, and writes <code>ScreeningResult</code> children back + sets the case disposition.
+5. Routing: <code>CLEARED</code> → SOAP contract + notification; <code>REVIEW</code> → <code>RemediationTask</code> to a Compliance Officer; <code>REJECTED</code> → terminal status + notification.
+6. Compliance Officer works the <code>REVIEW</code> queue in the Case Detail page (PII-gated panel), resolves, re-runs or finalizes.</p>
+<hr />
+<h2 id="2-component-architecture-module-breakdown">2. COMPONENT ARCHITECTURE &amp; MODULE BREAKDOWN</h2>
+<p>Each row maps a <strong>functional requirement → the specific Extend capability</strong> that implements it.</p>
+<h3 id="21-ui-layer-page-builder-pmd">2.1 UI Layer (Page Builder / PMD)</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Functional requirement</th>
+<th>Extend technical capability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>App Hub / Landing</strong></td>
+<td>KPI tiles (open / in-review / breached SLA) + filterable case list</td>
+<td>PMD <code>instanceList</code> bound to a RAAS/instances endpoint; <code>card</code> presentation components for KPIs; client-side filter via <code>pageVariables</code> + <code>list:where</code></td>
+</tr>
+<tr>
+<td><strong>New Case Wizard</strong></td>
+<td>Worker pick → auto-context → required-screening derivation</td>
+<td><code>select</code>/<code>instanceList</code> with a worker prompt endpoint; <strong><code>onChange</code></strong> cascade recomputes <code>pageVariables.requiredScreenings</code> from the Jurisdiction Rules endpoint</td>
+</tr>
+<tr>
+<td><strong>Case Detail</strong></td>
+<td>Worker summary, disposition badge, screening grid, document grid, remediation panel</td>
+<td><code>section</code> + <code>fieldSet</code> layout; <code>grid</code> presentation components; conditional formatting via computed <code>valueClass</code>/icon; <strong>conditional visibility</strong> sections keyed on <code>data.country</code></td>
+</tr>
+<tr>
+<td><strong>Document grid</strong></td>
+<td>Per-row expiry validation, add/remove rows (multi-value)</td>
+<td><code>grid</code> with editable <code>date</code> column, <strong>per-row <code>onChange</code></strong> validation against <code>date:daysBetween</code>, row-level <code>valueClass</code> for amber/red</td>
+</tr>
+<tr>
+<td><strong>Jurisdiction Config</strong> (admin)</td>
+<td>CRUD on rules</td>
+<td><code>grid</code> editor bound to <code>JurisdictionRule</code> CBO instances; gated by a separate security domain</td>
+</tr>
+</tbody>
+</table>
+<p><strong>PMD script triggers exercised:</strong> <code>onLoad</code> (hydrate page variables from multiple endpoints), <code>onChange</code> (jurisdiction cascade + per-row document validation — the <code>v-model</code>-equivalent of binding <code>self.value</code> back into a page variable), <code>onSubmit</code> (completeness guard), conditional <code>visible</code>/<code>enabled</code>/<code>required</code> expressions, computed conditional formatting.</p>
+<h3 id="22-data-layer-cbos-wdbos">2.2 Data Layer (CBOs + WDBOs)</h3>
+<p><strong>Custom Business Objects</strong></p>
+<table>
+<thead>
+<tr>
+<th>CBO</th>
+<th>Key fields</th>
+<th>Relationships</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ComplianceCase</code></td>
+<td><code>caseStatus</code> (CLEARED/REVIEW/REJECTED/IN_PROGRESS), <code>overallScore</code>, <code>jurisdiction</code>, <code>initiatedOn</code>, <code>slaDueOn</code>, <code>assignedOfficer</code></td>
+<td><strong>1:1</strong> ref → <code>Worker</code> (WDBO); <strong>1:M</strong> → <code>ScreeningResult</code>; <strong>1:M</strong> → <code>ComplianceDocument</code>; <strong>0:M</strong> → <code>RemediationTask</code></td>
+</tr>
+<tr>
+<td><code>ScreeningResult</code></td>
+<td><code>screeningType</code>, <code>vendor</code>, <code>status</code>, <code>score</code>, <code>rawResponseRef</code>, <code>completedOn</code>, <code>retryCount</code></td>
+<td><strong>M:1</strong> parent → <code>ComplianceCase</code></td>
+</tr>
+<tr>
+<td><code>ComplianceDocument</code></td>
+<td><code>docType</code>, <code>fileRef</code>, <code>validationStatus</code>, <code>expiryDate</code></td>
+<td><strong>M:1</strong> parent → <code>ComplianceCase</code></td>
+</tr>
+<tr>
+<td><code>JurisdictionRule</code> (config)</td>
+<td><code>country</code>, <code>requiredScreenings</code> (multi-value), <code>slaDays</code>, <code>dataResidencyRegion</code></td>
+<td>standalone, looked up by <code>country</code></td>
+</tr>
+<tr>
+<td><code>RemediationTask</code></td>
+<td><code>reason</code>, <code>assignee</code>, <code>dueOn</code>, <code>status</code></td>
+<td><strong>M:1</strong> parent → <code>ComplianceCase</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Modeling note: <code>ComplianceCase → ScreeningResult/ComplianceDocument</code> are true parent–child (cascade-scoped) relationships, so child instance security and lifecycle follow the parent. The <code>Worker</code> link is a <strong>single-instance reference field</strong> to the WDBO, not ownership.</p>
+</blockquote>
+<p><strong>Required Workday-Delivered Business Objects (WDBOs):</strong> <code>Worker</code>, <code>Contingent Worker</code>, <code>Company</code>, <code>Cost Center</code>, <code>Supplier</code>, <code>Location</code>, <code>Country</code>, <code>Worker Document</code>, plus the <code>Contract Contingent Worker</code> business process for the downstream SOAP write.</p>
+<h3 id="23-security-layer">2.3 Security Layer</h3>
+<p><strong>Custom Functional Area:</strong> <code>Contingent Compliance</code> (groups all domains so they can be administered/reported as a unit).</p>
+<table>
+<thead>
+<tr>
+<th>Security Domain</th>
+<th>Grants</th>
+<th>Mapped security group</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Manage Compliance Case</code></td>
+<td>R/W on <code>ComplianceCase</code>, <code>ComplianceDocument</code>, <code>RemediationTask</code></td>
+<td>Compliance Officer / HR Ops (role-based)</td>
+</tr>
+<tr>
+<td><code>View Compliance Case (Limited)</code></td>
+<td>Read <strong>summary fields only</strong> of own-team cases</td>
+<td>Hiring Manager (constrained, manager-hierarchy)</td>
+</tr>
+<tr>
+<td><code>View Screening PII / Raw Result</code></td>
+<td>Read <code>rawResponseRef</code>, raw <code>ScreeningResult</code> detail</td>
+<td>Compliance Lead only — <strong>separated domain so raw OFAC/background detail is gated independently of case access</strong></td>
+</tr>
+<tr>
+<td><code>Configure Jurisdiction Rules</code></td>
+<td>R/W on <code>JurisdictionRule</code></td>
+<td>Compliance Admin</td>
+</tr>
+<tr>
+<td><code>Integrate Compliance Orchestration</code></td>
+<td>API write to CBOs + SOAP <code>Contract_Contingent_Worker</code></td>
+<td>ISSG for the ISU running Orchestrate</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Design principles worth internalizing here:</strong>
+- <strong>PII isolation as its own domain.</strong> Raw screening payloads (criminal history, watchlist hits) are split into a dedicated domain so that "can see the case exists" and "can see the derogatory detail" are independently grantable. This is the single most important security move in the app.
+- <strong>Constrained vs unconstrained.</strong> Hiring Manager access is constrained to the supervisory org / manager hierarchy; Compliance roles are unconstrained within the functional area.
+- <strong>Headless context.</strong> The orchestration runs as an ISU whose ISSG holds <code>Integrate Compliance Orchestration</code> only — least privilege, no interactive login, no UI domains.</p>
+<hr />
+<h2 id="3-workday-orchestration-specs-logical-algorithms">3. WORKDAY ORCHESTRATION SPECS &amp; LOGICAL ALGORITHMS</h2>
+<h3 id="31-algorithmic-breakdown">3.1 Algorithmic breakdown</h3>
+<div class="code"><div class="code-bar"><span class="code-lang">TEXT</span><button class="code-copy" type="button" aria-label="Copy code">copy</button></div><pre><code class="">INPUT: { caseId, workerId, jurisdiction }
+
+1.  FETCH worker context
+      1a. Workday REST  GET /workers/{workerId}           → identity, location, company
+      1b. RAAS          GET &lt;compliance_profile_report&gt;    → enriched attributes
+      JOIN 1a+1b into ctx
+
+2.  RESOLVE rules
+      lookup JurisdictionRule by ctx.country
+      requiredScreenings := rule.requiredScreenings   (e.g. [BGC, SANCTIONS, RTW])
+      slaDueOn          := today + rule.slaDays
+      IF requiredScreenings is empty → set case = CLEARED, skip to step 7
+
+3.  PARALLEL FAN-OUT  (fork per required screening; this is the join-loop pattern)
+      branch BGC       : POST &lt;backgroundProvider&gt;     [try/retry x3, backoff]
+      branch SANCTIONS : POST &lt;sanctionsProvider&gt;      [try/retry x3, backoff]
+      branch RTW       : POST &lt;rightToWorkProvider&gt;    [try/retry x3, backoff]
+      each branch:
+        on success → emit ScreeningResult{type,status,score,raw}
+        on terminal failure (retries exhausted) → emit ScreeningResult{type,status=ERROR}
+                                                  AND flag branchFailed=true
+
+4.  JOIN / AGGREGATE
+      collect all branch outputs into results[]
+      IF any branchFailed → disposition = REVIEW   (never auto-clear on a failed gate)
+      ELSE compute:
+           IF all results.status == PASS                 → CLEARED
+           ELSE IF any results.status == FAIL/HIT         → REJECTED
+           ELSE                                           → REVIEW
+      overallScore := weighted aggregate(results)
+
+5.  TRANSFORM
+      shape results[] + disposition + overallScore into the CBO write payload
+      (Transform step: PMD-transform or XSLT, depending on target shape)
+
+6.  CONDITIONAL ROUTING (branch step)
+      CLEARED  → 6a. SOAP  Contract_Contingent_Worker
+                 6b. notify HR Ops (success)
+      REVIEW   → 6c. create RemediationTask → assign Compliance Officer
+                 6d. notify Compliance Officer
+      REJECTED → 6e. set terminal status
+                 6f. notify HR Ops (rejection)
+
+7.  PERSIST
+      Workday API write-back:
+        update ComplianceCase{ status, overallScore, slaDueOn }
+        create child ScreeningResult[] (batch loop over results[])
+8.  END
+</code></pre></div>
+<p><strong>Standard integration step notes:</strong>
+- <strong>Internal reads</strong> use Workday REST (<code>/workers/...</code>) for live attributes and <strong>RAAS</strong> for report-shaped enrichment — REST for the canonical object, RAAS where you want the report builder's joins/derived fields.
+- <strong>External calls</strong> are HTTP steps against named connections holding the provider credentials (OAuth2 client-credentials or API key in a secure connection, never inline).
+- <strong>Failure recovery:</strong> each external HTTP step is wrapped in <strong>try/catch</strong> with a bounded <strong>retry</strong> (e.g., 3 attempts, exponential backoff) for transient (<code>5x</code>/timeout) classes only; auth/<code>4xx</code> fail fast. Retries exhausted → the branch emits an <code>ERROR</code> result and the join forces <code>REVIEW</code> (a failed gate must never silently clear).
+- <strong>Batch loop vs join loop (the distinction you studied):</strong> Step 3 fan-out uses the <strong>join loop / parallel</strong> semantics — iterations execute concurrently and the flow blocks until all join. Step 7 write-back uses a <strong>batch loop</strong> — iterate the <code>results[]</code> sequentially (or in tenant-sized batches) to create child instances, where ordering/throttling matters more than concurrency.</p>
+<h3 id="32-ascii-flow-diagram">3.2 ASCII flow diagram</h3>
+<figure class="fig"><figcaption class="fig-cap">FIG.01 &mdash; ORCHESTRATION TOPOLOGY</figcaption><div class="fig-body"><pre class="ascii"><code>                         ┌─────────────┐
+                         │   START     │
+                         │ {caseId,    │
+                         │  workerId}  │
+                         └──────┬──────┘
+                                │
+                 ┌──────────────┴──────────────┐
+                 │  STEP 1  Fetch worker ctx    │
+                 │  REST GET /workers + RAAS    │
+                 └──────────────┬──────────────┘
+                                │  ctx
+                 ┌──────────────┴──────────────┐
+                 │  STEP 2  Resolve rules       │
+                 │  JurisdictionRule[country]   │
+                 │  → requiredScreenings[]      │
+                 └──────────────┬──────────────┘
+                                │
+                  required==[] ?├───── yes ──────────────┐
+                                │ no                      │
+       ┌────────────────────────┴────────────────────────┐
+       │            STEP 3  PARALLEL FAN-OUT (join loop)  │
+       │                                                  │
+       │  ┌───────────┐  ┌────────────┐  ┌────────────┐   │
+       │  │  BGC      │  │ SANCTIONS  │  │ RIGHT-TO-  │   │
+       │  │  HTTP POST│  │ HTTP POST  │  │ WORK  POST │   │
+       │  │ try/retry │  │ try/retry  │  │ try/retry  │   │
+       │  └─────┬─────┘  └─────┬──────┘  └─────┬──────┘   │
+       │        └──────────────┼───────────────┘          │
+       └───────────────────────┼──────────────────────────┘
+                                │  results[]   (JOIN barrier)
+                 ┌──────────────┴──────────────┐
+                 │  STEP 4  Aggregate           │
+                 │  any failed → REVIEW         │
+                 │  else PASS/FAIL → disposition│
+                 │  + overallScore              │
+                 └──────────────┬──────────────┘
+                                │
+                 ┌──────────────┴──────────────┐
+                 │  STEP 5  Transform → payload │
+                 └──────────────┬──────────────┘
+                                │
+            ┌───────────────────┼───────────────────┐
+            │   STEP 6  BRANCH on disposition        │
+            │                                        │
+      CLEARED│                 REVIEW│         REJECTED│
+       ┌─────┴─────┐        ┌────────┴───────┐   ┌────┴─────┐
+       │ SOAP      │        │ create         │   │ set      │
+       │ Contract_ │        │ RemediationTask│   │ terminal │
+       │ Contingent│        │ + notify CO    │   │ + notify │
+       │ + notify  │        └────────┬───────┘   └────┬─────┘
+       └─────┬─────┘                 │                │
+             └───────────────────────┴────────────────┘
+                                │
+                 ┌──────────────┴──────────────┐◄──── (skip path:
+                 │  STEP 7  PERSIST (batch loop)│       required==[])
+                 │  update Case + create        │
+                 │  ScreeningResult[] children  │
+                 └──────────────┬──────────────┘
+                                │
+                         ┌──────┴──────┐
+                         │    END      │
+                         └─────────────┘
+</code></pre></div><div class="fig-marks"><span></span><span></span><span></span><span></span></div></figure>
+<hr />
+<h2 id="4-end-to-end-sample-compact-app-code">4. END-TO-END SAMPLE COMPACT APP CODE</h2>
+<p>Minimal but representative. Two artifacts: a <strong>PMD page</strong> demonstrating dynamic logic, and an <strong>Orchestrate orchestration</strong> demonstrating an external API call → transform → conditional routing.</p>
+<h3 id="41-pmd-case-detail-dynamic-rendering-validation-conditional-formatting-multi-value">4.1 PMD — Case Detail (dynamic rendering, validation, conditional formatting, multi-value)</h3>
+<div class="code"><div class="code-bar"><span class="code-lang">JSONC</span><button class="code-copy" type="button" aria-label="Copy code">copy</button></div><pre><code class="language-jsonc">{
+  &quot;id&quot;: &quot;complianceCaseDetail&quot;,
+  &quot;securityDomains&quot;: [&quot;Manage Compliance Case&quot;],
+
+  // --- Endpoints: invoked on load; data referenced as &lt;name&gt;.data ---
+  &quot;endPoints&quot;: [
+    {
+      &quot;name&quot;: &quot;getCase&quot;,
+      &quot;baseUrlType&quot;: &quot;workday-app&quot;,
+      &quot;url&quot;: &quot;&lt;% 'instances/complianceCase/' + queryParams.caseId %&gt;&quot;,
+      &quot;httpMethod&quot;: &quot;get&quot;
+    },
+    {
+      &quot;name&quot;: &quot;getWorker&quot;,
+      &quot;baseUrlType&quot;: &quot;workday-common&quot;,
+      &quot;url&quot;: &quot;&lt;% 'workers/' + getCase.data.worker.id %&gt;&quot;,
+      &quot;httpMethod&quot;: &quot;get&quot;
+    },
+    {
+      &quot;name&quot;: &quot;getJurisdictionRule&quot;,
+      &quot;baseUrlType&quot;: &quot;workday-app&quot;,
+      &quot;url&quot;: &quot;&lt;% 'instances/jurisdictionRule?country=' + getCase.data.jurisdiction %&gt;&quot;,
+      &quot;httpMethod&quot;: &quot;get&quot;
+    }
+  ],
+
+  // --- onLoad: derive page variables from joined endpoint data ---
+  &quot;onLoad&quot;: &quot;&lt;%
+      var c = getCase.data;
+      pageVariables.country           = c.jurisdiction;
+      pageVariables.documents         = c.documents;
+      pageVariables.requiredScreenings = getJurisdictionRule.data.data[0].requiredScreenings;
+
+      // conditional formatting: compute a disposition descriptor once, reuse in UI
+      var styleMap = {
+        'CLEARED':  { 'label': 'Cleared',  'cls': 'wd-text-color-green'  },
+        'REVIEW':   { 'label': 'In Review','cls': 'wd-text-color-amber'  },
+        'REJECTED': { 'label': 'Rejected', 'cls': 'wd-text-color-red'    }
+      };
+      pageVariables.badge = styleMap[c.caseStatus];
+  %&gt;&quot;,
+
+  &quot;presentation&quot;: {
+    &quot;title&quot;: { &quot;type&quot;: &quot;title&quot;, &quot;label&quot;: &quot;&lt;% 'Compliance Case · ' + getWorker.data.descriptor %&gt;&quot; },
+    &quot;body&quot;: {
+      &quot;type&quot;: &quot;section&quot;,
+      &quot;children&quot;: [
+
+        // ---- Disposition badge (conditional formatting via computed valueClass) ----
+        {
+          &quot;type&quot;: &quot;text&quot;,
+          &quot;id&quot;: &quot;dispositionBadge&quot;,
+          &quot;label&quot;: &quot;Disposition&quot;,
+          &quot;value&quot;:      &quot;&lt;% pageVariables.badge.label %&gt;&quot;,
+          &quot;valueClass&quot;: &quot;&lt;% pageVariables.badge.cls %&gt;&quot;
+        },
+
+        // ---- US-only section: conditional VISIBILITY keyed on jurisdiction ----
+        {
+          &quot;type&quot;: &quot;fieldSet&quot;,
+          &quot;id&quot;: &quot;usWorkAuthSection&quot;,
+          &quot;label&quot;: &quot;U.S. Work Authorization (E-Verify)&quot;,
+          &quot;visible&quot;: &quot;&lt;% pageVariables.country == 'US' %&gt;&quot;,
+          &quot;children&quot;: [
+            {
+              &quot;type&quot;: &quot;text&quot;,
+              &quot;label&quot;: &quot;Required&quot;,
+              &quot;value&quot;: &quot;&lt;% list:contains(pageVariables.requiredScreenings, 'EVERIFY') ? 'Yes' : 'No' %&gt;&quot;
+            }
+          ]
+        },
+
+        // ---- Documents grid: per-row onChange validation + row-level formatting ----
+        {
+          &quot;type&quot;: &quot;grid&quot;,
+          &quot;id&quot;: &quot;documentsGrid&quot;,
+          &quot;label&quot;: &quot;Compliance Documents&quot;,
+          &quot;value&quot;: &quot;&lt;% pageVariables.documents %&gt;&quot;,
+          &quot;columns&quot;: [
+            { &quot;type&quot;: &quot;text&quot;, &quot;label&quot;: &quot;Type&quot;, &quot;value&quot;: &quot;&lt;% item.docType %&gt;&quot; },
+            {
+              &quot;type&quot;: &quot;date&quot;,
+              &quot;id&quot;: &quot;expiryDate&quot;,
+              &quot;label&quot;: &quot;Expiry&quot;,
+              &quot;value&quot;: &quot;&lt;% item.expiryDate %&gt;&quot;,
+              &quot;required&quot;: true,
+              // v-model equivalent: write the edited value back into the row,
+              // then derive a per-row validation flag.
+              &quot;onChange&quot;: &quot;&lt;%
+                  item.expiryDate = self.value;
+                  item.expiringSoon =
+                    date:daysBetween(date:getTodaysDate(), self.value) &lt; 30;
+              %&gt;&quot;,
+              // conditional formatting at the cell level
+              &quot;valueClass&quot;: &quot;&lt;% item.expiringSoon ? 'wd-text-color-red' : '' %&gt;&quot;
+            }
+          ]
+        },
+
+        // ---- Submit guard: block trigger until every required screening is mapped ----
+        {
+          &quot;type&quot;: &quot;button&quot;,
+          &quot;id&quot;: &quot;triggerCompliance&quot;,
+          &quot;label&quot;: &quot;Run Compliance Check&quot;,
+          &quot;enabled&quot;: &quot;&lt;% !list:isEmpty(pageVariables.requiredScreenings)
+                         &amp;&amp; !list:isEmpty(pageVariables.documents) %&gt;&quot;,
+          &quot;onClick&quot;: &quot;&lt;%
+              if (list:isEmpty(pageVariables.documents)) {
+                pageVariables.error = 'Upload required documents before running checks.';
+              } else {
+                // hands off to the orchestration (endpoint omitted for brevity)
+                runOrchestration.invoke();
+              }
+          %&gt;&quot;
+        }
+      ]
+    }
+  }
+}
+</code></pre></div>
+<p><strong>What this snippet is teaching:</strong> endpoint chaining (<code>getWorker</code> URL depends on <code>getCase.data</code>), <code>onLoad</code>-derived page variables, <strong>conditional visibility</strong> (<code>usWorkAuthSection</code>), <strong>conditional formatting</strong> (computed <code>valueClass</code> at both field and cell level), <strong>multi-value / per-row <code>onChange</code></strong> writing <code>self.value</code> back into the row object (the <code>v-model</code> analog), and an <code>onClick</code>/submit guard built from <code>list:isEmpty</code> / <code>list:contains</code>.</p>
+<h3 id="42-orchestrate-orchestration-definition-api-call-transform-conditional-routing">4.2 Orchestrate — orchestration definition (API call → transform → conditional routing)</h3>
+<p>Representative shape. The visual editor will own the real JSON; this shows the <em>topology and step config</em> you'd reproduce.</p>
+<div class="code"><div class="code-bar"><span class="code-lang">JSONC</span><button class="code-copy" type="button" aria-label="Copy code">copy</button></div><pre><code class="language-jsonc">{
+  &quot;name&quot;: &quot;cwComplianceOrchestration&quot;,
+  &quot;input&quot;:  { &quot;caseId&quot;: &quot;string&quot;, &quot;workerId&quot;: &quot;string&quot;, &quot;jurisdiction&quot;: &quot;string&quot; },
+  &quot;variables&quot;: { &quot;ctx&quot;: {}, &quot;results&quot;: [], &quot;disposition&quot;: &quot;&quot; },
+
+  &quot;steps&quot;: [
+    { &quot;id&quot;: &quot;start&quot;, &quot;type&quot;: &quot;start&quot;, &quot;transitions&quot;: [{ &quot;to&quot;: &quot;fetchWorker&quot; }] },
+
+    // 1. Internal Workday REST read
+    {
+      &quot;id&quot;: &quot;fetchWorker&quot;,
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;config&quot;: {
+        &quot;connection&quot;: &quot;workdayRestConnection&quot;,
+        &quot;method&quot;: &quot;GET&quot;,
+        &quot;url&quot;: &quot;/workers/${input.workerId}?expand=primaryWorkPosition,location&quot;
+      },
+      &quot;output&quot;: &quot;ctx.worker&quot;,
+      &quot;transitions&quot;: [{ &quot;to&quot;: &quot;screenSanctions&quot; }]
+    },
+
+    // 2. External call wrapped in try/catch with bounded retry
+    {
+      &quot;id&quot;: &quot;screenSanctions&quot;,
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;config&quot;: {
+        &quot;connection&quot;: &quot;sanctionsProviderConnection&quot;,   // OAuth2 creds held by the connection
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;https://api.sanctions-provider.example/v2/screen&quot;,
+        &quot;headers&quot;: { &quot;Content-Type&quot;: &quot;application/json&quot; },
+        &quot;body&quot;: {
+          &quot;fullName&quot;: &quot;${ctx.worker.descriptor}&quot;,
+          &quot;country&quot;:  &quot;${input.jurisdiction}&quot;
+        },
+        &quot;retry&quot;: { &quot;maxAttempts&quot;: 3, &quot;backoff&quot;: &quot;exponential&quot;, &quot;retryOn&quot;: [&quot;5xx&quot;, &quot;timeout&quot;] }
+      },
+      &quot;onError&quot;: { &quot;to&quot;: &quot;markScreeningError&quot; },        // catch branch
+      &quot;output&quot;: &quot;rawSanctions&quot;,
+      &quot;transitions&quot;: [{ &quot;to&quot;: &quot;transformResult&quot; }]
+    },
+
+    // 3. Transform: shape raw provider payload into a normalized result + disposition
+    {
+      &quot;id&quot;: &quot;transformResult&quot;,
+      &quot;type&quot;: &quot;transform&quot;,
+      &quot;config&quot;: {
+        &quot;language&quot;: &quot;pmd-script&quot;,
+        &quot;script&quot;: &quot;&lt;%
+            var hit = rawSanctions.body.matchCount &gt; 0;
+            variables.results = [{
+              'screeningType': 'SANCTIONS',
+              'vendor': 'sanctions-provider',
+              'status': hit ? 'HIT' : 'PASS',
+              'score':  rawSanctions.body.riskScore
+            }];
+            // never auto-clear on a hit; a hit routes to human REVIEW
+            variables.disposition = hit ? 'REVIEW' : 'CLEARED';
+            return variables;
+        %&gt;&quot;
+      },
+      &quot;transitions&quot;: [{ &quot;to&quot;: &quot;routeDisposition&quot; }]
+    },
+
+    // 4. Conditional routing
+    {
+      &quot;id&quot;: &quot;routeDisposition&quot;,
+      &quot;type&quot;: &quot;branch&quot;,
+      &quot;branches&quot;: [
+        { &quot;when&quot;: &quot;${variables.disposition == 'CLEARED'}&quot;,  &quot;to&quot;: &quot;contractWorker&quot; },
+        { &quot;when&quot;: &quot;${variables.disposition == 'REVIEW'}&quot;,    &quot;to&quot;: &quot;createRemediation&quot; },
+        { &quot;when&quot;: &quot;${variables.disposition == 'REJECTED'}&quot;,  &quot;to&quot;: &quot;persist&quot; }
+      ],
+      &quot;default&quot;: { &quot;to&quot;: &quot;persist&quot; }
+    },
+
+    // 5a. CLEARED → Workday SOAP contract
+    {
+      &quot;id&quot;: &quot;contractWorker&quot;,
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;config&quot;: {
+        &quot;connection&quot;: &quot;workdaySoapConnection&quot;,
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;/ccx/service/Staffing/v44.0&quot;,
+        &quot;soapAction&quot;: &quot;Contract_Contingent_Worker&quot;,
+        &quot;bodyTemplate&quot;: &quot;contractContingentWorker.xml&quot;   // SOAP envelope template
+      },
+      &quot;transitions&quot;: [{ &quot;to&quot;: &quot;persist&quot; }]
+    },
+
+    // 5b. REVIEW → create remediation task instance
+    {
+      &quot;id&quot;: &quot;createRemediation&quot;,
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;config&quot;: {
+        &quot;connection&quot;: &quot;workdayRestConnection&quot;,
+        &quot;method&quot;: &quot;POST&quot;,
+        &quot;url&quot;: &quot;/extend/instances/remediationTask&quot;,
+        &quot;body&quot;: {
+          &quot;case&quot;: &quot;${input.caseId}&quot;,
+          &quot;reason&quot;: &quot;Sanctions match requires manual review&quot;,
+          &quot;status&quot;: &quot;OPEN&quot;
+        }
+      },
+      &quot;transitions&quot;: [{ &quot;to&quot;: &quot;persist&quot; }]
+    },
+
+    // catch branch: a failed external gate forces REVIEW, never CLEARED
+    {
+      &quot;id&quot;: &quot;markScreeningError&quot;,
+      &quot;type&quot;: &quot;transform&quot;,
+      &quot;config&quot;: {
+        &quot;language&quot;: &quot;pmd-script&quot;,
+        &quot;script&quot;: &quot;&lt;% variables.disposition = 'REVIEW';
+                      variables.results = [{ 'screeningType':'SANCTIONS','status':'ERROR' }];
+                      return variables; %&gt;&quot;
+      },
+      &quot;transitions&quot;: [{ &quot;to&quot;: &quot;createRemediation&quot; }]
+    },
+
+    // 6. Persist case + children (batch loop in the full design)
+    {
+      &quot;id&quot;: &quot;persist&quot;,
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;config&quot;: {
+        &quot;connection&quot;: &quot;workdayRestConnection&quot;,
+        &quot;method&quot;: &quot;PATCH&quot;,
+        &quot;url&quot;: &quot;/extend/instances/complianceCase/${input.caseId}&quot;,
+        &quot;body&quot;: {
+          &quot;caseStatus&quot;:  &quot;${variables.disposition}&quot;,
+          &quot;overallScore&quot;: &quot;${variables.results[0].score}&quot;
+        }
+      },
+      &quot;transitions&quot;: [{ &quot;to&quot;: &quot;end&quot; }]
+    },
+
+    { &quot;id&quot;: &quot;end&quot;, &quot;type&quot;: &quot;end&quot; }
+  ]
+}
+</code></pre></div>
+<blockquote>
+<p>Compacted to a single screening branch for readability. The full Step-3 design replicates <code>screenSanctions</code> into a <strong>parallel/join-loop</strong> block over <code>requiredScreenings[]</code>, and Step 7 wraps the child writes in a <strong>batch loop</strong>. The two patterns you studied — join loop (concurrent fan-out, blocks at join) vs batch loop (sequential/throttled iteration) — map exactly onto fan-out vs write-back here.</p>
+</blockquote>
+<hr />
+<h2 id="5-what-each-piece-is-designed-to-teach">5. WHAT EACH PIECE IS DESIGNED TO TEACH</h2>
+<p>A quick map so the build doubles as a curriculum:</p>
+<ul>
+<li><strong>CBO modeling &amp; relationships</strong> → the <code>Case → Result/Document</code> parent–child vs <code>Case → Worker</code> reference distinction (cascade scope, child security inheritance).</li>
+<li><strong>PMD dynamic rendering</strong> → <code>onLoad</code> hydration, conditional <code>visible</code>, computed <code>valueClass</code>, per-row <code>onChange</code> with <code>self.value</code> write-back.</li>
+<li><strong>Security depth</strong> → splitting <em>case access</em> from <em>raw-PII access</em> into separate domains; constrained vs unconstrained groups; least-privilege ISU/ISSG for the headless orchestration.</li>
+<li><strong>Orchestrate</strong> → internal REST + RAAS reads, external HTTP with connection-held credentials, try/catch + bounded retry, transform (PMD-script &amp; XSLT), branch routing, and the join-loop vs batch-loop contrast.</li>
+<li><strong>The one rule that ties it together</strong> → <em>a failed or uncertain gate routes to human REVIEW; the system never auto-clears on ambiguity.</em> That single invariant is what makes the aggregation logic non-trivial and worth modeling carefully.</li>
+</ul>
+<p>Build it in this order: CBOs → security → a static PMD against seeded data → the orchestration against one provider → parallelize → wire the PMD trigger last. Each layer is testable before the next exists.</p>
+  </main>
+</div>
+
+<footer class="foot">
+  <span>CW COMPLIANCE HUB — EXTEND ARCHITECTURE BLUEPRINT</span>
+  <span>BUILD ORDER: CBO → SMD → PMD → ORCHESTRATE → WIRE</span>
+</footer>
+<script>
+// language already labelled server-side. Wire copy buttons.
+document.querySelectorAll('.code-copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var code=btn.closest('.code').querySelector('code');
+    var text=code.innerText;
+    navigator.clipboard.writeText(text).then(function(){
+      btn.textContent='copied'; btn.classList.add('done');
+      setTimeout(function(){btn.textContent='copy'; btn.classList.remove('done');},1400);
+    });
+  });
+});
+
+// Strip leading "N. " from section headings (CSS counter supplies §0N).
+var heads=[].slice.call(document.querySelectorAll('.doc h2'));
+heads.forEach(function(h){ h.firstChild&&(h.textContent=h.textContent.replace(/^\s*\d+\.\s*/,'')); });
+
+// Build TOC from h2s.
+var toc=document.getElementById('toc-list');
+heads.forEach(function(h,i){
+  var a=document.createElement('a');
+  a.href='#'+h.id;
+  var n=String(i+1).padStart(2,'0');
+  a.innerHTML='<span class="n">'+n+'</span>'+h.textContent;
+  a.dataset.target=h.id;
+  toc.appendChild(a);
+});
+
+// Scroll-spy.
+var links=[].slice.call(toc.querySelectorAll('a'));
+var io=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      links.forEach(function(l){l.classList.toggle('active',l.dataset.target===e.target.id);});
+    }
+  });
+},{rootMargin:'-10% 0px -75% 0px',threshold:0});
+heads.forEach(function(h){io.observe(h);});
+
+// Wrap tables for horizontal scroll on small screens.
+document.querySelectorAll('.doc table').forEach(function(t){
+  if(t.parentElement.classList.contains('tbl-wrap'))return;
+  var w=document.createElement('div'); w.className='tbl-wrap';
+  t.parentNode.insertBefore(w,t); w.appendChild(t);
+});
+
+// Conditional-formatting demo: pill-ify disposition words outside code.
+var DISP={CLEARED:'ok',REVIEW:'rev',REJECTED:'rej'};
+var re=/\b(CLEARED|REVIEW|REJECTED)\b/;
+function walk(node){
+  for(var i=node.childNodes.length-1;i>=0;i--){
+    var c=node.childNodes[i];
+    if(c.nodeType===1){
+      var tag=c.tagName;
+      if(tag==='PRE'||tag==='CODE'||tag==='A'||tag==='BUTTON'||c.classList.contains('pill'))continue;
+      walk(c);
+    } else if(c.nodeType===3 && re.test(c.nodeValue)){
+      var frag=document.createDocumentFragment(), rest=c.nodeValue, m;
+      var rx=/\b(CLEARED|REVIEW|REJECTED)\b/g, last=0;
+      while((m=rx.exec(rest))){
+        frag.appendChild(document.createTextNode(rest.slice(last,m.index)));
+        var span=document.createElement('span');
+        span.className='pill '+DISP[m[1]]; span.textContent=m[1];
+        frag.appendChild(span); last=rx.lastIndex;
+      }
+      frag.appendChild(document.createTextNode(rest.slice(last)));
+      c.parentNode.replaceChild(frag,c);
+    }
+  }
+}
+walk(document.querySelector('.doc'));
+</script>
+</body>
+</html>

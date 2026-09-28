@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workday Studio — Complete Reference &amp; Build Guide</title>
+<style>
+:root{
+  --bg:#0E1420; --surface:#161E2E; --surface2:#1D2739; --surface3:#232F46;
+  --border:#2A3650; --border2:#3A4A6B;
+  --text:#DCE3F0; --muted:#8B97AF; --faint:#5C6A85;
+  --amber:#F0A030; --amber-dim:#8A5E1E; --cyan:#5FD3E8; --violet:#A48BF2;
+  --ok:#4CC38A; --bad:#E5586D; --warn:#E8C15F;
+  --mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,"Liberation Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --rail:270px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15.5px;line-height:1.65}
+::selection{background:var(--amber);color:#161005}
+
+/* ===== Top bar ===== */
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 20px;
+  background:rgba(14,20,32,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:14px;letter-spacing:.04em}
+.logo .dot{width:11px;height:11px;border-radius:3px;background:var(--amber);box-shadow:0 0 0 3px rgba(240,160,48,.18)}
+.logo b{color:var(--amber);font-weight:600}
+.tabs{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.tab{font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--muted);background:transparent;
+  border:1px solid transparent;border-radius:7px;padding:7px 13px;cursor:pointer;transition:all .15s}
+.tab:hover{color:var(--text);background:var(--surface2)}
+.tab.active{color:var(--amber);background:var(--surface2);border-color:var(--border2)}
+.tab:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* ===== Layout ===== */
+.page{display:none}
+.page.visible{display:block}
+.layout{display:grid;grid-template-columns:var(--rail) 1fr;max-width:1340px;margin:0 auto}
+@media(max-width:940px){.layout{grid-template-columns:1fr}.rail{display:none}}
+main{min-width:0;padding:34px 44px 90px}
+@media(max-width:640px){main{padding:24px 18px 70px}}
+
+/* ===== Assembly-wire rail nav (signature) ===== */
+.rail{position:sticky;top:53px;align-self:start;height:calc(100vh - 53px);overflow-y:auto;
+  padding:30px 10px 40px 26px;border-right:1px solid var(--border)}
+.rail h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px 22px}
+.rail h4:first-child{margin-top:0}
+.wire{position:relative;padding-left:22px}
+.wire::before{content:"";position:absolute;left:6px;top:10px;bottom:10px;width:2px;background:var(--border)}
+.wire a{position:relative;display:block;padding:5px 8px;font-size:13px;color:var(--muted);text-decoration:none;border-radius:6px;line-height:1.4}
+.wire a::before{content:"";position:absolute;left:-20px;top:11px;width:9px;height:9px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--border2);transition:all .15s}
+.wire a:hover{color:var(--text);background:var(--surface)}
+.wire a:hover::before{border-color:var(--amber)}
+.wire a.on{color:var(--amber)}
+.wire a.on::before{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 3px rgba(240,160,48,.2)}
+
+/* ===== Typography ===== */
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+h1{font-size:32px;font-weight:700;letter-spacing:-.015em;line-height:1.2;margin-bottom:12px}
+h2{font-size:23px;font-weight:650;letter-spacing:-.01em;margin:52px 0 14px;padding-top:14px;scroll-margin-top:70px}
+h2 .hash{color:var(--faint);font-family:var(--mono);font-weight:400;margin-right:8px;font-size:18px}
+h3{font-size:17px;font-weight:600;margin:30px 0 10px;color:var(--text);scroll-margin-top:70px}
+p{margin:0 0 13px;color:#C4CDDD}
+p.lead{font-size:17px;color:var(--muted);max-width:760px}
+strong{color:var(--text)}
+em{color:var(--cyan);font-style:normal}
+ul,ol{margin:0 0 14px 22px;color:#C4CDDD}
+li{margin-bottom:6px}
+a.inline{color:var(--cyan)}
+hr.sep{border:none;border-top:1px dashed var(--border);margin:40px 0}
+
+/* ===== Code ===== */
+code{font-family:var(--mono);font-size:.88em;background:var(--surface2);border:1px solid var(--border);
+  border-radius:5px;padding:1.5px 6px;color:var(--cyan);white-space:nowrap}
+pre{background:#0B111C;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:0 0 16px;
+  overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.7;color:#B9D9E8}
+pre code{background:none;border:none;padding:0;white-space:pre;color:inherit}
+pre .cm{color:var(--faint)} pre .k{color:var(--amber)} pre .s{color:#9CE0A8} pre .v{color:var(--violet)}
+.codehead{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);background:var(--surface);border:1px solid var(--border);border-bottom:none;
+  border-radius:10px 10px 0 0;padding:7px 14px;margin-top:14px}
+.codehead+pre{border-radius:0 0 10px 10px;margin-top:0}
+
+/* ===== Cards, tables, callouts ===== */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}
+@media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.card h5{font-family:var(--mono);font-size:12.5px;color:var(--amber);letter-spacing:.05em;margin-bottom:7px}
+.card p{font-size:13.5px;margin-bottom:0;color:var(--muted)}
+.card ul{font-size:13.5px;color:var(--muted);margin-bottom:0}
+
+table{width:100%;border-collapse:collapse;margin:14px 0 22px;font-size:13.5px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  text-align:left;padding:9px 12px;border-bottom:2px solid var(--border2);background:var(--surface)}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:#C4CDDD}
+td code{white-space:normal}
+tr:hover td{background:rgba(29,39,57,.5)}
+.tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin:14px 0 22px}
+.tablewrap table{margin:0}
+
+.callout{display:flex;gap:12px;border-radius:10px;padding:14px 16px;margin:16px 0;font-size:14px;border:1px solid}
+.callout .ic{font-family:var(--mono);font-weight:700;flex-shrink:0}
+.callout.tip{background:rgba(76,195,138,.07);border-color:rgba(76,195,138,.3)} .callout.tip .ic{color:var(--ok)}
+.callout.warn{background:rgba(232,193,95,.07);border-color:rgba(232,193,95,.32)} .callout.warn .ic{color:var(--warn)}
+.callout.danger{background:rgba(229,88,109,.07);border-color:rgba(229,88,109,.32)} .callout.danger .ic{color:var(--bad)}
+.callout p{margin:0;color:#C4CDDD}
+
+/* step lists for build guides */
+.steps{counter-reset:st;list-style:none;margin:18px 0 24px 0}
+.steps>li{counter-increment:st;position:relative;padding:0 0 20px 52px;margin:0}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:-2px;width:32px;height:32px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:600;
+  color:var(--amber);background:var(--surface2);border:1px solid var(--border2)}
+.steps>li::after{content:"";position:absolute;left:15px;top:34px;bottom:2px;width:2px;background:var(--border)}
+.steps>li:last-child::after{display:none}
+.steps>li b:first-child{display:block;color:var(--text);margin-bottom:3px}
+.steps p{font-size:14px;margin-bottom:8px}
+.steps pre{margin-top:8px}
+
+/* flow diagram strip */
+.flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:18px 0 22px;font-family:var(--mono);font-size:12.5px}
+.flow .node{background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:9px 14px;color:var(--text);white-space:nowrap}
+.flow .node.in{border-color:var(--cyan);color:var(--cyan)}
+.flow .node.out{border-color:var(--amber);color:var(--amber)}
+.flow .node.med{border-color:var(--violet);color:var(--violet)}
+.flow .link{width:34px;height:2px;background:var(--border2);position:relative;flex-shrink:0}
+.flow .link::after{content:"";position:absolute;right:-1px;top:-3.5px;border:4.5px solid transparent;border-left-color:var(--border2)}
+.flow .lbl{width:100%;font-size:11px;color:var(--faint);margin-top:6px;letter-spacing:.08em;text-transform:uppercase}
+
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:2px 9px;border-radius:99px;
+  border:1px solid var(--border2);color:var(--muted);margin-left:8px;vertical-align:middle}
+.pill.in{color:var(--cyan);border-color:rgba(95,211,232,.4)}
+.pill.out{color:var(--amber);border-color:rgba(240,160,48,.4)}
+.pill.med{color:var(--violet);border-color:rgba(164,139,242,.45)}
+
+kbd{font-family:var(--mono);font-size:.82em;background:var(--surface3);border:1px solid var(--border2);
+  border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--text)}
+
+/* ===== Hero ===== */
+.hero{padding:56px 44px 30px;max-width:1340px;margin:0 auto}
+@media(max-width:640px){.hero{padding:36px 18px 20px}}
+.hero .big{font-family:var(--mono);font-size:clamp(26px,4.6vw,46px);font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.hero .big em{color:var(--amber)}
+.hero p{max-width:720px;margin-top:14px;color:var(--muted);font-size:16.5px}
+.hero .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:22px;font-family:var(--mono);font-size:12px;color:var(--faint)}
+.hero .meta b{color:var(--cyan);font-weight:600}
+
+/* ===== Quiz ===== */
+.quizshell{max-width:860px;margin:0 auto;padding:40px 22px 90px}
+.modegrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+@media(max-width:640px){.modegrid{grid-template-columns:1fr}}
+.modecard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;cursor:pointer;transition:all .15s;text-align:left}
+.modecard:hover{border-color:var(--amber);transform:translateY(-2px)}
+.modecard h3{margin:0 0 8px;font-size:18px}
+.modecard p{font-size:13.5px;color:var(--muted);margin:0}
+.modecard .tag{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase}
+.qtopbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.qtopbar .spacer{flex:1}
+.progress{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:22px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--cyan));border-radius:99px;transition:width .25s}
+.qcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px}
+.qcat{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+.qtext{font-size:17.5px;font-weight:600;line-height:1.5;margin-bottom:18px}
+.qtext code{font-size:.85em}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:13px 15px;cursor:pointer;font-size:14.5px;text-align:left;color:var(--text);transition:all .12s;width:100%}
+.opt:hover:not(:disabled){border-color:var(--border2);background:var(--surface3)}
+.opt .key{font-family:var(--mono);font-size:12px;color:var(--faint);border:1px solid var(--border2);border-radius:6px;
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.opt.correct{border-color:var(--ok);background:rgba(76,195,138,.1)}
+.opt.correct .key{border-color:var(--ok);color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:rgba(229,88,109,.1)}
+.opt.wrong .key{border-color:var(--bad);color:var(--bad)}
+.opt.picked{border-color:var(--cyan)}
+.opt:disabled{cursor:default;opacity:.92}
+.explain{margin-top:16px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);padding:14px 16px;font-size:14px}
+.explain b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:6px}
+.explain.good b{color:var(--ok)} .explain.badx b{color:var(--bad)}
+.qnav{display:flex;gap:10px;margin-top:20px}
+.btn{font-family:var(--mono);font-size:13px;letter-spacing:.04em;padding:10px 20px;border-radius:9px;cursor:pointer;
+  border:1px solid var(--border2);background:var(--surface2);color:var(--text);transition:all .15s}
+.btn:hover{border-color:var(--amber);color:var(--amber)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:#161005;font-weight:700}
+.btn.primary:hover{background:#FFB84D;color:#161005}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.scorewrap{text-align:center;padding:30px 0}
+.scorering{width:170px;height:170px;margin:0 auto 18px;position:relative}
+.scorering svg{transform:rotate(-90deg)}
+.scorering .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.scorering .num b{font-family:var(--mono);font-size:36px}
+.scorering .num span{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.verdict{font-size:19px;font-weight:650;margin-bottom:6px}
+.breakdown{margin:26px auto 0;max-width:560px;text-align:left}
+.breakdown .row{display:flex;justify-content:space-between;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border);font-size:13.5px}
+.breakdown .row b{font-family:var(--mono);font-size:12.5px}
+.review-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;text-align:left}
+.review-item .rq{font-weight:600;margin-bottom:8px}
+.review-item .ra{font-size:13.5px;margin-bottom:4px}
+.review-item .ra.ok{color:var(--ok)} .review-item .ra.no{color:var(--bad)}
+.review-item .rx{font-size:13px;color:var(--muted);margin-top:8px;border-top:1px dashed var(--border);padding-top:8px}
+.timer{font-family:var(--mono);color:var(--warn)}
+.footer{max-width:1340px;margin:0 auto;padding:26px 44px 44px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:11.5px;color:var(--faint);line-height:1.8}
+@media(max-width:640px){.footer{padding:22px 18px 36px}}
+@media print{.topbar,.rail,.qnav{display:none}body{background:#fff;color:#111}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><span class="dot"></span><span>workday<b>://studio</b>&nbsp;reference</span></div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-page="p-overview">Architecture</button>
+    <button class="tab" data-page="p-components">Components</button>
+    <button class="tab" data-page="p-build">Build Guides</button>
+    <button class="tab" data-page="p-mvel">MVEL</button>
+    <button class="tab" data-page="p-quiz">Quiz</button>
+  </nav>
+</div>
+
+<!-- ============================== PAGE 1: ARCHITECTURE ============================== -->
+<section class="page visible" id="p-overview">
+<div class="hero">
+  <div class="eyebrow">Complete reference &amp; build guide</div>
+  <div class="big">Take in a message.<br>Process it. <em>Route it on.</em></div>
+  <p>Workday Studio is an Eclipse-based development environment for building sophisticated, custom integrations that run in the Workday Cloud. This guide covers the assembly architecture, every major component family, step-by-step build walkthroughs, a full MVEL expression reference, and a quiz to lock it all in.</p>
+  <div class="meta">
+    <span>sections <b>5</b></span><span>build guides <b>8</b></span><span>mvel variables <b>13</b></span><span>quiz bank <b>61 Q</b></span><span>offline <b>single file</b></span>
+  </div>
+</div>
+
+<div class="layout">
+<aside class="rail">
+  <h4>Architecture</h4>
+  <div class="wire">
+    <a href="#ov-what">What is Studio?</a>
+    <a href="#ov-when">Studio vs EIB vs CC</a>
+    <a href="#ov-anatomy">Anatomy of an assembly</a>
+    <a href="#ov-message">MediationMessage</a>
+    <a href="#ov-context">MediationContext</a>
+    <a href="#ov-sync">Sync vs async</a>
+    <a href="#ov-lifecycle">Runtime lifecycle</a>
+    <a href="#ov-scale">Scalability rules</a>
+    <a href="#ov-workspace">Workspace &amp; Cloud Explorer</a>
+  </div>
+</aside>
+<main>
+
+<h2 id="ov-what"><span class="hash">01</span>What is Workday Studio?</h2>
+<p>Workday Studio is a unified, Eclipse-based IDE that lets customers and partners <strong>develop, deploy, debug, and support</strong> their own complex integrations running inside the Workday Cloud. It ships as a set of Eclipse plug-ins and gives you a graphical <strong>Assembly Editor</strong> where you drag reusable components onto a canvas and wire them together. The components handle the plumbing — transports, paging, document storage, eventing — so you focus on business logic.</p>
+<p>Workday itself has used Studio for years to build its packaged integrations, connectors, and even the EIB framework. Studio has been available to customers since Workday 12.</p>
+<div class="grid3">
+  <div class="card"><h5>Develop</h5><p>Drag-and-drop Assembly Editor plus full source view of the underlying <code>assembly.xml</code>. Content assist (Ctrl+Space) surfaces Javadoc for MVEL helpers.</p></div>
+  <div class="card"><h5>Deploy &amp; launch</h5><p>Cloud Explorer connects Studio to your tenants. Deploy a project as a WSAR to the Integration Cloud, then launch from Studio or from Workday.</p></div>
+  <div class="card"><h5>Debug &amp; support</h5><p>Process Monitor, log files, consolidated reports, and the Assembly Debugger let you inspect every message, property, and variable at runtime.</p></div>
+</div>
+
+<h2 id="ov-when"><span class="hash">02</span>When to use Studio (vs EIB vs Core Connectors)</h2>
+<p>Choosing the right tool is the first architecture decision on any Workday integration.</p>
+<div class="tablewrap"><table>
+<tr><th>Tool</th><th>Best for</th><th>Trade-offs</th></tr>
+<tr><td><strong>EIB</strong></td><td>Simple inbound/outbound patterns: one data source, one transformation, one destination. Report-based extracts, spreadsheet loads.</td><td>Single transform, single delivery. Limited branching, error handling, and orchestration.</td></tr>
+<tr><td><strong>Core Connectors / PICOF / PECI</strong></td><td>Packaged, configurable connector frameworks for common vendor patterns (payroll, benefits) driven by integration services, attributes, and maps.</td><td>Configuration over code — fast, but bounded by what the template supports.</td></tr>
+<tr><td><strong>Studio</strong></td><td>Complex logic: multiple sources/targets, conditional routing, looping, aggregation, custom error handling, large-volume paging, custom audit files, multi-format output.</td><td>Requires a developer skill set; you own the design, scalability, and support model.</td></tr>
+</table></div>
+<div class="callout tip"><span class="ic">TIP</span><p>A common enterprise pattern: use a Core Connector (e.g. PECI) to produce the canonical change file, then a Studio assembly or XSLT layer for the vendor-specific transformation and delivery that the connector can't express.</p></div>
+
+<h2 id="ov-anatomy"><span class="hash">03</span>Anatomy of an assembly</h2>
+<p>An <strong>assembly</strong> describes a message-oriented processing chain. The processing style is always the same: <em>take in a message, process it, and route it on</em>. Messages arrive over an in-transport, pass through mediation components and steps, and exit over an out-transport.</p>
+<div class="flow">
+  <div class="node in">workday-in</div><div class="link"></div>
+  <div class="node med">async-mediation<br><small>steps: eval → xslt → log</small></div><div class="link"></div>
+  <div class="node out">sftp-out</div><div class="link"></div>
+  <div class="node">PutIntegrationMessage</div>
+  <div class="lbl">A minimal outbound chain: receive launch event → transform → deliver → report status to the integration event</div>
+</div>
+<ul>
+  <li><strong>In-transports</strong> define where processing starts. Every assembly needs at least one <code>workday-in</code>; more than one gives you multiple entry points. <code>local-in</code> defines a reusable sub-assembly (a subroutine); <code>local-out</code> calls it.</li>
+  <li><strong>Mediation components</strong> (sync/async) hold ordered lists of <strong>steps</strong> — the units that validate, transform, manipulate, and log messages.</li>
+  <li><strong>Advanced components</strong> — <em>route</em>, <em>splitter</em>, <em>aggregator</em> — dynamically control how the runtime traverses the chain.</li>
+  <li><strong>Common components</strong> are Workday-delivered sub-assemblies (PagedGet, PutIntegrationMessage, Ftp, GetIntegrationSystems…). Dropping one onto the canvas inserts a <code>local-out</code> pointing at the packaged endpoint.</li>
+  <li><strong>Out-transports</strong> take the current MediationMessage and send it somewhere: SFTP/FTPS, HTTP/S, email, XMPP, or back to Workday via <code>workday-out-soap</code> / <code>workday-out-rest</code>.</li>
+</ul>
+
+<h2 id="ov-message"><span class="hash">04</span>The MediationMessage</h2>
+<p>An assembly processes data as <strong>messages</strong>. A message enters at an in-transport, follows the connector paths, and leaves through an out-transport. A message consists of <strong>one or more parts</strong> (MIME-style): a single document is a one-part message; attachments become parts 1, 2, 3… Parts can hold textual or binary data, and every part carries a MIME type and headers.</p>
+<pre><code><span class="cm">// Address parts by index — part 0 is always the root part</span>
+parts[0].text                 <span class="cm">// content of the root part</span>
+parts[1].text                 <span class="cm">// content of the first attachment</span>
+parts[0].mimeType             <span class="cm">// MIME type of the root part</span>
+parts[0].getHeader('someHeader')</code></pre>
+
+<h2 id="ov-context"><span class="hash">05</span>The MediationContext</h2>
+<p>The framework passes <em>everything</em> between components inside an instance of <strong>MediationMessageContext</strong>. When an in-transport creates a message, it's wrapped in this context, which lets every component in the chain share state. Its key sub-components:</p>
+<div class="grid3">
+  <div class="card"><h5>MediationMessage</h5><p>The current message and its parts. Ultimately exchanged with an external system via an out-transport.</p></div>
+  <div class="card"><h5>Variables</h5><p>Temporary holders for message data. Classic pattern: copy the message into a variable now, use it later in the chain — e.g. <code>vars['raw'] = message</code>.</p></div>
+  <div class="card"><h5>Properties</h5><p>A map for temporary values and Java objects — flags, counters, attribute values. Accessed as <code>props.name</code> or <code>props['name']</code>.</p></div>
+</div>
+<p>The context also carries the error flag and <code>errorHandled</code> boolean, the assembly audit, the customer ID, and the dynamic endpoint. In MVEL you reach it via the <code>context</code> variable; a <code>mctx</code> URL protocol also lets other components reference context values.</p>
+
+<h2 id="ov-sync"><span class="hash">06</span>Synchronous vs asynchronous</h2>
+<p>The distinction runs through transports <em>and</em> mediations, and it's a favourite exam topic:</p>
+<ul>
+  <li><strong>Sync in-transport</strong> expects a response; <strong>async in-transport</strong> discards any response returned to it.</li>
+  <li><strong>Sync out-transport</strong> returns a response; <strong>async out-transport</strong> does not.</li>
+  <li><strong>SyncMediation</strong> has two step lists — <em>request-steps</em> (push phase) and <em>response-steps</em> (pop phase). <strong>AsyncMediation</strong> has a single <code>steps</code> list that runs during the push phase only. An async mediation is exactly a sync one with no response steps.</li>
+</ul>
+<div class="callout tip"><span class="ic">TIP</span><p>Use a <strong>SyncMediation</strong> around a <code>workday-out-soap</code> call when you need to process the web-service <em>response</em> (pop phase). Use <strong>AsyncMediation</strong> for one-way work like logging, transforming, and delivering.</p></div>
+
+<h2 id="ov-lifecycle"><span class="hash">07</span>Runtime lifecycle of an integration</h2>
+<ol>
+  <li>Processing starts at a <code>workday-in</code> transport, which receives a <strong>launch integration event</strong> document containing the integration event ID and any launch-time parameters.</li>
+  <li>The <code>workday-in</code> transparently calls <code>Get_Integration_Systems</code> to fetch attribute/map settings for services you defined, populating <code>wd.int.sys</code> for the <code>intsys</code> MVEL helper.</li>
+  <li>The message flows through mediations, routes, splitters, and steps; state accumulates in properties and variables.</li>
+  <li>Out-transports deliver the payload; <strong>PutIntegrationMessage</strong> writes status, messages, and output-file links back onto the Integration Event; the <strong>store</strong> step persists documents to the Workday document store (the "Blobitory" / W: drive).</li>
+  <li>Errors raise the context error flag; error handlers (local or global) fire, and the event completes, completes-with-warnings, or fails.</li>
+</ol>
+
+<h2 id="ov-scale"><span class="hash">08</span>Scalability rules</h2>
+<p>Every integration must assume its data extract can be <strong>arbitrarily large</strong>. If you process employee data, assume the population can grow without bound. The two sanctioned approaches:</p>
+<ul>
+  <li><strong>Split → process → aggregate:</strong> use a splitter to break bulk documents into individual records, process each, and re-batch with an aggregator.</li>
+  <li><strong>Page the web service:</strong> use the <strong>PagedGet</strong> common component so responses are retrieved and processed page by page instead of one giant payload.</li>
+</ul>
+<div class="callout danger"><span class="ic">!</span><p>XPath methods (<code>xpath</code>, <code>xpathB</code>, <code>xpathF</code>) are processed in memory with a <strong>1,000,000-character limit</strong>. On large messages use streaming — e.g. the write step's <code>xml-stream</code> element — or you'll hit <em>"Output greater than limit of 1,000,000"</em> and the integration terminates.</p></div>
+
+<h2 id="ov-workspace"><span class="hash">09</span>Workspace &amp; Cloud Explorer</h2>
+<p>Before deploying anything you connect Studio to a tenant. The <strong>Cloud Explorer</strong> view lists available Workday environments; configure the delivered Sandbox/Production connections or add your own, choosing the URL for your data center. Credentials are your integration user for that tenant.</p>
+<ul>
+  <li><strong>Project Explorer</strong> — your assembly projects; a project builds to a <em>WSAR</em> (Web Service ARchive) with <code>META-INF</code> and <code>WSAR-INF</code> folders.</li>
+  <li><strong>Assembly Editor</strong> — canvas + palette + Properties view. Most property fields accept MVEL with content assist via <kbd>Ctrl</kbd>+<kbd>Space</kbd>.</li>
+  <li><strong>Process Monitor</strong> — watch deployed integrations run; right-click an event to <em>View Log File</em>.</li>
+  <li><strong>Help &gt; Help Contents</strong> — the built-in Tutorials &amp; Samples Guide and this Reference Guide's source material live here.</li>
+</ul>
+
+</main>
+</div>
+</section>
+
+<!-- ============================== PAGE 2: COMPONENTS ============================== -->
+<section class="page" id="p-components">
+<div class="hero">
+  <div class="eyebrow">Component reference</div>
+  <div class="big">Every block on <em>the palette.</em></div>
+  <p>Transports move messages in and out. Mediations hold steps. Routes, splitters, and aggregators control flow. Common components are Workday-delivered sub-assemblies. Steps do the actual work.</p>
+</div>
+<div class="layout">
+<aside class="rail">
+  <h4>Components</h4>
+  <div class="wire">
+    <a href="#c-in">In-transports</a>
+    <a href="#c-out">Out-transports</a>
+    <a href="#c-bindings">Bindings &amp; security</a>
+    <a href="#c-mediation">Mediations</a>
+    <a href="#c-route">Route</a>
+    <a href="#c-splitter">Splitter</a>
+    <a href="#c-agg">Aggregator</a>
+    <a href="#c-common">Common components</a>
+    <a href="#c-steps">Mediation steps</a>
+    <a href="#c-errors">Error handlers</a>
+    <a href="#c-modules">Modules</a>
+  </div>
+</aside>
+<main>
+
+<h2 id="c-in"><span class="hash">01</span>In-transports <span class="pill in">entry points</span></h2>
+<div class="tablewrap"><table>
+<tr><th>Transport</th><th>What it does</th></tr>
+<tr><td><code>workday-in</code></td><td>The standard entry point. Receives the launch integration event (event ID + launch parameters). An assembly must have at least one; multiple <code>workday-in</code>s give multiple ways to kick off processing. Define <em>services</em> on it to declare integration attributes and maps.</td></tr>
+<tr><td><code>local-in</code></td><td>Declares a reusable sub-assembly chain — analogous to defining a subroutine. Invoked by a <code>local-out</code> elsewhere.</td></tr>
+</table></div>
+
+<h2 id="c-out"><span class="hash">02</span>Out-transports <span class="pill out">delivery</span></h2>
+<div class="tablewrap"><table>
+<tr><th>Transport</th><th>What it does</th></tr>
+<tr><td><code>workday-out-soap</code></td><td>Sends SOAP requests to your Workday tenant (Workday Web Services). Configure the application (e.g. Human_Resources) and an <strong>explicit version</strong> (e.g. v24.1).</td></tr>
+<tr><td><code>workday-out-rest</code></td><td>Retrieves custom reports via Reports-as-a-Service (RaaS). Configure the <em>extra path</em>: <code>customreport2/&lt;tenant&gt;/&lt;owner&gt;/&lt;report name&gt;</code>.</td></tr>
+<tr><td><code>sftp-out</code> / <code>ftp-out</code> / <code>ftps-out</code></td><td>File delivery. SFTP supports proxy and private-key properties. The Workday network supports FTPS with <em>implicit</em> mode SSL.</td></tr>
+<tr><td><code>http-out</code></td><td>HTTP/S delivery; combine with REST or WSDL bindings and basic/custom authentication.</td></tr>
+<tr><td><code>email-out</code></td><td>SMTP delivery, including messages with attachments.</td></tr>
+<tr><td><code>local-out</code></td><td>Calls a <code>local-in</code> sub-assembly (the subroutine call). Also how common components are invoked under the hood.</td></tr>
+<tr><td><code>xmpp-out</code>, <code>custom-out</code></td><td>Chat protocol delivery; developer-supplied custom transport.</td></tr>
+</table></div>
+
+<h2 id="c-bindings"><span class="hash">03</span>Bindings &amp; security</h2>
+<p>Transport <strong>bindings</strong> shape how a transport speaks a protocol: <code>rest-binding</code>, <code>wsdl-http-binding</code>, and <code>wsdl-soap-binding</code>. The SOAP binding supports <code>ws-security</code>, <code>ws-ut</code> (WS-UsernameToken, configurable on both in- and out-transports), and <code>custom-policy</code>. HTTP transports support <strong>basic</strong> and <strong>custom authentication</strong> with automatic handler selection.</p>
+
+<h2 id="c-mediation"><span class="hash">04</span>Mediations <span class="pill med">step containers</span></h2>
+<p>A mediation defines a sequential ordering of steps that operate on the message as it passes through. Steps cannot be dropped directly onto the canvas — <strong>they must live inside a mediation</strong>. The <code>routes-to</code> attribute names the next transport, mediation, or service in the chain.</p>
+<div class="grid2">
+  <div class="card"><h5>async-mediation</h5><p>One <code>steps</code> list, executed during the push (request) phase. The workhorse for one-way flows.</p></div>
+  <div class="card"><h5>sync-mediation</h5><p>Two lists: <em>request-steps</em> (push) and <em>response-steps</em> (pop). Use when you must handle a response — e.g. after <code>workday-out-soap</code>.</p></div>
+</div>
+
+<h2 id="c-route"><span class="hash">05</span>Route — conditional flow</h2>
+<p>A route consists of one or more <strong>sub-routes</strong> plus a <strong>strategy</strong> that picks which sub-route runs during the push phase. Content-based strategies:</p>
+<ul>
+  <li><code>xpath</code> — choose a sub-route from an XPath expression against the message.</li>
+  <li><code>regex</code> — choose from a regular-expression match.</li>
+  <li><code>mvel</code> — choose from an MVEL Boolean expression (the most flexible; pair with <em>choose-route</em> conditions).</li>
+  <li><code>round-robin</code> — rotate through sub-routes on each execution.</li>
+</ul>
+<p>Routes can also iterate or loop: <code>all</code> executes every sub-route in turn, <code>loop</code> uses MVEL to set context properties that drive iteration, and <code>failover</code> tries an alternate sub-route when one errors.</p>
+
+<h2 id="c-splitter"><span class="hash">06</span>Splitter — divide bulk data</h2>
+<p>The splitter processes bulk messages containing many records, feeding them one (or a group) at a time down a sub-route. Like a route, it has strategies and sub-routes added from the hover toolbar. Splitter flavours:</p>
+<ul>
+  <li><code>xpath-splitter</code> — split on a repeating XPath node (e.g. each <code>wd:Report_Entry</code>).</li>
+  <li><code>xml-stream-splitter</code> — streaming split for very large XML, avoiding in-memory limits.</li>
+  <li><code>standard-splitter</code>, <code>custom-splitter</code>, <code>unzip-splitter</code> — delimiter/standard formats, developer logic, and archive entries respectively.</li>
+</ul>
+<pre><code><span class="cm">// Detect the last record emitted by a splitter</span>
+props['is.last.record'] = util.isLastMessageInBatch()</code></pre>
+
+<h2 id="c-agg"><span class="hash">07</span>Aggregator — reassemble batches</h2>
+<p>The aggregator concatenates mediation messages into a single batch message and routes it onward. Configure a <strong>batch strategy</strong> (custom, size-based, or time-based, via <code>force-batch-when</code>) and a <strong>collator strategy</strong> (<code>collate-when</code>) defining how messages are merged. Splitter + aggregator is the canonical scalable pattern: split employees → transform each → aggregate into the final file.</p>
+
+<h2 id="c-common"><span class="hash">08</span>Common components (Workday sub-assemblies)</h2>
+<div class="tablewrap"><table>
+<tr><th>Component</th><th>Purpose</th></tr>
+<tr><td><code>PutIntegrationMessage</code></td><td>Writes messages back to the Integration Event: severity, <code>is.message.summary</code>, and document links via <code>is.document.variable.name</code>. The status surface of every integration.</td></tr>
+<tr><td><code>PagedGet</code> / <code>PagedGetLocalPaging</code></td><td>Handles paged invocation of any Workday web service; process page-by-page or aggregate all pages. Has both in and out parameters.</td></tr>
+<tr><td><code>GetIntegrationSystems</code></td><td>Retrieves and parses integration system config into the context; its ParseIntegrationSystems creates the <code>intsys</code> MVEL helper for attributes and maps.</td></tr>
+<tr><td><code>GetEventConfigurations</code> / <code>GetEventDocuments</code> / <code>GetIntegrationEvent</code> / <code>PutIntegrationEvent</code></td><td>Read event configuration and documents; read/update the integration event itself.</td></tr>
+<tr><td><code>Ftp</code></td><td>Reusable file-transfer sub-assembly for FTP-family protocols.</td></tr>
+<tr><td><code>PdfPrintStep</code>, <code>XMLStreamModify</code>, <code>SalesforceConnector</code>, <code>GenerateGoogleOAuthAccessToken</code>, <code>PostToGoogleCloudStorage</code></td><td>PDF rendering, streaming XML edits, and packaged third-party connectivity.</td></tr>
+</table></div>
+
+<h2 id="c-steps"><span class="hash">09</span>Mediation steps — the full toolbox</h2>
+<p>Steps are grouped by what they do to the message. The ones you'll use constantly are <strong>bolded</strong>.</p>
+<div class="tablewrap"><table>
+<tr><th>Family</th><th>Steps</th></tr>
+<tr><td>Transform</td><td><strong>xslt</strong>, csv-to-xml, xml-to-csv, xml-to-json, java-to-xml, xml-to-java, xml-to-x12, x12-to-xml, text-excel, textschema, fop (PDF via XSL-FO), character-conversion</td></tr>
+<tr><td>Evaluate &amp; script</td><td><strong>eval</strong> (run MVEL directly — currently the only supported language on its Advanced tab), javascript, custom (Spring bean)</td></tr>
+<tr><td>Validate</td><td><strong>validate</strong> (XSD/DTD/well-formedness), validate-exp (MVEL expressions), validate-xpath (Boolean XPath like <code>/person/age = 200</code>)</td></tr>
+<tr><td>Message manipulation</td><td><strong>copy</strong> (move parts between messages), <strong>write</strong> (Message Builder: build message content from text/xml-stream), set-headers, wrap-soap</td></tr>
+<tr><td>Documents &amp; storage</td><td><strong>store</strong> (persist to the Blobitory / W: drive, optionally auto-creating a document reference), retrieve, enqueue-message</td></tr>
+<tr><td>Encoding &amp; compression</td><td>base64-encode/decode, compress/decompress, zip/unzip, pgp-encrypt/pgp-decrypt</td></tr>
+<tr><td>Logging &amp; diffing</td><td><strong>log</strong> (custom log4j message to the server console), xmldiff (compare two documents; result in <code>wd.xmldiff.step.result</code> and the <code>xmldiff</code> MVEL variable)</td></tr>
+<tr><td>Tables &amp; endpoints</td><td>mtable-builder / mtable-writer (in-memory tables, JSON output), set-dynamic-endpoint</td></tr>
+</table></div>
+<div class="callout tip"><span class="ic">TIP</span><p>The <strong>store</strong> step: set <em>Output</em> to a variable, give it a <em>Title</em> (this becomes the filename), and leave <em>Create Document Reference</em> = true to auto-call PutIntegrationMessage (severity INFO, deliverable false). If you pair it with your own PIM, do <strong>not</strong> also set <code>is.document.file.name</code> — use the store step's title instead.</p></div>
+
+<h2 id="c-errors"><span class="hash">10</span>Error handlers</h2>
+<p>When a step fails, the runtime raises the context error flag and interrupts the flow. Error handlers can be placed <strong>inside a mediation</strong> (local scope) or <strong>globally</strong> (outside any mediation). Locally-scoped handlers fire for errors in their mediation; unhandled and downstream errors bubble to global handlers. A handler can mark <code>errorHandled = true</code>, stopping further error processing and letting the flow continue.</p>
+<ul>
+  <li><code>log-error</code> — writes an error log entry (contains a log-message element you configure).</li>
+  <li><code>send-error</code> — routes the error to a destination; classic pattern is routing to a <code>local-out</code> that calls <code>PutIntegrationMessage</code>, so the failure is visible on the Integration Event.</li>
+  <li><code>custom-error-handler</code> — a Spring bean you supply for programmatic handling.</li>
+</ul>
+<p>Add a handler by hovering over a mediation and picking the handler type from the context toolbar. The delivered <strong>Global Error Handler module</strong> drops a preconfigured global handler (set severity, e.g. CRITICAL) into the assembly in one step.</p>
+
+<h2 id="c-modules"><span class="hash">11</span>Modules — assembly templates</h2>
+<p>Modules are templates for whole assemblies or assembly fragments implementing a pattern. Drag one from the palette, answer the prompts (e.g. paste a SOAP request, specify web-service details), preview what will be inserted, and finish. You can also <strong>build your own</strong>: right-click a project → <em>Create Assembly Module…</em>, walk the wizard, and Studio generates an <code>.xmi</code> file whose parameters you reference in the assembly text as <code>${Parameter1}</code>. Register module directories under <em>Preferences → Workday → Assembly Editor → Modules</em>.</p>
+
+</main>
+</div>
+</section>
+
+<!-- ============================== PAGE 3: BUILD GUIDES ============================== -->
+<section class="page" id="p-build">
+<div class="hero">
+  <div class="eyebrow">Step-by-step walkthroughs</div>
+  <div class="big">Build it <em>from a blank canvas.</em></div>
+  <p>Eight guided builds, in the same order the official training runs them: from a two-component Hello Cloud to a routed, error-handled, scalable RaaS integration. Each build layers exactly one new concept on the previous one.</p>
+</div>
+<div class="layout">
+<aside class="rail">
+  <h4>Build guides</h4>
+  <div class="wire">
+    <a href="#b-setup">0 · Connect &amp; deploy</a>
+    <a href="#b-hello">1 · MyHelloCloud</a>
+    <a href="#b-log">2 · Add logging</a>
+    <a href="#b-wws">3 · Call a web service</a>
+    <a href="#b-raas">4 · Call a RaaS report</a>
+    <a href="#b-store">5 · Store &amp; deliver files</a>
+    <a href="#b-xslt">6 · Transform with XSLT</a>
+    <a href="#b-split">7 · Split, route, aggregate</a>
+    <a href="#b-errors">8 · Error handling</a>
+    <a href="#b-debug">Debugging checklist</a>
+  </div>
+</aside>
+<main>
+
+<h2 id="b-setup"><span class="hash">00</span>Prerequisite — connect, deploy, launch</h2>
+<ol class="steps">
+  <li><b>Open Cloud Explorer and configure a connection.</b><p>Pick the delivered Sandbox connection or add a new one, choosing the URL for your data center. Enter your integration user's credentials for the tenant.</p></li>
+  <li><b>Deploy a sample to verify the pipeline.</b><p>Install the delivered <em>HelloCloud</em> sample, deploy it to the tenant, and launch it from Studio.</p></li>
+  <li><b>Confirm the round trip.</b><p>Watch the event on the <strong>Process Monitor</strong> tab, then right-click → <em>View Log File</em>. You should also see the integration event in Workday itself, so you can prove launches work from both sides.</p></li>
+</ol>
+
+<h2 id="b-hello"><span class="hash">01</span>Build 1 — MyHelloCloud (the minimum viable assembly)</h2>
+<p><strong>Concept introduced:</strong> the workday-in → PutIntegrationMessage backbone that every integration shares.</p>
+<div class="flow">
+  <div class="node in">workday-in</div><div class="link"></div><div class="node">PutIntegrationMessage</div>
+</div>
+<ol class="steps">
+  <li><b>Create the project.</b><p>File → New → Assembly Project, named <code>MyHelloCloud</code>. Click Next, change the collection name to <code>MyHelloCloudCollection</code>, click Finish.</p></li>
+  <li><b>Drop the two components.</b><p>From the palette, drag a <strong>Workday In</strong> transport and a <strong>PutIntegrationMessage</strong> (PIM) onto the blank Assembly Diagram. When PIM shows its "Select Parameter" dialog, click Finish.</p></li>
+  <li><b>Wire them.</b><p>Draw a connector from Workday In to the PIM.</p></li>
+  <li><b>Configure the summary message.</b><p>In the PIM's Properties → Parameters, set <code>is.message.summary</code> to a value like <code>'My Hello Cloud'</code> — <strong>don't forget the single quotes</strong>: parameter values are MVEL expressions, so an unquoted word is treated as a variable reference.</p></li>
+  <li><b>Save, deploy, launch.</b><p>Check the event on the Process Monitor and View Log File. In Workday, the integration event now shows your summary message.</p></li>
+</ol>
+
+<h2 id="b-log"><span class="hash">02</span>Build 2 — add a Log step (steps need mediations)</h2>
+<p><strong>Concept introduced:</strong> steps can't sit on the canvas alone; they live inside a mediation, and every step with output uses the Message Builder.</p>
+<ol class="steps">
+  <li><b>Try dragging a Log step straight onto the diagram.</b><p>It won't attach — that's the lesson. A step must be dropped <em>into a mediation</em>.</p></li>
+  <li><b>Add an AsyncMediation, then drop the Log step inside it.</b><p>Drag an <strong>AsyncMediation</strong> onto the canvas; drag a <strong>Logging</strong> step into the mediation body.</p></li>
+  <li><b>Configure the Message Builder.</b><p>Select the Log step → Properties → Message Builder. Remove the default <code>message-content</code> element, add a <code>text</code> element, type your message, and save. (<code>message-content</code> logs the current message; <code>text</code> logs a literal/MVEL template.)</p></li>
+  <li><b>Re-wire, save, deploy, launch.</b><p>Route workday-in → AsyncMediation → PIM. Your text appears in the event's log file.</p></li>
+</ol>
+
+<h2 id="b-wws"><span class="hash">03</span>Build 3 — MyHelloWWS (call a Workday Web Service)</h2>
+<p><strong>Concepts introduced:</strong> the write step, workday-out-soap, versioned WWS requests, and reading responses from the log.</p>
+<div class="flow">
+  <div class="node in">workday-in</div><div class="link"></div>
+  <div class="node med">async-mediation<br><small>write (SOAP request)</small></div><div class="link"></div>
+  <div class="node out">workday-out-soap</div><div class="link"></div>
+  <div class="node med">async-mediation<br><small>log (response)</small></div><div class="link"></div>
+  <div class="node">PIM</div>
+</div>
+<ol class="steps">
+  <li><b>Create project <code>MyHelloWWS</code></b><p>Collection name <code>MyHelloWWSCollection</code>.</p></li>
+  <li><b>Drop four components.</b><p>Workday In · AsyncMediation containing a <strong>Write</strong> step · <strong>WorkdayOutSoap</strong> · PIM. Wire them in that order.</p></li>
+  <li><b>Generate the request XML with the Web Service Tester.</b><p>Rather than hand-writing SOAP, open the Schema Explorer / Web Service Tester, build a <code>Get_Workers</code> request for one worker, generate the Request XML, and paste it into the Write step's Message Builder as a <em>text</em> value. Use the current explicit version (e.g. <code>v24.1</code>) in the request.</p></li>
+  <li><b>Configure workday-out-soap.</b><p>Set the application to <code>Human_Resources</code> and the version to match the request (v24.1).</p></li>
+  <li><b>Set the PIM summary, then deploy and launch.</b><p>You won't see the response yet — nothing displays it.</p></li>
+  <li><b>Log the response.</b><p>Add another AsyncMediation <em>after</em> WorkdayOutSoap with a Log step; this time keep <code>message-content</code> in the Message Builder so the full response message is logged.</p></li>
+  <li><b>Capture the response for reuse.</b><p>From Process Monitor → View Log File, copy the response XML. In Project Explorer, right-click <code>WSAR-INF</code> → New → XML file → <code>output.xml</code>, paste into the Source tab, then right-click → Source → Format. You now have a real response to develop XSLT against.</p></li>
+</ol>
+<div class="callout warn"><span class="ic">!</span><p><strong>Always pin the web service version.</strong> <code>util.getLatestWWSVersion()</code> is deprecated practice: version drift causes unexpected failures. Explicit, versioned requests are the standard.</p></div>
+
+<h2 id="b-raas"><span class="hash">04</span>Build 4 — MyHelloRaaS (call a custom report)</h2>
+<p><strong>Concepts introduced:</strong> Reports-as-a-Service, workday-out-rest, and the extra path.</p>
+<ol class="steps">
+  <li><b>Enable a custom report as a web service.</b><p>Create an Advanced custom report, tick <em>Enable as Web Service</em>. Workday generates a fixed RaaS namespace: <code>urn:com.workday.report/Report_Name</code>. It stays stable across owner or name changes (editable, but Workday doesn't verify uniqueness — and existing integrations must be updated if you change it). All columns, prompts, and related business objects need labels.</p></li>
+  <li><b>Create project <code>MyHelloRaaS</code></b><p>Components: Workday In · <strong>WorkdayOutRest</strong> · AsyncMediation with a Log step (logging the response) · PIM. Wire in order.</p></li>
+  <li><b>Configure the extra path.</b><p>On WorkdayOutRest, the REST path is <code>customreport2/&lt;tenant&gt;/&lt;owner&gt;/&lt;report name&gt;</code>. Easiest source of truth: open the report in the tenant → related actions → <em>Web Service → View URLs</em> and copy the Workday XML (REST) URL.</p></li>
+  <li><b>Or bind via the report service.</b><p>Define a <em>report service</em> on the workday-in and reference it from WorkdayOutRest; Studio then inserts the MVEL expression <code>@{intsys.reportService.getExtrapath('report-alias-name')}</code> into the Extra Path property, decoupling the assembly from tenant/owner specifics.</p></li>
+  <li><b>Deploy and launch.</b><p>The report rows appear in the logged response.</p></li>
+</ol>
+
+<h2 id="b-store"><span class="hash">05</span>Build 5 — store the output &amp; attach it to the event</h2>
+<p><strong>Concepts introduced:</strong> the store step, the document store ("Blobitory" / W: drive), and document links on the Integration Event.</p>
+<ol class="steps">
+  <li><b>Add a Store step.</b><p>In MyHelloRaaS, drop a <strong>Store</strong> step into the existing AsyncMediation after the Log step.</p></li>
+  <li><b>Configure output to a variable.</b><p>Set <em>Output</em> = variable, <em>Output-Variable</em> = <code>StoredReportResults</code>. Give it a <em>Title</em> — that's the filename; if omitted it defaults to the external filename of what's being stored. The variable lands in the MediationContext and is available to anything downstream.</p></li>
+  <li><b>Decide who creates the document reference.</b><p><em>Create Document Reference</em> defaults to true: the store step itself calls PutIntegrationMessage with severity INFO, summary = the reference description, and <code>is.document.deliverable</code> = false. Need different parameters? Set it to false and call PIM explicitly.</p></li>
+  <li><b>Attach the file on your own PIM.</b><p>Set the PIM's <code>is.document.variable.name</code> parameter to <code>'StoredReportResults'</code>. Don't also set <code>is.document.file.name</code> when a store step is in play — the store title wins.</p></li>
+  <li><b>Deploy, launch, verify.</b><p>The integration event now shows an output file link to your stored report.</p></li>
+</ol>
+
+<h2 id="b-xslt"><span class="hash">06</span>Build 6 — transform with XSLT</h2>
+<p><strong>Concepts introduced:</strong> the xslt step and passing context properties into the stylesheet as parameters.</p>
+<ol class="steps">
+  <li><b>Create the stylesheet in the project.</b><p>Add an <code>.xsl</code> file under the project (e.g. inside <code>WSAR-INF</code>) that transforms the RaaS/WWS response — the <code>output.xml</code> you saved in Build 3 is your development sample.</p></li>
+  <li><b>Add an XSLT step.</b><p>Drop an <strong>xslt</strong> step into the mediation between the response and the store/delivery, pointing at your stylesheet.</p></li>
+  <li><b>Feed it configuration the clean way.</b><p>MediationContext properties are automatically passed into the transformation as stylesheet parameters — just declare a matching <code>&lt;xsl:param name="ia.include.job.code"/&gt;</code>. Set the property first in an eval step: <code>props['ia.include.job.code'] = intsys.getAttribute('Include Job Code')</code>. This beats calling extension functions like <code>is:getIntegrationAttributeValue(...)</code> from inside the XSLT, which ties the stylesheet to the IntegrationSharedComponents project and makes it hard to debug in an external editor like Oxygen.</p></li>
+  <li><b>Store/deliver the transformed output.</b><p>Route the transformed message to the store step or an sftp-out, exactly as in Build 5.</p></li>
+</ol>
+
+<h2 id="b-split"><span class="hash">07</span>Build 7 — split, route by MVEL, aggregate</h2>
+<p><strong>Concepts introduced:</strong> the scalable splitter/aggregator pattern plus content-based routing — the Day-6 router activity.</p>
+<div class="flow">
+  <div class="node in">workday-in</div><div class="link"></div>
+  <div class="node med">splitter<br><small>per worker</small></div><div class="link"></div>
+  <div class="node med">route (mvel)<br><small>male / non-male</small></div><div class="link"></div>
+  <div class="node med">xslt A · xslt B</div><div class="link"></div>
+  <div class="node med">aggregator</div><div class="link"></div>
+  <div class="node out">sftp-out</div>
+</div>
+<ol class="steps">
+  <li><b>Split the bulk document.</b><p>Add a splitter (xpath-splitter on the repeating worker node, or xml-stream-splitter for very large files) so each record flows individually.</p></li>
+  <li><b>Prepare two transformations.</b><p>Duplicate the worker-summary XSLT; in the copy for non-male workers, strip it down (e.g. keep only <code>wd:ReferenceID</code> and <code>wd:Gender</code>). Build two AsyncMediations, one per stylesheet.</p></li>
+  <li><b>Add a router with an MVEL strategy.</b><p>Configure two sub-routes with <em>choose-route</em> conditions — one condition matching male, one matching everything else. Design decision from the training: workers with <strong>no gender must fall through to the non-male path</strong>, so make that the default/else condition rather than an explicit match.</p></li>
+  <li><b>Aggregate and deliver.</b><p>Both paths converge on an aggregator (size/time/custom batch strategy + collator) that reassembles a single output file, then route to your out-transport. Use <code>util.isLastMessageInBatch()</code> in an eval if you need last-record logic.</p></li>
+</ol>
+
+<h2 id="b-errors"><span class="hash">08</span>Build 8 — error handling done properly</h2>
+<ol class="steps">
+  <li><b>Drop the Global Error Handler module.</b><p>Drag the <strong>Global Error Handler</strong> module from the palette to an empty area of the assembly; configure severity <code>CRITICAL</code>; review what it inserted. Global handlers catch errors that bubble back unhandled from anywhere in the assembly.</p></li>
+  <li><b>Add local handlers to every mediation.</b><p>Hover over each mediation → add a <strong>send-error</strong> handler → route it to a PIM so every failure surfaces on the Integration Event with a meaningful message. A <strong>log-error</strong> handler alongside gives the console detail.</p></li>
+  <li><b>Understand the scoping rules.</b><p>An error in a step fires the handlers of <em>that mediation</em> first. Handlers can set <code>errorHandled</code> to stop propagation and allow processing to continue at the next step; otherwise the error flows to global handlers. A property controls whether locally-scoped handlers may also handle <em>downstream</em> errors (default: they don't — downstream errors belong to global handlers).</p></li>
+  <li><b>Report clean summaries.</b><p>When writing failure text into XML (e.g. a PIM summary sourced from a property), wrap it: <code>@{util.cleanString(props['is.message.summary'])}</code> so the output stays well-formed.</p></li>
+</ol>
+
+<h2 id="b-debug"><span class="hash">09</span>Debugging checklist</h2>
+<ul>
+  <li><strong>Process Monitor → View Log File</strong> is your first stop; log steps with <code>message-content</code> are your printf.</li>
+  <li><strong>Consolidated Report Viewer</strong> shows the run's aggregated diagnostics, including memory-limit failures.</li>
+  <li><strong>Assembly Debugger</strong> lets you step through and inspect properties/variables; setting attribute values into properties (rather than XSLT extension calls) makes them visible here.</li>
+  <li><kbd>Ctrl</kbd>+<kbd>Space</kbd> in property fields opens content assist with the MVEL helper Javadoc.</li>
+  <li>Common gotchas: unquoted string parameters on PIM, missing web-service version, steps outside mediations, RaaS report missing column labels, intsys used without a service defined on workday-in, dots in property names, and the 1M-character XPath limit.</li>
+</ul>
+
+</main>
+</div>
+</section>
+
+<!-- ============================== PAGE 4: MVEL ============================== -->
+<section class="page" id="p-mvel">
+<div class="hero">
+  <div class="eyebrow">Expression language reference</div>
+  <div class="big">MVEL: the glue in <em>every property field.</em></div>
+  <p>MVEL is a Java-friendly expression language the assembly runtime uses pervasively for dynamic configuration — from a one-line property binding to full scripts in an eval step. The Workday runtime supports <strong>MVEL 1.3</strong> (compatible with 1.2).</p>
+</div>
+<div class="layout">
+<aside class="rail">
+  <h4>MVEL</h4>
+  <div class="wire">
+    <a href="#m-where">Where MVEL appears</a>
+    <a href="#m-vars">The 13 variables</a>
+    <a href="#m-primer">Expression primer</a>
+    <a href="#m-auto">Auto-conversion syntax</a>
+    <a href="#m-intsys">Attributes &amp; maps</a>
+    <a href="#m-lp">Launch parameters</a>
+    <a href="#m-gotchas">Gotchas</a>
+  </div>
+</aside>
+<main>
+
+<h2 id="m-where"><span class="hash">01</span>Where MVEL appears</h2>
+<p>Property fields in the Assembly Editor accept MVEL in three flavours — the field's decoration tells you which:</p>
+<div class="tablewrap"><table>
+<tr><th>Flavour</th><th>Meaning</th><th>Example</th></tr>
+<tr><td><strong>MVEL template</strong></td><td>Free text with embedded expressions wrapped in <code>@{ }</code></td><td><code>text @{mvel.exp} some text</code></td></tr>
+<tr><td><strong>MVEL expression</strong></td><td>The whole field is an expression; concatenate with <code>+</code></td><td><code>'text' + mvel.exp + 'more text'</code></td></tr>
+<tr><td><strong>Numeric expression</strong></td><td>Expression that must return a number</td><td><code>props.pageCount * 100</code></td></tr>
+</table></div>
+<p>Beyond property fields, MVEL drives the <strong>route</strong> component's <code>mvel-strategy</code> (Boolean sub-route selection), the <strong>eval</strong> step (evaluate expressions directly — MVEL is the only supported language there), <strong>validate-exp</strong>, and assertions inside your own Java. Press <kbd>Ctrl</kbd>+<kbd>Space</kbd> for content assist with Javadoc, or unpack <code>studio/plugins/com.workday.wtp.cloud.runtime.a_&lt;version&gt;/lib/javadoc.zip</code>.</p>
+
+<h2 id="m-vars"><span class="hash">02</span>The 13 expression variables</h2>
+<div class="tablewrap"><table>
+<tr><th>Variable</th><th>Provides access to</th><th>Signature usage</th></tr>
+<tr><td><code>context</code></td><td>The MediationContext itself: message, variables, properties, error flags, audit, customer id, dynamic endpoint</td><td><code>context.getProperty('myProperty')</code> · <code>context.getCustomerId()</code> · <code>context.setProperty('a.b', x)</code></td></tr>
+<tr><td><code>props</code></td><td>Context properties via PropertyMapAdapter — the terse form of context.getProperty</td><td><code>props.myProperty</code> · <code>props['bean.property']</code></td></tr>
+<tr><td><code>vars</code></td><td>Context variables as a Map (MessageContextVariables)</td><td><code>vars['myVar'].text</code> · <code>vars['myVar'] != null</code> · <code>vars['v'].xpath('/a/b')</code></td></tr>
+<tr><td><code>parts</code></td><td>Array-style access to message parts (MessageAdapter). Root = 0, first attachment = 1</td><td><code>parts[0].text</code> · <code>parts[0].mimeType</code> · <code>parts[0].xpath('/a/b')</code> · <code>parts[0].setText('new')</code></td></tr>
+<tr><td><code>message</code></td><td>The MediationMessage interface</td><td><code>message.rootPartAsText</code></td></tr>
+<tr><td><code>da</code></td><td>Document Accessor — pull Integration Event documents inside an eval step</td><td><code>da.toVar('eib_transform_output.txt','var1')</code></td></tr>
+<tr><td><code>intsys</code></td><td>Integration system config: attributes, maps, report services</td><td><code>intsys.getAttribute('username')</code> · <code>intsys.reportService.getExtrapath('alias')</code></td></tr>
+<tr><td><code>lp</code></td><td>Launch parameters (requires <code>wd.launchparameters</code> assigned)</td><td><code>lp.getSimpleData('label')</code> · <code>lp.getDate('label')</code> · <code>lp.exists('label')</code></td></tr>
+<tr><td><code>util</code></td><td>MVELUtilHelper — 40+ helpers for dates, XML testing, batches</td><td><code>util.isLastMessageInBatch()</code> · <code>util.cleanString(s)</code></td></tr>
+<tr><td><code>mtable</code></td><td>In-memory MTable data</td><td><code>mtable['p'].set(0,'Col','v')</code> · <code>mtable['p'].get(0,'Col')</code></td></tr>
+<tr><td><code>xmldiff</code></td><td>Result of an xmldiff step (also <code>wd.xmldiff.step.result</code>)</td><td><code>xmldiff.isDifferent() == true</code></td></tr>
+<tr><td><code>env</code></td><td>JVM system properties</td><td><code>env['cc.hostname']</code></td></tr>
+<tr><td><code>spring</code> / <code>ftp</code> / <code>epg</code></td><td>Spring context beans; FTP URI-scheme tests; external paygroups (internal/Cloud developers)</td><td><code>spring.getBean('fred').name</code> · <code>ftp.isSftp('sftp://…')</code> · <code>epg.getStartDate(w)</code></td></tr>
+</table></div>
+
+<h2 id="m-primer"><span class="hash">03</span>Expression primer</h2>
+<div class="codehead">reading &amp; writing message content</div>
+<pre><code>parts[0].text                          <span class="cm">// root part content</span>
+parts[0].getAs(String)                 <span class="cm">// as String; also getAs(DOMSource)</span>
+parts[0].setText('new content')        <span class="cm">// replace content</span>
+parts[0].setMimeType('text/plain')
+parts[0].getHeader('Content-Length')
+parts[0].setHeader('someHeader','SomeValue')
+message.rootPartAsText</code></pre>
+<div class="codehead">xpath from mvel — three methods</div>
+<pre><code>parts[0].xpath('/a/b')                 <span class="cm">// string content of node</span>
+parts[0].xpathB('/a/b')                <span class="cm">// boolean: does the node exist?</span>
+parts[0].xpathF('/a/b')                <span class="cm">// XML fragment of the node-list ('' if none)</span>
+<span class="cm">// namespace override (default nsmap comes from assembly.xml):</span>
+parts[0].xpath('/xx:a/xx:b', 'xx http://www.somewhere.com')</code></pre>
+<div class="codehead">conditions — route strategies &amp; validate-exp</div>
+<pre><code>props.myBool == true
+parts[0].xpath('/a/b') == 'hcm'
+parts[0].getHeader('someHeader') == 'someValue'
+parts[1].text != null                  <span class="cm">// attachment present?</span>
+parts[0].mimeType ~= 'text/xml.*'      <span class="cm">// ~= is regex match</span>
+order = parts[0].xpath('/customer/order'); order ~= 'ORDER [\\d]+'
+context.getProperty('someProperty').equals('someValue')</code></pre>
+<div class="codehead">ternaries &amp; defaults</div>
+<pre><code>props['ia.include.federal.w4'] =
+  (intsys.getAttribute('Include Federal W-4') == empty)
+      ? 'no'
+      : intsys.getAttribute('Include Federal W-4')</code></pre>
+
+<h2 id="m-auto"><span class="hash">04</span>Auto-conversion syntax</h2>
+<p>MVEL auto-converts between strings, lists, parts, variables, and whole messages — this is the fastest way to move data around an assembly. The inline-list syntax <code>[ content, mimeType ]</code> supplies content and MIME type together; the default MIME type is <code>text/xml</code>.</p>
+<div class="codehead">variables</div>
+<pre><code>vars['fred'] = '&lt;hello&gt;world&lt;/hello&gt;'        <span class="cm">// new var, text/xml</span>
+vars['fred'] = [ 'Hello World', 'text/plain' ] <span class="cm">// content + mime type</span>
+vars['fred'] = [ 23 + 5, 'text/plain' ]        <span class="cm">// any expression as content</span>
+vars['fred'] = parts[1]                        <span class="cm">// copy from first attachment</span>
+vars['fred'] = message                         <span class="cm">// copy the whole message</span>
+vars['fred'] = parts[0].xpathF('/dink/donk')   <span class="cm">// an XPath fragment</span>
+vars['fred'] = null                            <span class="cm">// remove the variable</span></code></pre>
+<div class="codehead">message parts</div>
+<pre><code>parts[0] = '&lt;hello&gt;world&lt;/hello&gt;'
+parts[1] = [ 'Hello World', 'text/plain' ]   <span class="cm">// created if missing —</span>
+                                             <span class="cm">// but parts must stay sequential (no part 9 without part 8)</span>
+parts[0] = vars['fred']
+parts[2] = parts[1]                          <span class="cm">// copy attachment 1 → 2</span>
+parts[0] = null                              <span class="cm">// remove root: attachment 1 becomes root;</span>
+                                             <span class="cm">// if none, root resets to '' text/xml</span></code></pre>
+<div class="codehead">whole messages — assign to context.message</div>
+<pre><code>context.message = '&lt;hello&gt;world&lt;/hello&gt;'
+context.message = [ 'Hello World', 'text/plain' ]
+context.message = vars['fred']
+context.message = parts[0]     <span class="cm">// multi-part message becomes single-part</span></code></pre>
+
+<h2 id="m-intsys"><span class="hash">05</span>Integration attributes &amp; maps</h2>
+<p>The <strong>GetIntegrationSystems</strong> sub-assembly parses your integration system config; its ParseIntegrationSystems component creates the <code>intsys</code> helper. (The <code>workday-in</code> also populates this transparently — but only for attributes/maps declared in <em>services</em> on the transport. Using <code>intsys</code> without a defined service fails at runtime.)</p>
+<pre><code><span class="cm">// classic eval step: copy attributes into properties</span>
+props['ia.include.job.code'] = intsys.getAttribute('Include Job Code')
+
+<span class="cm">// prompt-based attribute → a specific reference ID type</span>
+props['ia.business.contact.profile.type.reference'] =
+  intsys.getAttributeReferenceData('Business Contact Profile Type',
+                                   'Communication_Usage_Type_ID')</code></pre>
+<div class="callout tip"><span class="ic">TIP</span><p>Have <strong>one eval step</strong> that copies all integration attribute values into context properties up front. Properties flow into XSLT automatically as stylesheet parameters (<code>&lt;xsl:param name="ia.include.job.code"/&gt;</code>), which keeps stylesheets debuggable in Oxygen and values visible in the Assembly Debugger. Direct XSLT extension functions exist — declare <code>xmlns:is="java:com.workday.esb.intsys.xpath.ParsedIntegrationSystemFunctions"</code> then call <code>is:getIntegrationAttributeValue('Entity Name')</code> or <code>is:getIntegrationMapValue('Employee Type', $type)</code> — but they couple the XSLT to IntegrationSharedComponents.</p></div>
+
+<h2 id="m-lp"><span class="hash">06</span>Launch parameters (lp)</h2>
+<p>Assign the launch XML to the <code>wd.launchparameters</code> variable (from the <code>wd:Launch_Integration_Event_Data</code> the OMS sends, or one you construct for externally launched integrations), then:</p>
+<pre><code>lp.isSet() == true            <span class="cm">// valid launch XML present?</span>
+lp.exists('Pay Group')        <span class="cm">// parameter provided?</span>
+lp.getSimpleData('Run Type')  <span class="cm">// simple types: string/date/number</span>
+lp.getDate('Period End')      <span class="cm">// xsd:date as string, time stripped</span>
+lp.getUserName()              <span class="cm">// plus getUserNameWID(),</span>
+lp.getIntegrationEventWID()   <span class="cm">// getIntegrationSystemRefWID()</span>
+lp.getMap('Locations')        <span class="cm">// multi-instance params → props per instance</span>
+lp.getWIDs('Locations')
+lp.getDescriptor('Locations', wid)</code></pre>
+
+<h2 id="m-gotchas"><span class="hash">07</span>Gotchas that cost real debugging hours</h2>
+<div class="grid2">
+  <div class="card"><h5>Dots in property names</h5><p><code>props['SplitQ.last.in.batch'] = props['mediation.splitter.last.in.batch']</code> throws <code>org.mvel.CompileException: unterminated '['</code> in Studio's MVEL. Workaround: assign via <code>context.setProperty('name.with.dots', value)</code>.</p></div>
+  <div class="card"><h5>1M-character XPath limit</h5><p><code>xpath</code>/<code>xpathB</code>/<code>xpathF</code> run in memory with a 1,000,000-character ceiling. Large messages: switch to streaming (write step's xml-stream) or split first.</p></div>
+  <div class="card"><h5>MVEL version</h5><p>The runtime is MVEL <strong>1.3</strong> (1.2-compatible) — modern MVEL 2.x syntax you find online may not compile.</p></div>
+  <div class="card"><h5>getLatestWWSVersion()</h5><p>Deprecated practice. Always pin explicit, versioned WWS requests; latest-version lookups cause unexpected failures as tenants roll forward.</p></div>
+  <div class="card"><h5>Quotes on parameters</h5><p>PIM parameter fields are MVEL. <code>'My Hello Cloud'</code> is a string; <code>My Hello Cloud</code> is three undefined identifiers.</p></div>
+  <div class="card"><h5>Non-sequential parts</h5><p>You can't create part 9 unless part 8 exists. Attachments are created in order.</p></div>
+</div>
+
+</main>
+</div>
+</section>
+
+<div class="footer">
+  Compiled from the Workday Studio Reference Guide, Introduction to Workday Studio (WD23–WD25), Workday Studio for ICs Day 1–6, and Advanced Workday Studio WD25 training materials · Internal study aid, single-file &amp; offline · MVEL runtime 1.3<br>
+  Note: the .arf files in the source set are WebEx recordings and require the WebEx player; their content is represented here via the matching written manuals.
+</div>
+
+<!-- ============================== PAGE 5: QUIZ ============================== -->
+<section class="page" id="p-quiz">
+<div class="quizshell" id="quizRoot"></div>
+</section>
+
+<script>
+(function(){
+"use strict";
+/* ---------------- Tabs ---------------- */
+var tabs=document.querySelectorAll('.tab'),pages=document.querySelectorAll('.page');
+tabs.forEach(function(t){t.addEventListener('click',function(){
+  tabs.forEach(function(x){x.classList.remove('active')});
+  pages.forEach(function(p){p.classList.remove('visible')});
+  t.classList.add('active');
+  document.getElementById(t.dataset.page).classList.add('visible');
+  window.scrollTo(0,0);
+})});
+
+/* rail scroll-spy */
+function spy(){
+  document.querySelectorAll('.page.visible .rail a').forEach(function(a){
+    var id=a.getAttribute('href').slice(1),el=document.getElementById(id);
+    if(!el)return;
+    var r=el.getBoundingClientRect();
+    a.classList.toggle('on', r.top<140 && r.bottom>0);
+  });
+}
+window.addEventListener('scroll',spy,{passive:true});
+
+/* ---------------- Quiz data ---------------- */
+var QB=[
+// ARCHITECTURE
+{c:"Architecture",q:"What is the fundamental processing style of a Workday Studio assembly?",o:["Publish/subscribe event streaming","Take in a message, process it, and route it on","Batch job scheduling with cron triggers","Request/response RPC only"],a:1,x:"Assemblies describe message-oriented processing chains: a message arrives at an in-transport, passes through mediation steps, and leaves via an out-transport."},
+{c:"Architecture",q:"Which class does the assembly framework use to pass ALL information between assembly components?",o:["MediationMessage","AssemblyAudit","MediationMessageContext","SpringApplicationContext"],a:2,x:"Everything travels inside a MediationMessageContext instance, which wraps the message plus variables, properties, error flags, audit, customer id, and dynamic endpoint."},
+{c:"Architecture",q:"In a mediation message, what is parts[1]?",o:["The root part","The first attachment","The message header block","The SOAP envelope"],a:1,x:"Parts are indexed from 0: parts[0] is the root part, parts[1] the first attachment, and so on."},
+{c:"Architecture",q:"How does an AsyncMediation differ from a SyncMediation?",o:["Async runs on a separate thread pool","Async has a single steps list (push phase only); sync has request-steps and response-steps","Async cannot contain XSLT steps","Sync mediations cannot route to out-transports"],a:1,x:"SyncMediations have request (push) and response (pop) step lists. An AsyncMediation is directly equivalent to a sync one with no response steps."},
+{c:"Architecture",q:"What happens when a response message is returned to an asynchronous in-transport?",o:["It is queued for retry","It is discarded","It re-enters the assembly","It raises an error"],a:1,x:"Synchronous in-transports expect a response; asynchronous ones discard any response returned to them."},
+{c:"Architecture",q:"What document does the workday-in transport receive when an integration starts?",o:["The integration attribute map","A launch integration event","The consolidated report","The WSAR manifest"],a:1,x:"Processing starts at workday-in with a launch integration event containing the integration event ID and any launch-time parameters."},
+{c:"Architecture",q:"How many workday-in transports must an assembly have at minimum?",o:["Zero — local-in can substitute","Exactly one","At least one","Two (primary and failover)"],a:2,x:"An assembly must have at least one workday-in; having more than one simply provides multiple ways to kick off processing."},
+{c:"Architecture",q:"local-in and local-out are best described as…",o:["Loopback network transports","Sub-assembly declaration and sub-assembly call — like defining and calling a subroutine","Local file readers and writers","Debug-only components"],a:1,x:"local-in declares a reusable assembly chain (sub-assembly); local-out invokes it — the subroutine analogy from the training."},
+{c:"Architecture",q:"Which statement about scalability is the training's core rule?",o:["Integrations may assume data volumes seen in test","Assume the data extract can be arbitrarily large; use splitters/aggregators or paged web services","Always load full responses into a variable for speed","Scalability only matters for payroll integrations"],a:1,x:"All integrations must assume arbitrarily large extracts. The sanctioned patterns are split→process→aggregate and PagedGet paging."},
+{c:"Architecture",q:"Which of these is NOT stored on the MediationContext?",o:["Properties map","Variables","The Eclipse workspace path","Error and error-related flags"],a:2,x:"The context carries the message, variables, properties, error flags, audit, customer id, and dynamic endpoint — not IDE details."},
+// COMPONENTS
+{c:"Components",q:"Which out-transport retrieves custom reports via Reports-as-a-Service?",o:["workday-out-soap","workday-out-rest","http-out","raas-out"],a:1,x:"workday-out-rest calls RaaS-enabled custom reports; workday-out-soap sends SOAP requests to Workday Web Services."},
+{c:"Components",q:"Can you drop a Log step directly onto the assembly canvas?",o:["Yes, anywhere","Yes, but only after a transport","No — steps must be placed inside a mediation","No — log steps are configured in preferences"],a:2,x:"The Activity-4 lesson: steps only live inside mediations. Add an AsyncMediation first, then drop the step into it."},
+{c:"Components",q:"Which route strategy selects a sub-route based on an MVEL Boolean expression?",o:["xpath","regex","mvel","round-robin"],a:2,x:"Strategies include xpath, regex, mvel, and round-robin. The MVEL strategy pairs with choose-route conditions for content-based routing."},
+{c:"Components",q:"Which route option lets EVERY sub-route execute in turn?",o:["all","loop","failover","broadcast"],a:0,x:"'all' runs every sub-route; 'loop' uses MVEL-set context properties to iterate; 'failover' tries an alternate sub-route on error."},
+{c:"Components",q:"Which splitter type should you prefer for extremely large XML files to avoid in-memory limits?",o:["standard-splitter","xpath-splitter","xml-stream-splitter","unzip-splitter"],a:2,x:"xml-stream-splitter processes the document as a stream, sidestepping in-memory constraints like the 1M-character XPath limit."},
+{c:"Components",q:"What two strategy types does an Aggregator combine?",o:["Push and pop strategies","A batch strategy (custom/size/time) and a collator strategy","A route strategy and a splitter strategy","Request and response strategies"],a:1,x:"Configure force-batch-when (custom, size, or time-based batching) plus a collator strategy defining how messages merge."},
+{c:"Components",q:"Dropping a Common Component onto the canvas inserts what into the assembly XML?",o:["A custom Spring bean","A local-out element pointing at the packaged sub-assembly endpoint","An import of a JAR file","A workday-in clone"],a:1,x:"Common components are Workday-delivered sub-assemblies; Studio wires them via a local-out with the appropriate endpoint."},
+{c:"Components",q:"Which common component implements paging logic for Workday web services?",o:["GetIntegrationSystems","PagedGet","PutIntegrationEvent","XMLStreamModify"],a:1,x:"PagedGet handles paged invocation of any Workday web service, processing or aggregating page by page. It exposes both in and out parameters."},
+{c:"Components",q:"The PutIntegrationMessage component is primarily used to…",o:["Send SOAP messages to third parties","Update the Integration Event in Workday with messages, severity, and document links","Store documents in the Blobitory","Queue messages for retry"],a:1,x:"PIM writes status back to the Integration Event: is.message.summary, severity, and document links via is.document.variable.name."},
+{c:"Components",q:"Which FTPS mode does the Workday network support?",o:["Explicit mode only","Implicit mode only","Both explicit and implicit","Neither — SFTP only"],a:1,x:"Per the reference guide, the Workday network currently supports FTPS with implicit mode SSL."},
+{c:"Components",q:"Which step validates a message against an XML schema or DTD?",o:["validate-exp","validate","validate-xpath","xmldiff"],a:1,x:"validate checks XSD/DTD/well-formedness; validate-exp uses MVEL expressions; validate-xpath evaluates a Boolean XPath."},
+{c:"Components",q:"Which step evaluates MVEL expressions directly, and what languages does it support?",o:["eval — MVEL only","javascript — MVEL and JS","custom — any JVM language","write — MVEL templates only"],a:0,x:"The eval step evaluates expressions directly; currently MVEL is the only supported language on its Advanced tab."},
+{c:"Components",q:"Where does the store step persist documents?",o:["The local Eclipse workspace","The Workday document message store — a.k.a. the Blobitory or W: drive","The SFTP landing zone","The integration log"],a:1,x:"store writes an atom document or blob to a collection/workspace in the document store, known as the Blobitory or Workday W: drive."},
+{c:"Components",q:"With Create Document Reference = true, the store step automatically calls PutIntegrationMessage with which settings?",o:["severity WARN, deliverable true","severity INFO, summary = documentReferenceDescription, is.document.deliverable = false","severity CRITICAL, deliverable false","No parameters are set"],a:1,x:"The default behavior calls the WCC putIntegrationMessage sub-assembly with severity INFO, the reference description as summary, and deliverable = false. Need different values? Set it false and call PIM yourself."},
+{c:"Components",q:"When using a store step with your own PIM, which PIM parameter should you NOT define?",o:["is.message.summary","is.document.variable.name","is.document.file.name","is.message.severity"],a:2,x:"Don't set is.document.file.name — specify the filename via the store step's Title property instead."},
+{c:"Components",q:"What does the log step actually produce?",o:["A row in a Workday custom report","A customized log4j message written to the server console","An email to the integration owner","An entry in the audit trail business object"],a:1,x:"log creates a customized log4j message on the Server console — visible via Process Monitor → View Log File."},
+{c:"Components",q:"Modules in Studio are…",o:["Java OSGi bundles","Templates for assemblies or assembly fragments implementing a pattern, stored as .xmi files","Workday-delivered XSLTs","Runtime plugins loaded from the tenant"],a:1,x:"Modules template an integration pattern. Build your own via right-click project → Create Assembly Module…; parameters are referenced as ${Parameter1} in the assembly text, and workspaces point at .xmi directories in Preferences."},
+// BUILD & DEPLOY
+{c:"Build & Deploy",q:"In the MyHelloCloud build, is.message.summary is set to 'My Hello Cloud' — why the single quotes?",o:["Workday requires quotes for all parameters","The field is an MVEL expression, so unquoted text would be treated as identifiers","Quotes trigger template substitution","They're optional styling"],a:1,x:"PIM parameters are MVEL. 'My Hello Cloud' is a string literal; without quotes MVEL tries to resolve three variables and fails."},
+{c:"Build & Deploy",q:"In MyHelloWWS, how does the training recommend creating the Get_Workers request XML?",o:["Write it by hand from the WSDL","Generate it with the Web Service Tester and paste into a Write step's Message Builder","Export it from an EIB","Copy it from the SOAP UI marketplace"],a:1,x:"Use the Schema Explorer / Web Service Tester to generate the request for one worker, then paste into the Write step as a text value — with an explicit version like v24.1."},
+{c:"Build & Deploy",q:"After launching MyHelloWWS you can't see the web service response. What's the taught fix?",o:["Enable SOAP tracing on the tenant","Add an AsyncMediation with a Log step (keeping message-content) after WorkdayOutSoap","Switch to a sync in-transport","Check the consolidated report"],a:1,x:"Add a log step configured with message-content after the SOAP call; the response then appears in the event's log file, where you can copy it into an output.xml for XSLT development."},
+{c:"Build & Deploy",q:"What is the generic REST extra path for a RaaS report?",o:["raas/<report id>","customreport2/<tenant>/<owner>/<report name>","reports/v1/<namespace>","service/customreport/<wid>"],a:1,x:"customreport2/<tenant>/<owner>/<report name>. Easiest source: the report's related actions → Web Service → View URLs."},
+{c:"Build & Deploy",q:"When you bind a report via a report service, Studio inserts which expression into the Extra Path property?",o:["@{intsys.reportService.getExtrapath('report-alias-name')}","@{lp.getSimpleData('report')}","@{props['raas.path']}","@{util.getReportPath()}"],a:0,x:"Defining the report service on workday-in and referencing it lets Studio insert @{intsys.reportService.getExtrapath('alias')} — decoupling the assembly from tenant/owner names."},
+{c:"Build & Deploy",q:"A RaaS namespace like urn:com.workday.report/Report_Name…",o:["Changes whenever the report owner changes","Stays fixed across owner and name changes, protecting dependent integrations","Is regenerated on every tenant refresh","Must be globally unique — Workday enforces it"],a:1,x:"The namespace stays fixed even if ownership or the name changes. You can edit it, but Workday doesn't verify uniqueness and dependent integrations must then be updated."},
+{c:"Build & Deploy",q:"What must a custom report have before it can be enabled as a web service?",o:["A matrix layout","Labels defined for all columns, prompts, and related business objects","An owner in the Integration Admin group","Temporal filtering"],a:1,x:"Reports enabled as web services require labels on all columns, prompts, and related business objects."},
+{c:"Build & Deploy",q:"The clean way to pass integration attribute values into an XSLT is…",o:["Call is:getIntegrationAttributeValue() inside the stylesheet","Set context properties in an eval step; they flow into the XSLT automatically as stylesheet parameters","Hard-code them per tenant","Read them from env[] in the stylesheet"],a:1,x:"Properties are auto-passed as stylesheet parameters — declare a matching <xsl:param>. Extension functions work but couple the XSLT to IntegrationSharedComponents and hurt debuggability in Oxygen and the Assembly Debugger."},
+{c:"Build & Deploy",q:"In the Day-6 router activity (split by gender), where should workers WITHOUT a gender go?",o:["They should error out","Down the male path","Down the non-male path (make it the default condition)","They are silently dropped"],a:2,x:"The activity's design note: some workers have no gender, so the non-male sub-route must catch them — build the conditions so it's the fall-through path."},
+{c:"Build & Deploy",q:"A Studio project deploys to the Integration Cloud as a…",o:["JAR","WSAR (Web Service ARchive)","EAR","ZIP of the workspace"],a:1,x:"Projects build to a WSAR containing META-INF and WSAR-INF; project files like XSLTs and sample XML live under WSAR-INF."},
+{c:"Build & Deploy",q:"Which Studio view do you use to watch a running integration and open its log file?",o:["Cloud Explorer","Process Monitor","Console","Servers"],a:1,x:"Process Monitor tracks deployed integration runs; right-click the event → View Log File."},
+{c:"Build & Deploy",q:"Keyboard shortcut for MVEL content assist (with Javadoc) in property fields?",o:["Ctrl+Space","Ctrl+Shift+P","Alt+Enter","F2"],a:0,x:"Ctrl+Space opens content assist in many Properties-view fields, exposing the Javadoc for the MVEL helper classes."},
+// MVEL
+{c:"MVEL",q:"Which MVEL version does the Workday Runtime support?",o:["MVEL 2.4","MVEL 1.3 (compatible with 1.2)","MVEL 3.0","Whatever ships with the JVM"],a:1,x:"The runtime supports MVEL 1.3, also compatible with 1.2 — so modern 2.x syntax found online may not compile."},
+{c:"MVEL",q:"props.myProperty is the terse equivalent of…",o:["vars['myProperty'].text","context.getProperty('myProperty')","parts[0].getHeader('myProperty')","env['myProperty']"],a:1,x:"props is a PropertyMapAdapter over context properties — same value, less verbose."},
+{c:"MVEL",q:"What does parts[0].xpathB('/a/b') return?",o:["The string content of /a/b","A Boolean: whether the node /a/b exists","An XML fragment of matches","The count of matching nodes"],a:1,x:"xpath returns string content, xpathB evaluates a Boolean (node exists / expression true), xpathF returns the XML fragment of the node-list ('' if no match)."},
+{c:"MVEL",q:"vars['fred'] = [ 'Hello World', 'text/plain' ] does what?",o:["Creates a two-element list variable","Creates variable fred with content 'Hello World' and MIME type text/plain","Throws — vars only accept strings","Creates two variables"],a:1,x:"MVEL's inline list syntax supplies content plus MIME type in one assignment. Without it, the default MIME type is text/xml."},
+{c:"MVEL",q:"What is the effect of parts[0] = null?",o:["The message is deleted","The root part is removed; the first attachment becomes the root, or if none, root resets to empty text/xml","A NullPointerException","The MIME type is cleared only"],a:1,x:"A message must always have a root part, so removing part 0 promotes attachment 1 — or resets root content to '' with type text/xml."},
+{c:"MVEL",q:"To replace the entire current message from a variable, you assign to…",o:["message.root","parts[*]","context.message","vars['message']"],a:2,x:"Whole-message assignment goes through the context: context.message = vars['fred'] (or a string, list, or part)."},
+{c:"MVEL",q:"Why does props['SplitQ.last.in.batch'] = … fail with 'unterminated ['?",o:["Property names can't exceed 20 chars","Dots in property names break Studio's MVEL version; use context.setProperty(...) instead","Square brackets aren't valid MVEL","props is read-only"],a:1,x:"A known MVEL 1.3 issue: dotted names inside props[...] assignments fail to compile. context.setProperty('name.with.dots', value) is the workaround."},
+{c:"MVEL",q:"The 1,000,000-character limit applies to…",o:["Variable content","XPath methods (xpath/xpathB/xpathF), which run in memory","Log step output","SOAP request size"],a:1,x:"XPath methods are memory-bound with a 1M-char limit — exceed it and the integration terminates. Stream instead (e.g. write step's xml-stream) for large messages."},
+{c:"MVEL",q:"Which expression correctly detects the last message a splitter will emit?",o:["props['is.last.record'] = util.isLastMessageInBatch()","lp.isLast()","context.isLastMessage()","parts[0].last == true"],a:0,x:"util (MVELUtilHelper) provides isLastMessageInBatch(); the taught pattern assigns it to a property in an eval step."},
+{c:"MVEL",q:"util.cleanString(...) is used to…",o:["Trim whitespace only","Ensure a value produces well-formed XML when written into message content","Remove PII","Normalize dates"],a:1,x:"cleanString sanitizes text so components emit well-formed XML — e.g. wrapping a PIM summary written inside a write step template."},
+{c:"MVEL",q:"Before using the lp variable, what must be assigned?",o:["wd.launchparameters — the launch XML","wd.int.sys","props['lp.enabled']","Nothing; lp always works"],a:0,x:"lp reads the wd.launchparameters variable, which holds the wd:Launch_Integration_Event_Data XML (from the OMS or constructed for externally launched integrations)."},
+{c:"MVEL",q:"Using intsys.getAttribute(...) at runtime fails unless…",o:["The attribute is marked required","A service defining attributes/maps is configured on the workday-in","GetEventDocuments has run","The tenant is Production"],a:1,x:"workday-in calls Get_Integration_Systems transparently, but only for services you define on it. No service → intsys access fails at runtime."},
+{c:"MVEL",q:"Which expression gives an attribute a default of 'no' when unset?",o:["intsys.getAttribute('X') || 'no'","(intsys.getAttribute('X') == empty) ? 'no' : intsys.getAttribute('X')","default(intsys.getAttribute('X'),'no')","intsys.getAttributeOrDefault('X','no')"],a:1,x:"The documented ternary-with-empty pattern: props['ia.x'] = (intsys.getAttribute('X') == empty) ? 'no' : intsys.getAttribute('X')."},
+{c:"MVEL",q:"What does the ~= operator do in MVEL?",o:["Approximate numeric equality","Regular-expression match","XML deep-equal","Case-insensitive equality"],a:1,x:"~= is regex match: parts[0].mimeType ~= 'text/xml.*' or order ~= 'ORDER [\\d]+'."},
+{c:"MVEL",q:"Within an eval step, da.toVar('eib_transform_output.txt','var1')…",o:["Deletes a document","Fetches a document from the Integration Event into variable var1","Uploads var1 as a document","Renames a stored file"],a:1,x:"da is the Document Accessor: it pulls Integration Event documents into context variables inside eval steps."},
+{c:"MVEL",q:"@{ } notation in a property field means the field is…",o:["A pure MVEL expression","An MVEL template — free text with embedded expressions","A JSON literal","An XPath"],a:1,x:"Template-type fields mix literal text with @{expression} substitutions; expression-type fields hold a single MVEL expression concatenated with +."},
+// ERRORS
+{c:"Error Handling",q:"Which three error-handler types does the Assembly Runtime support?",o:["try, catch, finally","log-error, send-error, custom-error-handler","retry, skip, abort","warn-error, fail-error, halt-error"],a:1,x:"log-error writes an error log entry; send-error routes the error onward (classically to a PIM via local-out); custom-error-handler runs your Spring bean."},
+{c:"Error Handling",q:"An error in step transform_1 inside Mediation1 fires which handler first?",o:["The global handler, always","The handler scoped to Mediation1","The workday-in error service","Whichever was added first"],a:1,x:"Locally-scoped handlers fire for errors within their mediation; unhandled errors then bubble to global handlers."},
+{c:"Error Handling",q:"What does setting errorHandled = true accomplish?",o:["Retries the failed step","Marks the error handled, stopping further error processing so flow can continue","Escalates to CRITICAL","Rolls back the integration event"],a:1,x:"Handlers can mark the error handled; the runtime clears the error and processing may continue at the next step in the mediation."},
+{c:"Error Handling",q:"The classic send-error pattern routes the error to…",o:["An email-out to the admin","A local-out calling the putIntegrationMessage sub-assembly, so the failure shows on the Integration Event","The consolidated report","A dead-letter queue"],a:1,x:"Routing send-error → local-out → PIM makes every failure visible on the event with a meaningful message and severity."},
+{c:"Error Handling",q:"In the Day-6 module activity, what severity is configured on the Global Error Handler module?",o:["INFO","WARNING","CRITICAL","DEBUG"],a:2,x:"The activity drops the delivered Global Error Handler module and configures severity CRITICAL, then adds send-error handlers to every mediation."},
+{c:"Error Handling",q:"By default, can a locally-scoped handler handle DOWNSTREAM errors?",o:["Yes, always","No — downstream errors are handled by global handlers unless a property enables local handling","Only in sync mediations","Only if it is a custom-error-handler"],a:1,x:"Downstream errors belong to global handlers by default; a setting can allow locally-scoped handlers to catch them."}
+];
+
+/* ---------------- Quiz engine ---------------- */
+var root=document.getElementById('quizRoot');
+var S=null, timerId=null;
+
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(s){ // allow `code` ticks in questions
+  return esc(s).replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+
+function home(){
+  clearInterval(timerId);
+  root.innerHTML=
+  '<div class="eyebrow">Knowledge check</div>'+
+  '<h1>Workday Studio Quiz</h1>'+
+  '<p class="lead">'+QB.length+' questions spanning architecture, components, build workflow, MVEL, and error handling — written from the reference guide and training activities in this app.</p>'+
+  '<div class="modegrid">'+
+  '<button class="modecard" id="mLearn"><span class="tag">Learning mode</span><h3>Study all '+QB.length+' questions</h3><p>Immediate feedback with a full explanation after every answer. No timer, no pressure. Questions run in order by topic.</p></button>'+
+  '<button class="modecard" id="mExam"><span class="tag">Exam mode</span><h3>20 random questions · 20 minutes</h3><p>Shuffled questions and options, no feedback until the end. Score ring, topic breakdown, and full answer review.</p></button>'+
+  '</div>';
+  document.getElementById('mLearn').onclick=function(){start('learn')};
+  document.getElementById('mExam').onclick=function(){start('exam')};
+}
+
+function start(mode){
+  var qs = mode==='learn' ? QB.map(function(q,i){return {q:q,shuf:null}}) 
+                          : shuffle(QB).slice(0,20).map(function(q){return {q:q,shuf:shuffle([0,1,2,3])}});
+  S={mode:mode,qs:qs,i:0,answers:new Array(qs.length).fill(null),answered:0,correct:0,secs:mode==='exam'?20*60:0};
+  if(mode==='exam'){
+    timerId=setInterval(function(){
+      S.secs--;
+      var el=document.getElementById('tmr');
+      if(el)el.textContent=clock(S.secs);
+      if(S.secs<=0){clearInterval(timerId);finish();}
+    },1000);
+  }
+  render();
+}
+function clock(s){var m=Math.floor(s/60),x=s%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x;}
+
+function render(){
+  var item=S.qs[S.i], q=item.q;
+  var order=item.shuf||[0,1,2,3];
+  var picked=S.answers[S.i];
+  var html='<div class="qtopbar">'+
+    '<span>'+(S.mode==='learn'?'LEARNING':'EXAM')+'</span>'+
+    '<span>Q '+(S.i+1)+' / '+S.qs.length+'</span>'+
+    (S.mode==='exam'?'<span class="timer" id="tmr">'+clock(S.secs)+'</span>':'<span>score '+S.correct+' / '+S.answered+'</span>')+
+    '<span class="spacer"></span><button class="btn" id="quitBtn">Exit</button></div>'+
+    '<div class="progress"><i style="width:'+((S.i)/S.qs.length*100)+'%"></i></div>'+
+    '<div class="qcard"><div class="qcat">'+q.c+'</div><div class="qtext">'+fmt(q.q)+'</div><div class="opts">';
+  var KEYS=['A','B','C','D'];
+  order.forEach(function(oi,k){
+    var cls='opt';
+    if(picked!==null){
+      if(S.mode==='learn'){
+        if(oi===q.a)cls+=' correct';
+        else if(oi===picked)cls+=' wrong';
+      }else if(oi===picked)cls+=' picked';
+    }
+    html+='<button class="'+cls+'" data-oi="'+oi+'" '+(picked!==null&&S.mode==='learn'?'disabled':'')+'>'+
+      '<span class="key">'+KEYS[k]+'</span><span>'+fmt(q.o[oi])+'</span></button>';
+  });
+  html+='</div>';
+  if(picked!==null&&S.mode==='learn'){
+    var good=picked===q.a;
+    html+='<div class="explain '+(good?'good':'badx')+'"><b>'+(good?'Correct':'Not quite — answer: '+esc(q.o[q.a]))+'</b>'+fmt(q.x)+'</div>';
+  }
+  html+='</div><div class="qnav">'+
+    '<button class="btn" id="prevBtn" '+(S.i===0?'disabled':'')+'>&larr; Prev</button>'+
+    '<span class="spacer" style="flex:1"></span>'+
+    (S.i<S.qs.length-1
+      ?'<button class="btn primary" id="nextBtn">Next &rarr;</button>'
+      :'<button class="btn primary" id="finBtn">Finish</button>')+
+    '</div>';
+  root.innerHTML=html;
+  root.querySelectorAll('.opt').forEach(function(b){
+    b.onclick=function(){
+      if(S.mode==='learn'&&S.answers[S.i]!==null)return;
+      var oi=+b.dataset.oi;
+      if(S.answers[S.i]===null){S.answered++;if(oi===S.qs[S.i].q.a)S.correct++;}
+      else if(S.mode==='exam'){ // allow changing in exam
+        if(S.answers[S.i]===S.qs[S.i].q.a)S.correct--;
+        if(oi===S.qs[S.i].q.a)S.correct++;
+      }
+      S.answers[S.i]=oi;
+      render();
+    };
+  });
+  document.getElementById('prevBtn').onclick=function(){if(S.i>0){S.i--;render();}};
+  var nb=document.getElementById('nextBtn');if(nb)nb.onclick=function(){S.i++;render();};
+  var fb=document.getElementById('finBtn');if(fb)fb.onclick=finish;
+  document.getElementById('quitBtn').onclick=function(){if(confirm('Exit the quiz? Progress will be lost.'))home();};
+  window.scrollTo(0,0);
+}
+
+function finish(){
+  clearInterval(timerId);
+  var total=S.qs.length, correct=0, cats={};
+  S.qs.forEach(function(item,i){
+    var q=item.q, ok=S.answers[i]===q.a;
+    if(ok)correct++;
+    cats[q.c]=cats[q.c]||{t:0,c:0}; cats[q.c].t++; if(ok)cats[q.c].c++;
+  });
+  var pct=Math.round(correct/total*100);
+  var verdict = pct>=90?'Studio architect.':pct>=75?'Deployment-ready.':pct>=60?'Solid — reread the flagged topics.':'Back to the build guides.';
+  var R=52,C=2*Math.PI*R;
+  var html='<div class="scorewrap"><div class="eyebrow">'+(S.mode==='learn'?'Learning session complete':'Exam complete')+'</div>'+
+  '<div class="scorering"><svg width="170" height="170" viewBox="0 0 120 120">'+
+  '<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="#232F46" stroke-width="9"/>'+
+  '<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+(pct>=75?'#4CC38A':pct>=60?'#E8C15F':'#E5586D')+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct/100))+'"/></svg>'+
+  '<div class="num"><b>'+pct+'%</b><span>'+correct+' / '+total+'</span></div></div>'+
+  '<div class="verdict">'+verdict+'</div>'+
+  '<div class="breakdown">';
+  Object.keys(cats).forEach(function(c){
+    html+='<div class="row"><span>'+c+'</span><b>'+cats[c].c+' / '+cats[c].t+'</b></div>';
+  });
+  html+='</div><div class="qnav" style="justify-content:center;margin-top:26px">'+
+  '<button class="btn" id="revBtn">Review answers</button>'+
+  '<button class="btn primary" id="againBtn">Back to modes</button></div></div><div id="revZone"></div>';
+  root.innerHTML=html;
+  document.getElementById('againBtn').onclick=home;
+  document.getElementById('revBtn').onclick=function(){
+    var z=document.getElementById('revZone'),h='';
+    S.qs.forEach(function(item,i){
+      var q=item.q,p=S.answers[i],ok=p===q.a;
+      h+='<div class="review-item"><div class="qcat">'+q.c+'</div><div class="rq">'+(i+1)+'. '+fmt(q.q)+'</div>'+
+      '<div class="ra '+(ok?'ok':'no')+'">Your answer: '+(p===null?'—':esc(q.o[p]))+(ok?' ✓':' ✗')+'</div>'+
+      (ok?'':'<div class="ra ok">Correct: '+esc(q.o[q.a])+'</div>')+
+      '<div class="rx">'+fmt(q.x)+'</div></div>';
+    });
+    z.innerHTML=h; this.style.display='none';
+  };
+  window.scrollTo(0,0);
+}
+
+home();
+})();
+</script>
+</body>
+</html>

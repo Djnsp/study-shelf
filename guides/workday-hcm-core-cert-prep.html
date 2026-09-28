@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workday Pro HCM Core — Certification Prep</title>
+<style>
+:root{
+  --navy:#0d2d5e; --navy2:#12407f; --blue:#0875e1; --blue-lt:#e7f1fc;
+  --orange:#f38b00; --green:#2f9e44; --green-lt:#e9f7ec; --red:#d63a2f; --red-lt:#fdecea;
+  --ink:#333; --ink2:#5e6a75; --soap:#f6f7f8; --line:#dfe3e8; --card:#ffffff;
+  --amber:#b8860b; --amber-lt:#fff7e0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--soap);color:var(--ink);line-height:1.5}
+header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:18px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header .logo{font-weight:800;font-size:20px;letter-spacing:.2px}
+header .logo span{color:var(--orange)}
+header .sub{font-size:13px;opacity:.85}
+header .spacer{flex:1}
+header button{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+header button:hover{background:rgba(255,255,255,.25)}
+.wrap{max-width:1060px;margin:0 auto;padding:26px 18px 70px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(13,45,94,.06)}
+h1{font-size:26px;color:var(--navy);margin-bottom:6px}
+h2{font-size:19px;color:var(--navy);margin-bottom:10px}
+.muted{color:var(--ink2);font-size:14px}
+.grid{display:grid;gap:16px}
+@media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:1fr 1fr 1fr}}
+.modecard{cursor:pointer;transition:.15s;border:2px solid var(--line)}
+.modecard:hover{border-color:var(--blue);transform:translateY(-2px)}
+.modecard .tag{display:inline-block;background:var(--blue-lt);color:var(--blue);font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.modecard.exam .tag{background:#fdf0dd;color:var(--orange)}
+.pill{display:inline-block;font-size:12px;background:var(--soap);border:1px solid var(--line);border-radius:20px;padding:3px 10px;margin:3px 4px 0 0;color:var(--ink2)}
+.btn{display:inline-block;background:var(--blue);color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:15px;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.06)}
+.btn.secondary{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+.btn.ghost{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.btn.warn{background:var(--orange)}
+.btn.danger{background:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select,input[type=number]{padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;background:#fff;color:var(--ink)}
+.qnum{font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:6px}
+.qtext{font-size:16.5px;font-weight:600;color:var(--ink);margin-bottom:14px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:9px;cursor:pointer;background:#fff;font-size:14.5px;transition:.12s}
+.opt:hover{border-color:var(--blue);background:var(--blue-lt)}
+.opt .dot{width:18px;height:18px;min-width:18px;border:2px solid #9aa5b1;border-radius:50%;margin-top:2px;position:relative}
+.opt.sel{border-color:var(--blue);background:var(--blue-lt)}
+.opt.sel .dot{border-color:var(--blue)}
+.opt.sel .dot::after{content:"";position:absolute;inset:3px;background:var(--blue);border-radius:50%}
+.opt.correct{border-color:var(--green);background:var(--green-lt)}
+.opt.correct .dot{border-color:var(--green)}
+.opt.correct .dot::after{content:"";position:absolute;inset:3px;background:var(--green);border-radius:50%}
+.opt.wrong{border-color:var(--red);background:var(--red-lt)}
+.opt.wrong .dot{border-color:var(--red)}
+.opt.wrong .dot::after{content:"";position:absolute;inset:3px;background:var(--red);border-radius:50%}
+.opt.locked{cursor:default}
+.feedback{border-radius:10px;padding:12px 14px;font-size:14px;margin:8px 0 4px;border:1px solid}
+.feedback.ok{background:var(--green-lt);border-color:#bfe6c8;color:#1c6a30}
+.feedback.bad{background:var(--red-lt);border-color:#f4c1bc;color:#992c23}
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.progressline{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin:8px 0 18px}
+.progressline>div{height:100%;background:var(--blue);border-radius:8px;transition:width .25s}
+.statchips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff;border:1px solid var(--line);border-radius:9px;padding:5px 12px;font-size:12.5px;color:var(--ink2)}
+.chip b{color:var(--navy)}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;color:var(--navy);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:6px 14px;font-size:15px}
+.timer.low{color:var(--red);border-color:var(--red)}
+.navgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:7px;margin-top:10px}
+.navgrid button{padding:8px 0;border-radius:8px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink2)}
+.navgrid button.answered{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.navgrid button.flagged{background:var(--amber-lt);border-color:var(--amber);color:var(--amber)}
+.navgrid button.current{outline:2.5px solid var(--navy);outline-offset:1px}
+.scorebig{font-size:44px;font-weight:800;color:var(--navy)}
+.passband{display:inline-block;padding:6px 16px;border-radius:24px;font-weight:700;font-size:14px;margin-left:10px;vertical-align:14px}
+.passband.pass{background:var(--green-lt);color:#1c6a30}
+.passband.fail{background:var(--red-lt);color:#992c23}
+.secbar{margin:9px 0}
+.secbar .lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);margin-bottom:3px}
+.secbar .bar{height:9px;background:var(--line);border-radius:8px;overflow:hidden}
+.secbar .bar>div{height:100%;border-radius:8px}
+.review-item{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;background:#fff}
+.review-item.correct{border-left:5px solid var(--green)}
+.review-item.wrong{border-left:5px solid var(--red)}
+.flagbtn{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:7px 13px;cursor:pointer;font-size:13px;color:var(--ink2)}
+.flagbtn.on{background:var(--amber-lt);border-color:var(--amber);color:var(--amber);font-weight:700}
+.footer-note{margin-top:26px;text-align:center;font-size:12px;color:var(--ink2)}
+.hidden{display:none}
+.streak{font-weight:800;color:var(--orange)}
+/* study guide */
+.guide-layout{display:grid;grid-template-columns:235px 1fr;gap:18px;align-items:start}
+@media(max-width:820px){.guide-layout{grid-template-columns:1fr}}
+.toc{position:sticky;top:14px}
+.toc button{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:7px;cursor:pointer;font-size:13.5px;color:var(--ink2);font-weight:600}
+.toc button:hover{border-color:var(--blue);color:var(--blue)}
+.toc button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.gchap h2{font-size:22px;margin-bottom:14px}
+.gchap h3{font-size:16px;color:var(--navy);margin:20px 0 8px;padding-top:6px;border-top:1px dashed var(--line)}
+.gchap h3:first-of-type{border-top:none;padding-top:0}
+.gchap p{font-size:14.5px;margin:8px 0}
+.gchap ul{margin:8px 0 8px 22px;font-size:14.5px}
+.gchap li{margin:5px 0}
+.wt{font-size:12px;font-weight:700;color:var(--orange);background:#fdf0dd;border-radius:20px;padding:3px 10px;vertical-align:4px;margin-left:6px}
+table.gt{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+table.gt th{background:var(--navy);color:#fff;text-align:left;padding:8px 10px;font-weight:600}
+table.gt td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;background:#fff}
+table.gt tr:nth-child(even) td{background:var(--soap)}
+.tip{background:var(--blue-lt);border-left:4px solid var(--blue);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+.tip.examtip{background:#fdf0dd;border-left-color:var(--orange)}
+.keybox{background:var(--soap);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+ul.cram{margin-left:18px}
+ul.cram li{margin:7px 0;font-size:14px}
+.gnav{display:flex;justify-content:space-between;margin-top:20px}
+.kbd{font-size:11.5px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo">workday<span>.</span> <span style="font-weight:400;font-size:14px;opacity:.9">| HCM Core Prep</span></div>
+    <div class="sub">Workday Pro HCM Core Certification &middot; practice question bank</div>
+  </div>
+  <div class="spacer"></div>
+  <button onclick="goHome()">&#8962; Home</button>
+</header>
+<div class="wrap">
+
+<!-- ================= HOME ================= -->
+<div id="view-home">
+  <div class="card" style="margin-bottom:18px">
+    <h1>Certification Prep — Question Bank</h1>
+    <p class="muted">Scenario-based single-answer questions in the Questionmark practice-exam style, aligned to the official exam guide topics and weights. The real exam is ~50 questions in 120 minutes; the practice exam is 20 questions in 60 minutes.</p>
+    <div style="margin-top:10px" id="home-pills"></div>
+  </div>
+  <div class="grid three">
+    <div class="card modecard guide" onclick="showGuide(0)">
+      <span class="tag" style="background:var(--green-lt);color:var(--green)">STUDY GUIDE</span>
+      <h2>Read the material</h2>
+      <p class="muted">A detailed reference for all five exam topics — staffing models, organizations, business processes, reporting, and security — plus a high-yield quick review for exam day.</p>
+    </div>
+    <div class="card modecard" onclick="showLearnSetup()">
+      <span class="tag">LEARNING MODE</span>
+      <h2>Study with instant feedback</h2>
+      <p class="muted">Work through any topic (or everything). Each answer is graded immediately with the rationale — just like the practice exam's feedback screens. Tracks your streak and per-topic accuracy.</p>
+    </div>
+    <div class="card modecard exam" onclick="showExamSetup()">
+      <span class="tag">EXAM MODE</span>
+      <h2>Timed exam simulation</h2>
+      <p class="muted">Questionmark-style: timer, flag for review, assessment navigator, submit, 75% pass bar, per-topic breakdown, and a full answer review with rationales. Choose the 20-question practice format or the 50-question full simulation.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <h2>Best exam results</h2>
+    <div id="home-best" class="muted">No exams taken yet in this browser.</div>
+  </div>
+  <div class="footer-note">Original practice questions for personal study — not official Workday content. Verify details against the HCM Core course manuals.</div>
+</div>
+
+<!-- ================= STUDY GUIDE ================= -->
+<div id="view-guide" class="hidden">
+  <div class="guide-layout">
+    <div class="toc" id="g-toc"></div>
+    <div class="card" id="g-body">
+      <section class="gchap" id="gc-0">
+<h2>1. Staffing Setup <span class="wt">25% of the exam</span></h2>
+
+<h3>1.1 The job catalog</h3>
+<p>The job catalog is the library of jobs your company uses. It has three layers:</p>
+<table class="gt"><tr><th>Layer</th><th>What it is</th><th>Example</th></tr>
+<tr><td><b>Job family group</b></td><td>The broadest grouping; contains job families</td><td>Information Technology</td></tr>
+<tr><td><b>Job family</b></td><td>A set of related job profiles</td><td>Software Engineering</td></tr>
+<tr><td><b>Job profile</b></td><td>The actual job definition used to create positions/jobs and staff workers</td><td>Senior Software Engineer</td></tr></table>
+<ul>
+<li>Job families and family groups exist mainly to <b>organize and report on</b> the catalog (for example, headcount by family).</li>
+<li>A job profile <b>can belong to more than one job family</b>.</li>
+<li>You create families and assign profiles to them with the job family maintenance tasks (for example, Create Job Family, Maintain Job Family).</li>
+</ul>
+
+<h3>1.2 Anatomy of a job profile</h3>
+<p>A job profile is a reusable template of job attributes. Fields you should know:</p>
+<table class="gt"><tr><th>Field</th><th>Why it matters</th></tr>
+<tr><td>Job family / families</td><td>Places the profile in the catalog for reporting and restrictions</td></tr>
+<tr><td>Management level</td><td>Consistent seniority hierarchy (for example, Executive, Manager, Individual Contributor) used in reporting and configuration</td></tr>
+<tr><td>Job level</td><td>Grading/leveling of jobs (for example, P1–P5)</td></tr>
+<tr><td>Job classifications</td><td>Categories, often regulatory (for example, EEO), grouped in job classification groups</td></tr>
+<tr><td>Exempt / non-exempt</td><td>Overtime eligibility treatment per country</td></tr>
+<tr><td>Pay rate type</td><td>Defaults salaried vs. hourly</td></tr>
+<tr><td>Compensation grade</td><td>Defaults pay guidelines during staffing events</td></tr>
+<tr><td>Critical job</td><td>Flags key jobs for reporting and planning</td></tr>
+<tr><td>Inactive</td><td>Removes the profile from new staffing; history is preserved</td></tr></table>
+<div class="tip examtip"><b>Exam angle:</b> expect questions on <i>which fields are used to create and edit job profiles</i> and what each defaults during staffing.</div>
+
+<h3>1.3 Staffing models — the big picture</h3>
+<ul>
+<li>The staffing model is chosen <b>per supervisory organization</b>, so different orgs in one tenant can use different models (a "hybrid" landscape).</li>
+<li><b>Position Management is the default</b> model for new supervisory organizations.</li>
+<li>Organizations can be <b>switched between models</b>; existing filled staffing converts to the new model.</li>
+</ul>
+
+<h3>1.4 Position Management</h3>
+<ul>
+<li>Every hire requires an <b>approved, individually created position</b> (Create Position).</li>
+<li>Each position carries its own <b>position restrictions</b> — job family/profile, worker type, location, availability date, earliest hire date — describing the "seat" itself.</li>
+<li><b>Unfilled positions are real objects</b>: you get vacancy tracking, time-to-fill by seat, and seat-level budgeting.</li>
+<li>On termination the position by default becomes an <b>unfilled position</b> you can refill; you can instead <b>close</b> it (ends availability) or <b>freeze</b> it (temporary block, reversible).</li>
+<li><b>Job overlap</b> lets a replacement occupy the position while the incumbent is still active (knowledge-transfer scenarios).</li>
+<li><b>Edit Position Restrictions</b> changes the seat's rules for future incumbents; <b>Edit Position</b> is a staffing event that changes a filled position's details (business title, scheduled hours, and so on).</li>
+</ul>
+
+<h3>1.5 Job Management</h3>
+<ul>
+<li>No pre-created positions — you <b>hire directly</b>, and the job is created at hire time.</li>
+<li><b>One set of hiring restrictions per supervisory organization</b> (task: Edit Hiring Restrictions) constrains all hires there.</li>
+<li>No unfilled position objects: <b>no vacancy tracking</b>, and nothing is "left behind" at termination.</li>
+<li>Maximum hiring flexibility and speed, but <b>headcount control depends on process</b>, not per-seat approvals.</li>
+</ul>
+
+<h3>1.6 Restrictions in both models</h3>
+<table class="gt"><tr><th>&nbsp;</th><th>Position Management</th><th>Job Management</th></tr>
+<tr><td>Where defined</td><td>Per position (position restrictions)</td><td>Once per org (hiring restrictions)</td></tr>
+<tr><td>Typical contents</td><td colspan="2">Job family/profile, worker type (employee/contingent and their types), location, time-based dates</td></tr>
+<tr><td>Availability date</td><td colspan="2">When the position/restrictions become usable</td></tr>
+<tr><td>Earliest hire date</td><td colspan="2">First day a worker may actually start</td></tr>
+<tr><td>Evaluated when</td><td colspan="2">During staffing events (hire, change job) — they constrain and validate choices</td></tr></table>
+
+<h3>1.7 Choosing (and changing) a model</h3>
+<table class="gt"><tr><th>Need</th><th>Pick</th></tr>
+<tr><td>Tight per-seat control, approvals, vacancy/time-to-fill reporting, seat budgeting</td><td>Position Management</td></tr>
+<tr><td>Fast, flexible, high-volume hiring against a shared rule set (retail, seasonal)</td><td>Job Management</td></tr>
+<tr><td>Different needs in different parts of the company</td><td>Different models on different sup orgs</td></tr></table>
+
+<h3>1.8 Commonly used staffing business processes</h3>
+<ul>
+<li><b>Preparing an org for staffing:</b> Position Management → <b>Create Position</b>; Job Management → <b>Edit Hiring Restrictions</b>.</li>
+<li><b>Hire:</b> turns a <b>pre-hire</b> into a worker with an effective date. Key subprocesses: <b>Propose Compensation Hire</b> (starting pay), <b>Assign Pay Group</b> (payroll population), <b>Assign Roles</b> (organization role assignments), <b>Onboarding</b> (new-hire tasks).</li>
+<li><b>Change Job:</b> promotions, demotions, lateral moves, transfers between orgs, location and hours changes. During transfers, <b>Assign Roles</b> keeps role-based access aligned with the new situation; <b>Propose Compensation Change</b> and <b>Assign Pay Group</b> commonly ride along.</li>
+<li><b>Termination:</b> captures termination date, last day of work, pay-through date, reason, and <b>eligibility for rehire</b>; decides position disposition (open vs. close) in Position Management; <b>Manage Business Processes for Worker</b> reviews the worker's in-flight events so they can be reassigned or canceled.</li>
+<li><b>Add Additional Job / End Additional Job:</b> a worker holds, then ends, a secondary job without touching the primary one.</li>
+<li><b>Contract Contingent Worker:</b> the staffing event for external/contingent labor (worker type distinguishes employees on payroll from contingent workers).</li>
+</ul>
+<div class="tip examtip"><b>Exam angle:</b> know the <i>purpose</i> of Hire, Change Job, and Termination, and which subprocess does what — especially Assign Roles vs. Assign Pay Group vs. Propose Compensation.</div>
+</section>
+
+<section class="gchap hidden" id="gc-1">
+<h2>2. Organizations <span class="wt">20% of the exam</span></h2>
+
+<h3>2.1 Supervisory organizations — the foundation</h3>
+<ul>
+<li>Supervisory organizations group workers into a <b>management hierarchy</b>. They are the only place <b>staffing happens</b> — every worker is staffed into one through their position or job.</li>
+<li>Business process definitions, routing, and role-based security all operate through the supervisory hierarchy.</li>
+</ul>
+
+<h3>2.2 Key supervisory organization attributes</h3>
+<table class="gt"><tr><th>Attribute</th><th>Notes</th></tr>
+<tr><td>Availability date</td><td>Earliest date the org can be used in transactions</td></tr>
+<tr><td>Superior organization</td><td>Exactly one, except the top-level org (which has none)</td></tr>
+<tr><td>Subtype</td><td>Label such as Department or Division; a subtype must be configured as <b>allowable for the organization type</b> to be selectable</td></tr>
+<tr><td>Staffing model</td><td>Position or Job Management, set per org</td></tr>
+<tr><td>Visibility</td><td>How broadly the org appears (for example, in search)</td></tr>
+<tr><td>Manager</td><td>Established via the <b>Manager role assignment</b>, normally held by a position</td></tr></table>
+<p><b>Inheritance:</b> subordinate organizations inherit configuration from superiors unless overridden — notably business process definitions and <b>unfilled role assignments</b> (if an org has no HR Partner of its own, Workday resolves the role by walking up the hierarchy).</p>
+
+<h3>2.3 Building and maintaining the hierarchy</h3>
+<table class="gt"><tr><th>Task</th><th>Use it to…</th></tr>
+<tr><td>Create Supervisory Organization</td><td>Create a top-level org (rare)</td></tr>
+<tr><td><b>Create Subordinate</b></td><td>Create an org beneath a superior, inheriting key settings — the everyday way to grow the hierarchy</td></tr>
+<tr><td>Divide Supervisory Organization</td><td>Split a large org, moving selected workers into subordinate orgs</td></tr>
+<tr><td>Assign Superior</td><td>Re-parent an org under a different superior</td></tr>
+<tr><td>Move Workers</td><td>Mass-move workers between supervisory organizations</td></tr>
+<tr><td>Inactivate Organization</td><td>Retire an org — allowed only when it has <b>no remaining workers/staffing</b>; history is preserved (orgs with history are inactivated, not deleted)</td></tr></table>
+<p><b>Reorganization events</b> bundle multiple org changes to take effect together on a planned date, keeping history clean.</p>
+
+<h3>2.4 Other organization types</h3>
+<table class="gt"><tr><th>Type</th><th>Purpose</th></tr>
+<tr><td>Company</td><td>Legal entity; statutory, financial, and payroll significance</td></tr>
+<tr><td>Cost center</td><td>Financial responsibility for worker costs</td></tr>
+<tr><td>Region</td><td>Geographic grouping for reporting/routing</td></tr>
+<tr><td>Pay group</td><td>Population processed together in payroll; connected via <b>Assign Pay Group</b></td></tr>
+<tr><td>Custom organizations</td><td>Customer-defined types when delivered ones don't fit; a custom type can be configured to <b>allow multiple simultaneous memberships</b></td></tr>
+<tr><td>Matrix organization</td><td>Secondary "dotted-line" reporting; the matrix manager gets team visibility, while staffing stays with the supervisory manager</td></tr>
+<tr><td>Retiree organization</td><td>Keeps a relationship with retirees after employment ends</td></tr></table>
+<div class="tip"><b>Watch out:</b> <b>locations are not organizations</b> — they are separate instances representing physical places assigned to workers and positions.</div>
+
+<h3>2.5 Organization hierarchies</h3>
+<ul>
+<li>Types like company, cost center, region, and custom orgs can be arranged into <b>hierarchies</b> for rollup reporting (for example, a cost center hierarchy for consolidated views).</li>
+<li>Workers/costs belong to the <b>organizations</b>, not to hierarchy nodes — hierarchies only aggregate.</li>
+</ul>
+
+<h3>2.6 Organization assignments (defaults and allowed values)</h3>
+<ul>
+<li>Supervisory organizations carry <b>default organization assignments</b> (commonly company, cost center, region) that <b>prefill</b> during staffing events, configured by maintaining organization assignments on the sup org.</li>
+<li><b>Allowed values</b> restrict which choices can be selected; defaults speed entry, allowed values constrain it.</li>
+<li><b>Change Organization Assignments</b> updates a worker's assignments (for example, a cost center move) without a job change.</li>
+</ul>
+
+<h3>2.7 Assignable roles</h3>
+<ul>
+<li>Roles (HR Partner, Compensation Partner, Manager…) connect <b>responsibilities to positions</b> in an organization context. Task: <b>Assign Roles</b>.</li>
+<li>Because assignments attach to the <b>position</b>, a successor automatically takes on the same responsibilities.</li>
+<li><b>Single assignment</b> roles allow one holder per org; others allow multiple.</li>
+<li>Roles drive <b>business process routing</b> (steps route to the role's holder on the relevant org, inheriting from superiors if unfilled) and <b>role-based security group membership</b>.</li>
+</ul>
+</section>
+
+<section class="gchap hidden" id="gc-2">
+<h2>3. Business Processes <span class="wt">25% of the exam</span></h2>
+
+<h3>3.1 Terminology and framework</h3>
+<table class="gt"><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>Business process <b>definition</b></td><td>The configured template: steps, order, groups, rules</td></tr>
+<tr><td>Business process <b>event</b></td><td>A live transaction created when someone initiates the process</td></tr>
+<tr><td>Initiating action</td><td>The task/action a user performs that creates the event</td></tr>
+<tr><td>Order values</td><td>Alphanumeric values (a, b, ba, c…) controlling step sequence; equal values run <b>in parallel</b>, and values like "ba" slot between "b" and "c"</td></tr>
+<tr><td>Completion step</td><td>The event is considered complete at this step even if later steps still run</td></tr></table>
+
+<h3>3.2 Step types</h3>
+<table class="gt"><tr><th>Step</th><th>What it does</th></tr>
+<tr><td>Initiation</td><td>Always first (order "a"); represents the initiating action</td></tr>
+<tr><td>Action</td><td>User performs a Workday task that can add/change event data</td></tr>
+<tr><td>Approval</td><td>Approve / deny / send back — <b>no editing</b> of submitted data</td></tr>
+<tr><td>Approval chain</td><td>Escalates through a chain (for example, the management hierarchy) until its rule is satisfied</td></tr>
+<tr><td>Consolidated approval</td><td>One screen combining several approvals — decision-only, <b>does not permit editing</b></td></tr>
+<tr><td>To Do</td><td>Manual task outside the transaction; user marks complete to let the process continue</td></tr>
+<tr><td>Checklist</td><td>A bundle of related To Dos</td></tr>
+<tr><td>Service</td><td>Automated Workday service performed without user data entry</td></tr>
+<tr><td>Subprocess</td><td>A full business process embedded in a parent (for example, Propose Compensation inside Hire) with its own definition <b>and its own security policy</b></td></tr>
+<tr><td>Questionnaire</td><td>Collects structured responses inside the flow</td></tr></table>
+
+<h3>3.3 Definitions: default vs. custom</h3>
+<ul>
+<li>The <b>default definition</b> applies tenant-wide. An organization can carry a <b>custom definition</b> that overrides it for that org and its subordinates.</li>
+<li>Resolution when an event starts: use the org's own definition → else walk <b>up the hierarchy</b> → else the default.</li>
+<li>Two ways to create an org-specific definition: <b>copy</b> (editable variant) or <b>link</b> (reuse another definition without duplicating).</li>
+<li>Editing a definition affects <b>new events only</b>; in-flight events finish on the definition they started with.</li>
+<li>Reference report: <b>Business Process Configuration Options</b> summarizes configurable options per process type.</li>
+</ul>
+
+<h3>3.4 Condition rules and validations</h3>
+<ul>
+<li>Condition rules are built from <b>condition items</b>: source field + relational operator + comparison value, combined with And/Or.</li>
+<li>An <b>entry condition</b> on a step ("run this step only if…") that evaluates false causes the step to be <b>skipped</b>.</li>
+<li><b>Validations</b> attached to the <b>initiation step</b> evaluate first, stopping (critical error) or warning (alert) on bad data before anyone downstream spends time on it.</li>
+<li>Conditions decide <b>whether</b> a step runs; routing decides <b>who</b> performs it — a favorite exam distinction.</li>
+</ul>
+
+<h3>3.5 Routing, due dates, delays, help text</h3>
+<ul>
+<li>Steps route to <b>groups/roles</b>; role holders resolve from the relevant organization, inheriting from superiors when unfilled. If no holder exists anywhere, the step cannot resolve and must be addressed.</li>
+<li><b>Advanced routing</b> refines who receives a step — for example, excluding the initiator or targeting a specific role member.</li>
+<li><b>Due dates</b> set targets used for aging, alerts, and escalation (they never auto-complete a step). <b>Maintain Step Delay</b> postpones a step's start; <b>Maintain Step Help Text</b> shows instructions to the assignee.</li>
+</ul>
+
+<h3>3.6 Custom notifications</h3>
+<ul>
+<li>Configure the <b>trigger</b> (on entry or exit of a step), the <b>recipients</b> (roles, security groups, specific Workday accounts), and the <b>message content</b> (subject/body, dynamic fields).</li>
+<li>Notifications inform only; unlike To Dos they require no completion and never block the process.</li>
+</ul>
+
+<h3>3.7 The event lifecycle and actions</h3>
+<table class="gt"><tr><th>Action</th><th>Effect</th></tr>
+<tr><td>Approve</td><td>Moves the event forward</td></tr>
+<tr><td>Send back</td><td>Returns it to an earlier step (often the initiator) for correction; event stays <b>in progress</b></td></tr>
+<tr><td>Deny</td><td><b>Terminates the entire event</b></td></tr>
+<tr><td>Cancel</td><td>Stops an <b>in-progress</b> event; its changes don't take effect</td></tr>
+<tr><td>Rescind</td><td>Reverses a <b>completed</b> event</td></tr>
+<tr><td>Correct</td><td>Edits an in-progress event (with permission)</td></tr>
+<tr><td>Reassign</td><td>Moves an inbox task to the right person</td></tr>
+<tr><td>Delegate</td><td>Temporarily hands inbox tasks to another user for a period — a convenience, <b>not</b> a security change</td></tr></table>
+<p>Assigned steps appear in the user's <b>inbox (My Tasks)</b>; the event's <b>process history</b> shows who acted, when, and who it awaits — your first stop when troubleshooting.</p>
+
+<h3>3.8 Business process security policies</h3>
+<ul>
+<li>Each process type has a security policy controlling <b>who can initiate, approve, view, rescind, cancel, and correct</b> its events.</li>
+<li>Subprocesses have their <b>own</b> policies — participation there is controlled independently of the parent.</li>
+<li>Like all security policy edits, changes take effect only after activation (see chapter 5).</li>
+</ul>
+</section>
+
+<section class="gchap hidden" id="gc-3">
+<h2>4. Reporting <span class="wt">5% of the exam</span></h2>
+
+<h3>4.1 Standard reports</h3>
+<ul>
+<li><b>Standard reports</b> are delivered, predefined reports — ready to run subject to security.</li>
+<li>They <b>cannot be modified in place</b>; many (Report Writer–based ones) can be copied via <b>Copy Standard Report to Custom Report</b>, and the copy edited freely.</li>
+<li>Know the frequently referenced ones: <b>Business Process Configuration Options</b> (plan BP config), <b>View Security for Securable Item</b>, <b>View Security Groups for User</b>, and job-profile/organization tracking reports.</li>
+</ul>
+
+<h3>4.2 Report Writer concepts</h3>
+<table class="gt"><tr><th>Concept</th><th>Meaning</th></tr>
+<tr><td>Business object</td><td>An entity such as Worker or Position; fields hang off it</td></tr>
+<tr><td>Data source</td><td>A predefined, <b>secured</b> query returning instances of a primary business object</td></tr>
+<tr><td>Related business objects</td><td>Reachable through fields on the primary object (Worker → Positions), letting one report traverse entities</td></tr></table>
+
+<h3>4.3 Building custom reports</h3>
+<ul>
+<li>Custom reports are built with <b>Report Writer</b>. The <b>advanced</b> report type unlocks the full tab set: Columns, Sort, Filter, Subfilter, <b>Prompts</b>, Output, Share, Advanced.</li>
+<li><b>Filters</b> restrict which instances return; <b>prompts</b> collect runtime criteria from the user (defined on the Prompts tab).</li>
+<li><b>Temporary reports</b> are flagged for automatic cleanup after a period; tags/categories keep the report catalog findable.</li>
+</ul>
+
+<h3>4.4 Report security and sharing</h3>
+<ul>
+<li>Sharing exposes a report to users/groups, but output is always constrained by the <b>viewer's own security</b> — two users can run the same report and see different rows.</li>
+<li>To run a report, a user effectively needs access to the report <i>and</i> to the <b>domains securing its data source and fields</b>.</li>
+</ul>
+</section>
+
+<section class="gchap hidden" id="gc-4">
+<h2>5. Security <span class="wt">25% of the exam</span></h2>
+
+<h3>5.1 The configurable security framework</h3>
+<p>Access flows one way: <b>users → security groups → security policies → securable items</b>.</p>
+<ul>
+<li>Securable items (tasks, reports, data) are grouped into <b>domains</b>; domains live inside <b>functional areas</b> (Staffing, Compensation…). <b>Maintain Functional Areas</b> enables/disables areas — a disabled area suppresses its contents regardless of policy grants.</li>
+<li><b>Subdomains inherit</b> the parent domain's policy unless deliberately overridden.</li>
+<li>A user's effective access is the <b>union</b> of everything granted to all of their groups.</li>
+</ul>
+
+<h3>5.2 Domain vs. business process security policies</h3>
+<table class="gt"><tr><th>&nbsp;</th><th>Domain security policy</th><th>BP security policy</th></tr>
+<tr><td>Secures</td><td>Tasks, reports, and data</td><td>Actions on events of a process type</td></tr>
+<tr><td>Permissions</td><td><b>View / Modify</b> for users; <b>Get / Put</b> for integrations (modify implies view; put is the write analogue)</td><td><b>Initiate, approve, view, rescind, cancel, correct</b></td></tr></table>
+
+<h3>5.3 Activation — the two-speed rule</h3>
+<ul>
+<li><b>Policy edits are pending</b> until you run <b>Activate Pending Security Policy Changes</b> (add a comment — it documents the timestamp for audit and rollback).</li>
+<li><b>Security group membership changes are immediate</b> — no activation needed.</li>
+<li><b>Activate Previous Security Timestamp</b> rolls policies back to a prior activation point.</li>
+</ul>
+
+<h3>5.4 Security group types</h3>
+<table class="gt"><tr><th>Type</th><th>Membership / access</th></tr>
+<tr><td><b>User-based</b></td><td>Named individuals; <b>unconstrained</b> (tenant-wide) — ideal for admins and auditors</td></tr>
+<tr><td><b>Role-based (constrained)</b></td><td>Members via role assignments; access limited to data of the orgs where they hold the role (plus configured subordinates)</td></tr>
+<tr><td><b>Role-based (unconstrained)</b></td><td>Members via role; access tenant-wide</td></tr>
+<tr><td><b>Job-based</b></td><td>Membership from job attributes (job profile, family, management level, exempt status)</td></tr>
+<tr><td><b>Location membership</b></td><td>Membership from assigned location</td></tr>
+<tr><td><b>Segment-based</b></td><td>Grants groups access to a <b>segment</b> of secured values — for example, specific document categories or pay component groups</td></tr>
+<tr><td><b>Aggregation</b></td><td>Union (OR) of included groups</td></tr>
+<tr><td><b>Intersection</b></td><td>Members must be in <b>all</b> included groups (AND), optionally excluding groups — for example, HR Partner ∩ France</td></tr>
+<tr><td><b>Service center</b></td><td>Scopes shared-service/external representatives to supported populations</td></tr>
+<tr><td><b>Integration system (ISSG)</b></td><td>Holds integration system users (ISUs); best practice is a dedicated ISU per integration with least-privilege get/put grants</td></tr></table>
+<div class="tip"><b>Note:</b> a group's <b>type is fixed at creation</b> — to change approach, create a new group of the desired type.</div>
+
+<h3>5.5 Workday-delivered groups</h3>
+<table class="gt"><tr><th>Group</th><th>Who / what</th></tr>
+<tr><td>All Users</td><td>Every account holder (broader than employees)</td></tr>
+<tr><td>All Employees</td><td>Employees only (contingent workers have their own group)</td></tr>
+<tr><td><b>Employee as Self</b></td><td>Self-service access to a worker's <b>own</b> data</td></tr>
+<tr><td>Manager</td><td>Role-based, constrained to the manager's own organizations</td></tr>
+<tr><td>Implementers</td><td>Deployment-time configuration access</td></tr></table>
+<p>Delivered groups can't be deleted; customers extend the model with their own groups.</p>
+
+<h3>5.6 Constrained vs. unconstrained — the heart of context</h3>
+<ul>
+<li>The distinction is <b>scope</b>: contextual access limited to specific organizations vs. tenant-wide reach.</li>
+<li>Classic symptom: a user can <i>see</i> a task but retrieves no data for other orgs — their access comes from a <b>constrained</b> group scoped to their own organizations.</li>
+<li>Two members of the same constrained group can legitimately see different data because they hold the role for different orgs.</li>
+<li>Because role assignments ride on positions, access <b>updates itself</b> through staffing changes — prefer role/job/org-derived groups over hand-maintained user lists.</li>
+</ul>
+
+<h3>5.7 Analysis and troubleshooting</h3>
+<table class="gt"><tr><th>Question</th><th>Go-to report</th></tr>
+<tr><td>Which policy secures this task/report?</td><td><b>View Security for Securable Item</b></td></tr>
+<tr><td>Which groups does this user belong to?</td><td><b>View Security Groups for User</b></td></tr>
+<tr><td>What can this account access, and why?</td><td><b>Security Analysis for Workday Account</b></td></tr></table>
+<p>Troubleshooting order for "I can't access X": find the securing domain/process → check whether any of the user's groups are in that policy → check constrained context → check pending (unactivated) changes.</p>
+</section>
+
+<section class="gchap hidden" id="gc-5">
+<h2>6. Quick review — high-yield facts</h2>
+<div class="keybox">
+<ul class="cram">
+<li>Catalog: job family <b>group</b> → job <b>family</b> → job <b>profile</b>; a profile can sit in multiple families.</li>
+<li>Position Management = default model; per-seat positions + restrictions; vacancies tracked; can freeze, close, or overlap positions.</li>
+<li>Job Management = one set of org-level hiring restrictions; hire directly; nothing remains at termination.</li>
+<li>Prepare for staffing: PM → <b>Create Position</b>; JM → <b>Edit Hiring Restrictions</b>.</li>
+<li>Availability date = when usable; earliest hire date = first day someone can start.</li>
+<li>Hire subprocesses: Propose Compensation (pay), Assign Pay Group (payroll), Assign Roles (roles), Onboarding (tasks).</li>
+<li>Staffing model is set <b>per supervisory organization</b> and can be changed.</li>
+<li>Every worker is staffed into a supervisory organization; locations are <b>not</b> organizations.</li>
+<li><b>Create Subordinate</b> builds the hierarchy with inheritance; unfilled roles resolve <b>up</b> the hierarchy.</li>
+<li>Org subtypes must be <b>allowable for the org type</b> to appear.</li>
+<li>Defaults prefill org assignments; allowed values restrict them; <b>Change Organization Assignments</b> moves cost centers without a job change.</li>
+<li>Roles attach to <b>positions</b> → successors inherit; roles drive routing and role-based security.</li>
+<li>Definition = template; event = live transaction. Order values sequence steps; equal values run in parallel; "ba" fits between "b" and "c".</li>
+<li>Approvals don't edit; consolidated approvals combine but still don't edit; To Dos are manual and must be marked complete.</li>
+<li>Validations go on the <b>initiation step</b>; entry condition false → step skipped; conditions = whether, routing = who.</li>
+<li>Custom notifications: trigger on entry/exit, recipients (roles/groups/accounts), message.</li>
+<li>Deny kills the event; send back returns it; cancel stops in-progress; rescind reverses completed; correct edits in-progress.</li>
+<li>Definition edits affect <b>new</b> events only; org-specific definitions via copy or link; resolution walks up the hierarchy.</li>
+<li>Standard reports: delivered, copy-to-custom to modify. Custom reports: Report Writer, data source = secured query on a business object; prompts = runtime criteria; sharing never overrides viewer security.</li>
+<li>Security flow: users → groups → policies → securable items; items → domains → functional areas.</li>
+<li>Domain permissions: view/modify + get/put (integrations). BP permissions: initiate/approve/view/rescind/cancel.</li>
+<li><b>Policy edits need activation; group membership is immediate.</b></li>
+<li>User-based = named + unconstrained. Role-based constrained = access only where the role is held. Segment-based = subset of secured values (document categories). Intersection = AND; aggregation = OR.</li>
+<li>Employee as Self = self-service; All Users ⊃ All Employees; group type can't be changed after creation.</li>
+<li>Diagnosis reports: View Security for Securable Item; View Security Groups for User; Security Analysis for Workday Account.</li>
+</ul>
+</div>
+<div class="tip examtip"><b>Exam logistics:</b> ~50 questions, 120 minutes, one included attempt (retakes cost 1 Training Credit), proctored via Questionmark, booked from your Workday Learning Center transcript. Weights: Staffing 25 · Organizations 20 · Business Processes 25 · Reporting 5 · Security 25.</div>
+</section>
+
+      <div class="gnav">
+        <button class="btn secondary" id="g-prev" onclick="guideNav(-1)">&#8592; Previous chapter</button>
+        <button class="btn" id="g-next" onclick="guideNav(1)">Next chapter &#8594;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LEARN SETUP ================= -->
+<div id="view-learnsetup" class="hidden">
+  <div class="card">
+    <h2>Learning mode</h2>
+    <p class="muted" style="margin-bottom:14px">Pick a topic and how many questions. Questions and options are shuffled every session.</p>
+    <div class="row" style="margin-bottom:14px">
+      <label>Topic&nbsp;<select id="learn-section"></select></label>
+      <label>Questions&nbsp;<select id="learn-count"><option>10</option><option>20</option><option selected>30</option><option>50</option><option value="all">All</option></select></label>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="startLearning()">Start studying</button>
+      <button class="btn secondary" onclick="goHome()">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LEARN ================= -->
+<div id="view-learn" class="hidden">
+  <div class="topbar">
+    <div class="statchips">
+      <span class="chip">Question <b id="l-pos"></b></span>
+      <span class="chip">Correct <b id="l-right">0</b></span>
+      <span class="chip">Streak <b class="streak" id="l-streak">0</b> &#128293;</span>
+      <span class="chip" id="l-sec"></span>
+    </div>
+    <button class="btn secondary" onclick="endLearning()">End session</button>
+  </div>
+  <div class="progressline"><div id="l-bar" style="width:0%"></div></div>
+  <div class="card">
+    <div class="qnum" id="l-topic"></div>
+    <div class="qtext" id="l-q"></div>
+    <div id="l-opts"></div>
+    <div id="l-fb"></div>
+    <div class="row" style="margin-top:12px;justify-content:flex-end">
+      <button class="btn" id="l-next" onclick="learnNext()" disabled>Next question &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= LEARN SUMMARY ================= -->
+<div id="view-learnsum" class="hidden">
+  <div class="card">
+    <h2>Session complete</h2>
+    <div class="scorebig" id="ls-score"></div>
+    <p class="muted" id="ls-detail"></p>
+    <div id="ls-secs" style="margin-top:14px"></div>
+    <div class="row" style="margin-top:18px">
+      <button class="btn" onclick="showLearnSetup()">Study again</button>
+      <button class="btn secondary" onclick="goHome()">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EXAM SETUP ================= -->
+<div id="view-examsetup" class="hidden">
+  <div class="card">
+    <h2>Exam simulation</h2>
+    <p class="muted" style="margin-bottom:6px">Questions are sampled across topics using the official exam weights: Staffing 25% &middot; Organizations 20% &middot; Business Processes 25% &middot; Reporting 5% &middot; Security 25%.</p>
+    <p class="muted" style="margin-bottom:14px">You will not be able to pause the clock once you begin. Pass mark: <b>75%</b>.</p>
+    <div class="grid two">
+      <div class="card modecard" onclick="startExam(20,60)">
+        <span class="tag">PRACTICE FORMAT</span>
+        <h2>20 questions &middot; 60 minutes</h2>
+        <p class="muted">Matches the Workday Pro practice exam format.</p>
+      </div>
+      <div class="card modecard exam" onclick="startExam(50,120)">
+        <span class="tag">FULL SIMULATION</span>
+        <h2>50 questions &middot; 120 minutes</h2>
+        <p class="muted">Matches the real certification exam length and time.</p>
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn secondary" onclick="goHome()">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EXAM ================= -->
+<div id="view-exam" class="hidden">
+  <div class="topbar">
+    <div class="statchips">
+      <span class="chip">Assessment progress: <b id="e-pos"></b></span>
+      <span class="chip">Answered <b id="e-answered">0</b></span>
+      <span class="chip">Flagged <b id="e-flagged">0</b></span>
+    </div>
+    <div class="timer" id="e-timer">--:--</div>
+  </div>
+  <div class="progressline"><div id="e-bar" style="width:0%"></div></div>
+  <div class="card">
+    <div class="qnum" id="e-num"></div>
+    <div class="qtext" id="e-q"></div>
+    <div id="e-opts"></div>
+    <div class="row" style="margin-top:14px;justify-content:space-between">
+      <div class="row">
+        <button class="btn secondary" id="e-prev" onclick="examNav(-1)">&#8592; Previous</button>
+        <button class="btn secondary" id="e-next" onclick="examNav(1)">Next &#8594;</button>
+        <button class="flagbtn" id="e-flag" onclick="toggleFlag()">&#9873; Flag question</button>
+      </div>
+      <button class="btn warn" onclick="trySubmit()">Submit exam &#10148;</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <b style="color:var(--navy);font-size:14px">Assessment Navigator</b>
+    <div class="navgrid" id="e-grid"></div>
+    <div class="kbd" style="margin-top:8px">Blue = answered &middot; Amber = flagged &middot; Outline = current</div>
+  </div>
+</div>
+
+<!-- ================= RESULTS ================= -->
+<div id="view-results" class="hidden">
+  <div class="card" style="margin-bottom:16px">
+    <h2>Assessment results</h2>
+    <div><span class="scorebig" id="r-score"></span><span class="passband" id="r-band"></span></div>
+    <p class="muted" id="r-detail"></p>
+    <div id="r-secs" style="margin-top:14px"></div>
+    <div class="row" style="margin-top:18px">
+      <button class="btn" onclick="showExamSetup()">Take another exam</button>
+      <button class="btn ghost" onclick="scrollToReview()">Review answers &#8595;</button>
+      <button class="btn secondary" onclick="goHome()">Home</button>
+    </div>
+  </div>
+  <h2 style="margin:18px 0 10px;color:var(--navy)" id="review-anchor">Answer review</h2>
+  <div class="row" style="margin-bottom:12px">
+    <button class="btn secondary" onclick="renderReview('all')">All</button>
+    <button class="btn secondary" onclick="renderReview('wrong')">Incorrect only</button>
+    <button class="btn secondary" onclick="renderReview('flag')">Flagged only</button>
+  </div>
+  <div id="r-review"></div>
+</div>
+
+</div>
+<script>
+const RAW = [["Staffing Setup", "A client wants every hire to go into a pre-approved, individually defined seat with its own attributes and approvals. Which staffing model do you recommend?", "Position Management", "Job Management", "A hybrid staffing model", "Headcount planning", "Position Management requires an approved, unfilled position for every hire, giving per-seat control."], ["Staffing Setup", "Managers at a retail client need to hire quickly against a pool of openings without creating and approving each seat first. Which staffing model fits?", "Job Management", "Position Management", "Matrix Management", "Committee Management", "Job Management lets you hire directly against one set of hiring restrictions without pre-creating positions."], ["Staffing Setup", "When you create a new supervisory organization, which staffing model is applied by default?", "Position Management", "Job Management", "No model until one is selected", "The model of the location", "Position Management is the default staffing model for new supervisory organizations."], ["Staffing Setup", "In a Job Management organization, how many sets of hiring restrictions exist?", "One set for the entire supervisory organization", "One set per position", "One set per job profile", "One set per worker type", "Job Management defines a single set of hiring restrictions at the supervisory organization level."], ["Staffing Setup", "In a Position Management organization, where are staffing restrictions defined?", "On each individual position as position restrictions", "Once for the whole organization", "On the location profile", "On the worker's profile", "Each position carries its own position restrictions that future incumbents must satisfy."], ["Staffing Setup", "You must limit the worker types and locations available when hiring into a Job Management organization. Which task do you use?", "Edit Hiring Restrictions", "Edit Position Restrictions", "Edit Job Requisition", "Maintain Locations", "Edit Hiring Restrictions defines organization-level constraints such as worker types and locations for Job Management."], ["Staffing Setup", "Which task prepares a Position Management supervisory organization for staffing?", "Create Position", "Edit Hiring Restrictions", "Create Job Requisition", "Assign Roles", "You must create positions (with their restrictions) before you can staff a Position Management organization."], ["Staffing Setup", "A client needs to report on vacancies — seats that are approved but not yet filled. Which staffing model supports this?", "Position Management, because unfilled positions are tracked objects", "Job Management, because openings are implied", "Either model tracks vacancies identically", "Neither model tracks vacancies", "Only Position Management creates unfilled position objects that can be reported on as vacancies."], ["Staffing Setup", "Which staffing model carries a higher risk of unplanned headcount growth if no additional controls are added?", "Job Management", "Position Management", "Both are equally controlled", "Neither allows headcount growth", "Job Management has no per-seat approval, so hiring can continue against the organization restrictions."], ["Staffing Setup", "What does the Edit Position Restrictions task change?", "The attributes future incumbents must satisfy, such as job profile, worker type, and location", "The current incumbent's business title and scheduled hours", "The organization's default cost center", "The worker's compensation plan", "Position restrictions describe the seat itself and constrain who can fill it in the future."], ["Staffing Setup", "A manager wants to change the business title and default weekly hours of a currently filled position. Which staffing task applies?", "Edit Position", "Edit Position Restrictions", "Edit Hiring Restrictions", "Change Organization Assignments", "Edit Position is the staffing event that updates details of a filled position."], ["Staffing Setup", "Which set can be included in hiring restrictions?", "Job families or job profiles, worker types, locations, and time-based availability", "Only job profiles", "Only compensation grades and pay groups", "Only security groups", "Hiring restrictions can constrain job catalog choices, worker types, locations, and dates."], ["Staffing Setup", "On position restrictions, which date controls the first day a worker can actually start in the position?", "Earliest Hire Date", "Availability Date", "Effective Date of the organization", "Probation end date", "Availability Date is when the restrictions are usable; Earliest Hire Date is the first allowable start date."], ["Staffing Setup", "A department needs to temporarily block hiring into an open position without deleting it. What should you do?", "Freeze the position using position freeze functionality", "Close the position permanently", "Inactivate the job profile", "Remove the supervisory organization", "Freezing a position keeps it defined but prevents it from being filled until unfrozen."], ["Staffing Setup", "In Position Management, what happens to a position by default when its incumbent terminates?", "It becomes an unfilled position that can be refilled", "It is automatically deleted", "It converts to a job requisition", "It moves to the retiree organization", "Unless closed, the position remains as a vacancy available for future staffing."], ["Staffing Setup", "In Job Management, what remains after a worker terminates?", "No vacancy object remains; the hiring restrictions are unchanged", "An unfilled position remains", "A frozen position remains", "A pre-hire record remains", "Job Management does not track individual seats, so no unfilled position is left behind."], ["Staffing Setup", "During a termination in Position Management, what does choosing to close the position do?", "Removes the position from being available for future staffing", "Freezes the position for 90 days", "Transfers the position to another organization", "Deletes the worker's history", "Closing a position ends its availability, unlike leaving it as an open vacancy."], ["Staffing Setup", "An incumbent is leaving at month end, and the replacement must start two weeks earlier for knowledge transfer in the same position. What enables this?", "Allowing job overlap on the position", "Creating a duplicate supervisory organization", "Using a matrix organization", "Assigning the replacement as a contingent worker only", "Job overlap permits a new worker to fill a position while the incumbent still occupies it."], ["Staffing Setup", "Which statement about changing an organization's staffing model is true?", "You can change the model, and existing filled jobs are converted to the new model", "The model can never change after the first hire", "Changing models deletes all workers", "Only Workday support can change models", "Organizations can switch between Position and Job Management; filled staffing converts accordingly."], ["Staffing Setup", "Which object must exist in the job catalog before you can create a position that references it?", "Job profile", "Job requisition", "Pre-hire", "Pay group", "Positions and hiring restrictions reference job profiles from the job catalog."], ["Staffing Setup", "What is the primary function of a job profile?", "It is a template of job attributes used to create positions and jobs and to staff workers", "It stores a worker's performance reviews", "It defines payroll tax rules", "It is the security policy for staffing", "Job profiles carry the core attributes (level, family, exempt status, and so on) applied when staffing."], ["Staffing Setup", "Which job profile attribute determines overtime eligibility treatment for a country such as the United States?", "Exempt / non-exempt designation", "Critical job flag", "Job family group", "Availability date", "The exempt designation on the job profile drives overtime eligibility classification."], ["Staffing Setup", "What does the pay rate type on a job profile typically default?", "Whether workers in the job are salaried or hourly", "The worker's bonus target", "The payroll country", "The cost center", "Pay rate type defaults salaried versus hourly treatment for workers staffed into the job."], ["Staffing Setup", "What are management levels used for in the job catalog?", "Defining a hierarchy of seniority levels for reporting and analytics", "Storing the org chart photo", "Setting payroll frequencies", "Controlling tenant login access", "Management levels create a consistent seniority hierarchy referenced in reporting and configuration."], ["Staffing Setup", "What is the purpose of job classifications?", "Grouping jobs into categories, often for regulatory reporting, within classification groups", "Encrypting job data", "Assigning security roles", "Defining payroll earnings", "Job classifications (in classification groups) support categorization needs such as regulatory reporting."], ["Staffing Setup", "How do job families relate to job family groups?", "Job family groups contain job families, which contain job profiles", "Job families contain job family groups", "They are interchangeable labels", "Job profiles contain job families", "The catalog hierarchy is: job family group, then job family, then job profile."], ["Staffing Setup", "Can a job profile be associated with more than one job family?", "Yes, a profile can belong to multiple job families", "No, exactly one family is allowed", "Only if it is marked critical", "Only in Job Management organizations", "Job profiles can be assigned to one or more job families for flexible cataloging."], ["Staffing Setup", "What happens when you mark a job profile inactive?", "It cannot be used for new positions or hires, but historical data is preserved", "All workers in the job are terminated", "It is permanently deleted", "Its positions are automatically closed", "Inactivating removes the profile from new staffing choices without disturbing history."], ["Staffing Setup", "What is the purpose of the critical job indicator on a job profile?", "Flagging key jobs for reporting and workforce planning purposes", "Forcing dual approval on hires", "Blocking terminations", "Doubling compensation budgets", "The critical job flag identifies important jobs so they can be tracked and reported."], ["Staffing Setup", "Why would you attach a compensation grade to a job profile?", "To default compensation guidelines when workers are staffed into the job", "To pay the worker automatically", "To create a pay group", "To set tax elections", "Compensation grades on profiles drive defaulting of pay guidelines during staffing events."], ["Staffing Setup", "What is the key structural difference between a position and a job?", "A position is an individually defined seat in Position Management; a job is created upon hire in Job Management", "A job is more controlled than a position", "Positions exist only for contingent workers", "Jobs require approval before hire; positions do not", "Position Management pre-defines seats; Job Management creates the job at hire time."], ["Staffing Setup", "When does Workday evaluate hiring or position restrictions?", "During staffing events such as hire and change job", "Only during payroll runs", "Only during security audits", "Only when the worker resigns", "Restrictions constrain choices presented and validated during staffing transactions."], ["Staffing Setup", "What is the purpose of the Hire business process?", "Bringing a pre-hire into the organization as a worker with an effective date", "Creating a supervisory organization", "Approving compensation budgets", "Creating a job profile", "Hire converts a pre-hire into an active worker in a supervisory organization."], ["Staffing Setup", "Before you can hire someone who is not in Workday, what record must exist?", "A pre-hire record", "A retiree record", "A position freeze", "A job classification", "Hiring requires a pre-hire, created directly or sourced from recruiting."], ["Staffing Setup", "Which Hire subprocess is used to set the new worker's pay?", "Propose Compensation Hire", "Assign Pay Group", "Request One-Time Payment", "Edit Position Restrictions", "Propose Compensation Hire proposes and routes the worker's starting compensation."], ["Staffing Setup", "During onboarding configuration, which subprocess assigns the worker to a payroll processing population?", "Assign Pay Group", "Propose Compensation Hire", "Assign Roles", "Change Organization Assignments", "Assign Pay Group places the worker in the correct payroll processing group."], ["Staffing Setup", "What does the Assign Roles subprocess accomplish during staffing events?", "Grants or updates assignable roles connected to the worker's position", "Sets the worker's password", "Creates the job profile", "Runs payroll", "Assign Roles maintains organization role assignments tied to positions during staffing changes."], ["Staffing Setup", "Which subprocess launches new hire tasks such as completing personal information after hire completes?", "Onboarding", "Termination", "Propose Compensation", "Create Position", "The Onboarding subprocess generates the new hire's onboarding event and tasks."], ["Staffing Setup", "Which business process handles promotions, transfers, and lateral moves?", "Change Job", "Hire", "Terminate", "Create Position", "Change Job covers job changes including promotion, demotion, transfer, and location moves."], ["Staffing Setup", "A worker transfers to a new organization. Which subprocess helps ensure role-based access reflects the new job?", "Assign Roles", "Manage Job History", "Assign Pay Group", "Maintain Step Delay", "Assign Roles updates role assignments so role-based security matches the new situation."], ["Staffing Setup", "A worker is moving from one supervisory organization to another. Which detail is typically decided within Change Job?", "The proposed organization, position or job details, and effective date", "The tenant's fiscal year", "The security policy version", "The report data source", "Change Job captures the target org, job details, and when the change takes effect."], ["Staffing Setup", "Which fields are captured on a Termination event?", "Termination date, last day of work, pay through date, reason, and rehire eligibility", "Only the termination date", "Only the security groups to remove", "Only the final pay amount", "Termination records key dates, the reason, and eligibility for rehire."], ["Staffing Setup", "What is the purpose of the eligible for rehire flag on termination?", "Informing future hiring decisions if the person applies again", "Blocking the worker's final paycheck", "Deleting the worker record", "Freezing the position automatically", "Rehire eligibility is stored so recruiters and HR can see it on any future pre-hire."], ["Staffing Setup", "During termination, which task lets you review and address the worker's in-flight business process events?", "Manage Business Processes for Worker", "Manage Job History", "View Security Groups for User", "Edit Position", "Manage Business Processes for Worker shows in-progress events so they can be reassigned or canceled."], ["Staffing Setup", "A current employee will take on a second position in another organization while keeping their primary job. Which staffing event applies?", "Add Additional Job", "Hire", "Change Job", "Create Pre-Hire", "Add Additional Job gives an existing worker an additional position or job."], ["Staffing Setup", "How do you end only the secondary job of a worker who holds two jobs?", "End Additional Job", "Terminate", "Rescind Hire", "Close Position", "End Additional Job removes the additional job while the primary employment continues."], ["Staffing Setup", "Which staffing event brings a contingent worker into the organization?", "Contract Contingent Worker", "Hire Employee", "Add Retiree Status", "Create Job Requisition", "Contract Contingent Worker is the staffing event for engaging contingent labor."], ["Staffing Setup", "What distinguishes an employee from a contingent worker in Workday?", "Employees are on your payroll; contingent workers are external labor engaged for a period", "Contingent workers cannot have positions", "Employees never have end dates", "There is no difference", "Worker type separates payroll employees from externally engaged contingent workers."], ["Staffing Setup", "A company wants tight seat control at headquarters but flexible hiring in field offices. How is this achieved?", "Set Position Management on the HQ organizations and Job Management on the field organizations", "Choose one model for the entire tenant", "Use matrix organizations for the field", "Disable staffing for field offices", "The staffing model is set per supervisory organization, so different orgs can use different models."], ["Staffing Setup", "Where is the staffing model selected?", "On the supervisory organization when creating or editing it", "On the location", "On the job profile", "On the security group", "Each supervisory organization carries its own staffing model setting."], ["Staffing Setup", "Can two supervisory organizations in the same hierarchy use different staffing models?", "Yes, the model is independent per organization", "No, the model is inherited and locked", "Only with a tenant restart", "Only for contingent workers", "Staffing model choice is organization-specific, enabling mixed models across a hierarchy."], ["Staffing Setup", "When a position is created in Position Management, what does the definition typically include?", "Position restrictions such as job family or profile, worker type, location, and availability dates", "The worker's home address", "The payroll tax elections", "The report layout", "Creating a position defines the seat and its restrictions before anyone is hired."], ["Staffing Setup", "Which model lets each opening in the same team have different restrictions?", "Position Management, since restrictions are per position", "Job Management, since restrictions are organization-wide", "Both models are per-opening", "Neither model supports restrictions", "Per-position restrictions allow every seat to differ; Job Management shares one set."], ["Staffing Setup", "In Job Management, several workers are hired over time against what?", "The single set of organization hiring restrictions", "Individually approved positions", "Job requisitions only", "Location profiles", "All Job Management hires validate against the organization's one set of hiring restrictions."], ["Staffing Setup", "What does the availability date on position restrictions represent?", "The date the position and its restrictions become usable in staffing", "The incumbent's birthday", "The payroll cutoff", "The date security policies activate", "Availability date controls when the position can begin to be used."], ["Staffing Setup", "A recruiter asks why the business title defaulted when filling a position. What is the likely source?", "Defaults defined on the position restrictions or job profile", "A random system value", "The previous worker's personal profile", "The pay group", "Position restrictions and the job profile default attributes like business title during staffing."], ["Staffing Setup", "Which staffing model would you choose to support precise seat-based budgeting?", "Position Management", "Job Management", "Neither supports budgeting", "Only a custom organization supports budgeting", "Because seats are discrete objects, Position Management aligns naturally with per-seat budgeting."], ["Staffing Setup", "What is a practical reason to keep an unfilled position open instead of closing it?", "The team plans to refill the vacancy in the future", "Closing positions increases headcount", "Open positions pay severance", "Unfilled positions run payroll", "Keeping the vacancy open preserves the approved seat for a future hire."], ["Staffing Setup", "Which action would you take so a Job Management organization can only hire employees (not contingent workers)?", "Restrict worker type to Employee in the hiring restrictions", "Delete all contingent worker profiles", "Freeze all positions", "Set the location to inactive", "Worker type restrictions in hiring restrictions control which worker types can be staffed."], ["Staffing Setup", "Time-based restrictions on positions or hiring restrictions are useful for what scenario?", "Seasonal staffing where hiring is only allowed during certain periods", "Encrypting worker data", "Routing approvals", "Scheduling reports", "Availability and earliest hire dates support time-bound staffing such as seasonal work."], ["Staffing Setup", "What generally happens to position restrictions when a position is filled?", "They remain with the position and continue to describe the seat for the future", "They are deleted", "They transfer to the worker profile permanently", "They convert into a security group", "Restrictions describe the seat itself and persist beyond any single incumbent."], ["Staffing Setup", "Which statement best describes a hybrid staffing approach?", "Different supervisory organizations in the same tenant use different staffing models", "A single organization uses both models simultaneously for the same seats", "Hybrid is a third selectable model on the organization", "Hybrid requires a separate tenant", "A hybrid approach mixes models across organizations, since each org selects its own model."], ["Staffing Setup", "Why might an organization switch from Job Management to Position Management?", "To gain per-seat control, vacancy tracking, and position-level approvals", "To remove all hiring restrictions", "To stop tracking workers", "To disable compensation", "Position Management adds seat-level control and vacancy visibility that Job Management lacks."], ["Staffing Setup", "Which of the following is NOT controlled by hiring restrictions?", "The worker's individual performance rating", "Allowed job families or job profiles", "Allowed worker types", "Allowed locations", "Restrictions constrain staffing choices; performance ratings are talent data, not staffing restrictions."], ["Organizations", "What is the primary purpose of a supervisory organization?", "Grouping workers into a management hierarchy where staffing, business processes, and role-based security operate", "Storing payroll tax rules", "Defining report layouts", "Tracking hardware assets", "Supervisory organizations are the foundation of Workday HCM: workers are hired into them and management hierarchy flows from them."], ["Organizations", "Which statement about workers and supervisory organizations is true?", "Every worker is staffed into a supervisory organization through their position or job", "Workers can exist without any supervisory organization", "Workers are hired directly into cost centers", "Workers are hired into locations", "Staffing always occurs in a supervisory organization; other org types are assignments, not staffing containers."], ["Organizations", "Which organization type must exist before you can hire anyone?", "Supervisory organization", "Cost center", "Region", "Pay group", "Hiring happens in supervisory organizations, so at least one must exist first."], ["Organizations", "An HR administrator is building the hierarchy under a top-level supervisory organization and wants key settings carried down. Which task creates the lower-level organization?", "Create Subordinate", "Assign Included Organizations", "Create Job Requisition", "Divide Supervisory Organization", "Create Subordinate creates a new supervisory organization beneath a superior, inheriting key settings."], ["Organizations", "If a supervisory organization has no HR Partner role assignment of its own, how does Workday route to the HR Partner?", "It looks up the hierarchy and uses the assignment inherited from a superior organization", "The step errors immediately", "It routes to all employees", "It skips security entirely", "Unfilled role assignments are inherited from superior organizations up the hierarchy."], ["Organizations", "What does the availability date on an organization control?", "The earliest date the organization can be used in transactions", "The manager's hire date", "The payroll period end", "The date reports expire", "An organization cannot be used in events dated before its availability date."], ["Organizations", "Several supervisory organization changes need to take effect together on the same date. What supports this?", "A reorganization event grouping the changes with a common effective date", "A tenant restart", "Separate tenants per change", "Deleting and recreating the hierarchy", "Reorganization events bundle organization changes to occur on a planned date."], ["Organizations", "A large team must be split so some workers report into two new subordinate teams. Which task supports this?", "Divide Supervisory Organization", "Inactivate Organization", "Edit Position Restrictions", "Create Matrix Organization", "Divide Supervisory Organization moves selected workers into new or existing subordinate organizations."], ["Organizations", "Which task moves an existing supervisory organization under a different superior?", "Assign Superior Organization", "Assign Roles", "Create Subordinate", "Edit Hiring Restrictions", "Assign Superior repositions an organization beneath a new superior in the hierarchy."], ["Organizations", "You need to mass-move a set of workers from one supervisory organization to another. Which capability applies?", "Move Workers functionality between supervisory organizations", "Deleting the workers and re-hiring them", "Changing the location profile", "Rescinding all hires", "Workday provides move workers actions to shift groups of workers between supervisory organizations."], ["Organizations", "When can a supervisory organization be inactivated?", "When it has no active workers or staffing remaining", "At any time regardless of members", "Only during year-end", "Never; organizations are permanent", "Organizations must be emptied of workers and staffing before inactivation."], ["Organizations", "A subtype is not selectable when creating a new organization. What must be true for a subtype to appear?", "The subtype must be configured as allowable for that organization type", "The subtype must match a company code", "The subtype must be marked global", "The subtype must be tied to the requester's position", "Organization subtype setup defines which subtypes are allowable per organization type."], ["Organizations", "What are organization subtypes such as Department or Division used for?", "Labeling and classifying organizations for structure and reporting", "Setting payroll frequency", "Encrypting data", "Assigning security proxies", "Subtypes categorize organizations, supporting clearer structure and reporting."], ["Organizations", "How is the manager of a supervisory organization established?", "Through the Manager role assignment on the organization", "By typing a name into a text field on each worker", "Through the pay group", "By the first hired worker automatically forever", "The manager is an assignable role on the organization, typically filled by a position."], ["Organizations", "Which organization type represents a legal entity used for statutory and financial purposes?", "Company", "Region", "Custom organization", "Matrix organization", "Company organizations represent legal entities and connect to financial and payroll processing."], ["Organizations", "What is the purpose of cost centers?", "Tracking financial responsibility for worker costs in reporting and accounting", "Storing job profiles", "Hosting business process definitions", "Controlling tenant login", "Cost centers capture where worker costs are charged for financial tracking."], ["Organizations", "What is the purpose of a region organization type?", "Grouping workers geographically for reporting and routing", "Setting the tenant language", "Storing physical addresses of buildings", "Calculating taxes", "Regions provide geographic groupings usable in reporting and configuration."], ["Organizations", "How is a worker connected to a pay group?", "Through the Assign Pay Group action, often as a subprocess of staffing events", "Through the job profile automatically", "Through the org chart", "Through a custom report", "Pay group assignment happens via Assign Pay Group during or after staffing events."], ["Organizations", "When delivered organization types do not fit a grouping need (for example, project teams), what should you use?", "Custom organization types", "Extra supervisory organizations", "Duplicate companies", "Locations", "Custom organizations let customers define additional grouping types."], ["Organizations", "A customer wants workers to belong to several organizations of the same custom type at once. Is this possible?", "Yes, if the custom organization type is configured to allow multiple assignments", "No, one assignment per type is a hard limit", "Only for contingent workers", "Only in Job Management", "Custom org types can be configured so workers hold multiple simultaneous memberships."], ["Organizations", "What is the purpose of a matrix organization?", "Providing a secondary, dotted-line reporting relationship alongside the supervisory hierarchy", "Replacing supervisory organizations", "Processing payroll", "Storing security policies", "Matrix organizations model dotted-line relationships without changing primary staffing."], ["Organizations", "What access does a matrix manager typically gain?", "Visibility to their matrix team without primary staffing responsibilities", "Full staffing control over matrix members", "Payroll approval for members", "Tenant configuration rights", "Matrix managers see their matrix reports but staffing remains with the supervisory manager."], ["Organizations", "What is the purpose of a retiree organization?", "Maintaining a relationship with retirees after employment ends", "Storing archived reports", "Freezing positions", "Managing contingent workers", "Retiree organizations let companies track and engage retirees post-termination."], ["Organizations", "How do organization hierarchies (for example, a cost center hierarchy) function?", "They roll up organizations of a type for reporting; members belong to the organizations, not the hierarchy nodes", "Workers are hired directly into hierarchy nodes", "They replace supervisory organizations", "They store compensation plans", "Hierarchies aggregate organizations for rollup reporting; membership stays in the underlying orgs."], ["Organizations", "Which organization assignments are commonly defaulted on staffing transactions?", "Company, cost center, and region", "Job family and job level", "Security groups", "Business process definitions", "Default organization assignments typically prefill company, cost center, region, and similar types."], ["Organizations", "Where do you configure the default organization assignments that prefill during staffing into a supervisory organization?", "By maintaining organization assignments on the supervisory organization", "On each worker's profile after hire", "On the job profile", "On the location hierarchy", "Supervisory organizations carry default organization assignments applied during staffing events."], ["Organizations", "What is the difference between default and allowed organization assignments?", "Defaults prefill values; allowed values restrict which choices can be selected", "Defaults restrict choices; allowed values prefill", "They are identical", "Both apply only to payroll", "Defaults speed data entry; allowed values constrain valid selections."], ["Organizations", "What is the function of assignable roles?", "Linking responsibilities to positions in an organization context, driving routing and role-based security", "Storing employee goals", "Defining payroll earnings", "Creating job profiles", "Assignable roles connect positions to responsibilities and power routing and security."], ["Organizations", "Which task is used to assign an organization role such as HR Partner?", "Assign Roles", "Edit Position", "Create Subordinate", "Maintain Step Conditions", "Assign Roles maintains role assignments on organizations."], ["Organizations", "Why do role assignments attach to positions rather than to people?", "So a successor in the position automatically inherits the responsibilities", "Because workers cannot hold roles", "To prevent transfers", "To simplify payroll", "Position-based assignment keeps roles stable through incumbent changes."], ["Organizations", "What does marking a role as single assignment mean?", "Only one position can hold the role for a given organization", "The role can never be reassigned", "The role applies to one worker forever", "The role is unconstrained", "Single assignment roles allow one holder per organization at a time."], ["Organizations", "An approval step routes to the role Compensation Partner. Where does Workday find who receives it?", "The role assignment on the target organization, or an inherited assignment from a superior", "A hard-coded user list in the step", "The worker's emergency contacts", "The pay group", "Routing resolves role assignments on the relevant organization, inheriting upward if unassigned."], ["Organizations", "When is the Create Supervisory Organization task (rather than Create Subordinate) typically used?", "When creating a new top-level organization", "For every team in the hierarchy", "Only for custom organizations", "Only for retirees", "Top-level supervisory organizations are created directly; most others are created as subordinates."], ["Organizations", "Which statement about superior organizations is correct?", "A top-level organization has no superior; all others have exactly one superior", "Every organization has two superiors", "Superiors are optional at every level", "Superiors are set by pay group", "Hierarchy rules: one superior per organization except the top level."], ["Organizations", "A worker's cost center must change but their job stays the same. Which event applies?", "Change Organization Assignments", "Change Job", "Terminate and rehire", "Edit Position Restrictions", "Change Organization Assignments updates assignments such as cost center without a job change."], ["Organizations", "What is the relationship between locations and organizations?", "Locations are not organizations; they are separate instances representing physical places assigned to workers and positions", "Locations are a type of supervisory organization", "Locations are custom organizations", "Locations are hierarchies", "Locations are their own object type, distinct from organizations, though both group workers conceptually."], ["Organizations", "Why give organizations a reference ID or organization code?", "Consistent identification for integrations and reporting", "Encrypting the organization", "Setting the time zone", "Enabling payroll", "Codes and reference IDs provide stable identifiers used by integrations and reports."], ["Organizations", "Which organization types support building hierarchies for rollup?", "Types such as company, cost center, and region can be arranged into hierarchies", "Only supervisory organizations", "No organization types support hierarchy", "Only custom organizations", "Non-supervisory types are commonly organized into hierarchies for reporting rollups."], ["Organizations", "What typically inherits down a supervisory hierarchy unless overridden locally?", "Configuration such as business process definitions and unfilled role assignments", "Worker home addresses", "Individual compensation", "Report schedules", "Subordinate organizations inherit definitions and role coverage from superiors unless overridden."], ["Organizations", "The visibility setting on an organization controls what?", "Where and to whom the organization appears, such as in search results", "Payroll accuracy", "The staffing model", "The letterhead logo", "Visibility governs how broadly the organization is exposed in the tenant."], ["Organizations", "Which is a good reason to create a company hierarchy?", "Consolidated reporting across multiple legal entities", "Hiring workers into the hierarchy top", "Replacing cost centers", "Avoiding security policies", "Company hierarchies roll up entities for consolidated views."], ["Organizations", "A new subordinate organization was created but transactions dated before its availability date fail. Why?", "The organization cannot be used in events before it becomes available", "The staffing model is wrong", "The subtype is missing", "The manager has no email", "Events must be dated on or after the organization's availability date."], ["Organizations", "Which statement describes how many primary cost center assignments a worker position holds for a given type?", "One primary assignment per organization type, with additional assignments only where the type allows multiples", "Unlimited primaries per type", "Zero; cost centers attach to reports", "Primaries exist only for companies", "Each org type yields one primary assignment; multiples require a type configured to allow them."], ["Organizations", "What happens to role assignments held by a position when the incumbent changes?", "The assignments stay with the position, so the new incumbent takes on the roles", "They are deleted", "They move to the previous worker's new job automatically in all cases", "They convert to user-based groups", "Because roles attach to positions, successors assume the same responsibilities."], ["Organizations", "An organization's manager leaves and the role is not reassigned. Who fulfills manager-routed steps for that organization?", "The inherited manager from the superior organization until a new assignment is made", "Nobody; events are lost", "The most senior employee automatically by tenure", "The payroll administrator", "Role inheritance keeps routing functional by resolving to superior organizations."], ["Organizations", "Which pair correctly matches organization type to purpose?", "Company = legal entity; Cost center = financial tracking", "Company = dotted-line reporting; Cost center = legal entity", "Region = payroll population; Pay group = geography", "Custom = staffing container; Supervisory = optional grouping", "Companies are legal entities and cost centers track financial responsibility."], ["Organizations", "A client asks which org type determines who processes a worker's payroll together. What do you answer?", "Pay group", "Region", "Matrix organization", "Job family", "Pay groups define populations processed together in payroll."], ["Organizations", "Why might you assign both a region and a cost center to a worker's position?", "They serve different purposes: geographic grouping versus financial tracking", "Workday requires both to save", "They are the same object", "Regions replace cost centers in reports", "Different organization types capture independent dimensions of the worker."], ["Organizations", "A reorganization requires renaming an organization and changing its manager on the same date. What is the cleanest approach?", "Plan the changes together with the same effective date, using a reorganization where applicable", "Do them weeks apart randomly", "Create a second tenant", "Terminate all workers first", "Coordinating effective dates keeps history clean and changes synchronized."], ["Organizations", "Which statement about deleting versus inactivating organizations is accurate?", "Organizations with history are inactivated rather than deleted to preserve records", "History is always deleted with the org", "Inactivation deletes worker history", "Deletion is the only option", "Inactivation preserves transactional history while retiring the organization."], ["Organizations", "What should be verified before moving a supervisory organization to a new superior?", "The impact on inherited configuration such as business processes, roles, and security context", "The weather on the effective date", "The number of reports in the tenant", "The color of the org chart", "Superior changes alter inheritance, so downstream effects must be assessed."], ["Organizations", "What does including subordinates mean when granting access or reporting at an organization level?", "The organization and everything beneath it in the hierarchy are included", "Only the top organization is included", "Only inactive organizations are included", "Subordinates are excluded by definition", "Including subordinates cascades scope down the hierarchy from the chosen node."], ["Business Processes", "What is the difference between a business process definition and a business process event?", "The definition is the configured template; the event is a transaction instance created when the process runs", "The event is configured first, then the definition", "They are the same object", "Definitions exist only in reports", "Definitions describe steps and rules; events are the live transactions executed from them."], ["Business Processes", "Which step is always first in a business process definition?", "The initiation step", "The completion step", "An approval step", "A service step", "Every definition begins with the initiation step representing the initiating action."], ["Business Processes", "What determines the sequence in which steps execute?", "The alphanumeric Order value on each step", "The step creation timestamp", "The step type alphabetically", "Random selection", "Order values (a, b, c, and combinations like ba) control step sequence."], ["Business Processes", "How do you configure two steps to run at the same time?", "Give them the same Order value", "Mark them both optional", "Put them in different definitions", "Use a checklist", "Steps sharing an order value execute in parallel."], ["Business Processes", "You need to insert a new step between existing steps ordered b and c without renumbering. What order value works?", "ba", "a", "d", "1", "Alphanumeric ordering allows values like ba to slot between b and c."], ["Business Processes", "What can a user do on a standard approval step?", "Approve, deny, or send back — but not edit the submitted data", "Edit any field in the event", "Restart the tenant", "Change the business process definition", "Approvals are decisions on submitted data; editing is not part of a standard approval."], ["Business Processes", "Which step type asks a user to complete a task in Workday that can add or change information in the event?", "Action step", "Approval step", "To Do step", "Service step", "Action steps involve performing a Workday task that contributes data to the event."], ["Business Processes", "What characterizes a To Do step?", "A manual task outside the transaction that the user marks complete to let the process continue", "An automated Workday service", "A payroll calculation", "A report schedule", "To Dos represent offline or manual work acknowledged by marking the step done."], ["Business Processes", "What is a service step?", "An automated step where Workday performs a service without direct user data entry", "A helpdesk ticket", "A conference call", "A manual checklist", "Service steps let the system execute delivered services within the flow."], ["Business Processes", "A checklist step is best described as what?", "A grouping of related To Do items to complete", "A type of approval", "A payroll audit", "A security policy", "Checklists bundle To Dos so related manual tasks are managed together."], ["Business Processes", "Which step type routes an approval up a chain, such as the management hierarchy, until a condition is satisfied?", "Approval chain", "Consolidated approval", "Service step", "Initiation step", "Approval chains escalate through successive approvers until the chain rule is met."], ["Business Processes", "A single reviewer needs to act once on a screen combining several approvals. Which step supports this, and what is its limitation?", "Consolidated approval; it does not allow editing the submitted data", "Action step; it blocks approvals", "To Do; it approves automatically", "Checklist; it denies by default", "Consolidated approvals combine approvals on one screen but are decision-only."], ["Business Processes", "What is a subprocess?", "A business process embedded within a parent process, with its own definition and security policy", "A step that cannot be configured", "A deleted process", "A report", "Subprocesses (like Propose Compensation within Hire) are full processes nested in a parent."], ["Business Processes", "What does designating a completion step accomplish?", "The event is considered complete at that step, even if later steps still run", "The event is canceled", "All later steps are deleted", "Security is bypassed", "Completion marks when the transaction takes effect; remaining steps can continue afterward."], ["Business Processes", "What is the effect of a due date on a step?", "It sets a target used for tracking and escalation; it does not complete the step automatically", "The step auto-completes at the date", "The event cancels at the date", "The definition locks", "Due dates support aging, alerts, and escalation rather than automatic completion."], ["Business Processes", "Which task postpones the start of a step for a period of time?", "Maintain Step Delay", "Maintain Step Help Text", "Assign Roles", "Edit Position", "Step delays hold a step from starting until the configured delay elapses."], ["Business Processes", "Which task provides instructions to the person performing a step?", "Maintain Step Help Text", "Maintain Step Delay", "Maintain Advanced Routing", "Edit Hiring Restrictions", "Step help text displays guidance to the step assignee."], ["Business Processes", "An approval must always go to someone other than the initiator. Which configuration achieves this?", "Advanced routing settings on the step, such as excluding the initiator", "A validation on the initiation step", "A step delay", "A checklist", "Advanced routing controls who receives a step, including initiator exclusion."], ["Business Processes", "What is the key difference between step conditions and routing configuration?", "Conditions decide whether a step runs; routing decides who performs it", "Routing decides whether a step runs; conditions decide who performs it", "They are identical", "Both only affect notifications", "Conditions gate execution of the step; routing resolves the responsible party."], ["Business Processes", "Where do you attach a validation condition rule so it evaluates before anything else in the process?", "On the initiation step", "On the final approval", "On the completion step", "On a To Do", "Validations on the initiation step run first, stopping invalid entries immediately."], ["Business Processes", "What happens when a step's entry condition evaluates to false?", "The step is skipped and the process continues", "The event is denied", "The tenant locks", "The step repeats", "Failed entry conditions cause the step to be bypassed."], ["Business Processes", "How are condition rules structured?", "Condition items combining source fields, relational operators, and comparison values with And/Or logic", "Free-text sentences interpreted by AI", "Spreadsheet formulas uploaded monthly", "Java code", "Condition rules are built from boolean condition items over Workday fields."], ["Business Processes", "A validation rule fires during initiation. What does the user experience?", "An error or alert preventing or warning about the submission", "Silent acceptance", "Automatic approval", "Immediate termination of employment", "Validations present critical errors (blocking) or warnings during data entry."], ["Business Processes", "Which elements are configurable on a custom business process notification?", "Trigger on entering or exiting a step, recipients, and message content", "Only the subject line", "Only the initiator's name", "Nothing is configurable", "Custom notifications configure when they fire, who receives them, and what they say."], ["Business Processes", "Who can be selected as recipients of a custom notification?", "Roles, security groups, and specific Workday accounts", "Only the initiator", "Only external email addresses", "Only managers", "Notification recipients can resolve from roles, groups, and accounts."], ["Business Processes", "A stakeholder wants an email when Hire completes. Which mechanism fits best?", "A custom notification triggered on exit of the final relevant step", "A validation rule", "A step delay", "A new security group", "Exit-triggered notifications inform stakeholders as steps or processes conclude."], ["Business Processes", "Which actions are secured by a business process security policy?", "Who can initiate, approve, view, rescind, cancel, and correct the process", "Which reports can be created", "Which fields appear on job profiles", "Tenant colors", "BP security policies govern participation rights on the process's events."], ["Business Processes", "Where is permission to approve a Hire event controlled?", "In the Hire business process security policy", "In a domain security policy", "On the job profile", "In the pay group", "Approval rights live on the business process security policy for that process type."], ["Business Processes", "What is the difference between the default definition and a custom definition for an organization?", "The default applies tenant-wide; a custom definition overrides it for a specific organization and its subordinates", "Custom definitions apply tenant-wide", "Defaults apply to one worker", "There is no difference", "Organizations can carry their own definitions that supersede the default."], ["Business Processes", "When an event starts, how does Workday choose which definition to use?", "It uses the organization's own definition if present, otherwise walks up the hierarchy, otherwise uses the default", "It always uses the default", "It asks the initiator to pick", "It uses the newest definition anywhere", "Definition resolution checks the org, then superiors, then falls back to the default definition."], ["Business Processes", "You edit a business process definition while events are in flight. What happens to those events?", "In-progress events continue on the definition they started with; new events use the updated definition", "In-progress events restart", "In-progress events adopt changes mid-flight", "All events cancel", "Definition changes affect newly initiated events, not ones already running."], ["Business Processes", "What does the Deny action do on an event?", "Terminates the entire event", "Returns it to the previous step", "Pauses it for a day", "Completes it successfully", "Deny ends the event; it is stronger than sending back for correction."], ["Business Processes", "What does Send Back do?", "Returns the event to an earlier step (often the initiator) for correction while keeping it in progress", "Ends the event permanently", "Approves the event", "Deletes the definition", "Send Back allows correction and resubmission without killing the event."], ["Business Processes", "What does Cancel do to an in-progress event?", "Stops the event so no further processing occurs", "Completes it", "Sends it back one step", "Archives the definition", "Cancel halts an in-progress event; data changes from it do not take effect."], ["Business Processes", "A completed staffing event must be reversed. Which action applies?", "Rescind", "Cancel", "Send back", "Deny", "Rescind reverses events that have already completed."], ["Business Processes", "A director notices a typo in an in-progress event and has proper access. Which action fixes it without restarting?", "Correct", "Rescind", "Deny", "Delete tenant data", "Correct edits an in-progress event when the user is permitted."], ["Business Processes", "A task sits in the wrong person's inbox. What can an authorized administrator do?", "Reassign the task to the appropriate user", "Nothing; inbox items are immutable", "Delete the worker", "Rescind the definition", "Authorized users can reassign in-flight tasks to the right assignee."], ["Business Processes", "A manager is on leave for two weeks. How can their approvals be handled without security changes?", "Delegation of inbox tasks for the period", "Deleting the manager role", "Giving everyone the manager's password", "Disabling the process", "Delegation temporarily hands inbox actions to another user for a date range."], ["Business Processes", "Where can you see who has acted and who the event is waiting on?", "The event's process history", "The job profile", "The pay group", "The org subtype", "Process history lists completed steps, actors, and awaiting persons."], ["Business Processes", "Which standard report helps you review configuration options across business process types?", "Business Process Configuration Options", "All Workers", "View Security Group", "Unfilled Positions", "This delivered report summarizes configurable options per business process type."], ["Business Processes", "What does the initiating action of a business process represent?", "The task or action a user performs that creates the event", "The last approval", "The report output", "The security activation", "Initiation is the act (for example, starting a hire) that spawns the event."], ["Business Processes", "Why do subprocesses have their own security policies?", "Participation in the subprocess is controlled independently of the parent process", "They do not; parents control everything", "Security does not apply to subprocesses", "Only integrations use subprocess security", "Each subprocess type carries its own business process security policy."], ["Business Processes", "What does effective dating on staffing events allow?", "Changes to apply as of a past or future date, independent of when the event completes", "Only same-day changes", "Only future dates", "Only payroll dates", "Effective dates let transactions take effect on the intended date, including retroactively."], ["Business Processes", "Routing resolves to a role that no organization in the hierarchy has filled. What is the practical outcome?", "The step cannot resolve an assignee and must be addressed, for example by assigning the role", "The event silently completes", "Workday invents an approver", "The initiator is terminated", "Unresolvable routing stalls the step until an assignee exists or configuration changes."], ["Business Processes", "What is the benefit of marking a step optional in a definition?", "Authorized users can skip it when it is not needed", "It runs twice", "It becomes an approval", "It deletes itself after running", "Optional steps provide flexibility to bypass work that does not apply."], ["Business Processes", "What is the difference between a notification and a To Do in an event?", "A notification informs and requires no completion; a To Do is a task that must be marked complete", "A To Do informs only; a notification is a task", "Both block the process equally", "Neither appears to users", "Notifications are informational; To Dos gate progress until completed."], ["Business Processes", "Where do action items awaiting a user appear?", "In the user's Workday inbox (My Tasks)", "In the org chart", "On the job profile", "In the audit log only", "Inbox/My Tasks is where assigned steps await action."], ["Business Processes", "A questionnaire needs to be completed as part of an event. How is this handled?", "Adding a questionnaire step or attaching a questionnaire to the process", "Emailing a spreadsheet outside Workday", "A validation rule", "A pay group change", "Business processes support questionnaires to collect structured responses in the flow."], ["Business Processes", "Which two actions differ mainly in that one reverses a finished event while the other stops an unfinished one?", "Rescind (finished) versus Cancel (unfinished)", "Deny versus Send Back", "Correct versus Approve", "Delegate versus Reassign", "Rescind undoes completed events; cancel stops in-progress ones."], ["Business Processes", "What does viewing a business process definition show you?", "The ordered steps, their types, groups responsible, and conditions", "Only the event history", "The tenant's licenses", "Worker home addresses", "The definition view lays out steps, order, responsible groups, and rules."], ["Business Processes", "Condition rules can reference what kind of data?", "Fields related to the business object of the process, such as worker or position attributes", "Only constants", "Only dates", "External spreadsheets", "Conditions evaluate Workday fields in context of the event's business object."], ["Business Processes", "Why place a validation rather than an approval to catch bad data?", "Validations stop errors at entry, before people spend time approving", "Approvals are faster than validations", "Validations require more staff", "Approvals cannot be configured", "Catching errors at initiation avoids wasted downstream effort."], ["Business Processes", "What is a business process event's status while steps remain and it has not been stopped?", "In progress", "Successfully completed", "Canceled", "Denied", "Events remain in progress until completion, denial, or cancellation."], ["Business Processes", "What generally happens when the final required step of an event finishes?", "The event completes and the transaction takes effect per its effective date", "The event restarts", "The definition is deleted", "Security policies deactivate", "Finishing required steps completes the event and applies the change."], ["Business Processes", "Who can view an in-progress event?", "Participants and those granted view in the process's security policy", "Everyone in the tenant always", "Nobody until completion", "Only integrations", "View access on events is governed by the BP security policy plus participation."], ["Business Processes", "A company wants a different Hire flow for its Japan organization only. What do you configure?", "A custom Hire definition on the Japan organization", "A new tenant for Japan", "A validation blocking Japan hires", "A location hierarchy", "Org-specific definitions tailor the flow for that organization and its subordinates."], ["Business Processes", "When creating an organization-specific definition, what are the two common approaches?", "Copying the existing definition to modify, or linking to reuse an existing definition", "Exporting to a spreadsheet, or emailing support", "Deleting the default first, or renaming it", "Neither copy nor link exists", "Copy creates an editable variant; link reuses another definition without duplication."], ["Business Processes", "What is the purpose of alerts or escalation tied to step due dates?", "Notifying or escalating when steps age past their targets", "Auto-approving late steps", "Deleting late events", "Blocking new hires", "Aging steps can raise alerts and escalate to keep processes moving."], ["Business Processes", "Which statement about the order value 'a' is correct?", "It is used by the initiation step at the start of the definition", "It marks the completion step", "It denotes optional steps", "It disables the step", "Initiation carries the first order value at the head of the flow."], ["Business Processes", "An approver wants the event returned for a date fix rather than killed. Which action should they use?", "Send Back", "Deny", "Cancel", "Rescind", "Send Back preserves the event for correction, unlike deny."], ["Business Processes", "How do parallel steps complete relative to the next sequential step?", "The process waits for the parallel steps to finish before moving past their order value", "Only the first finisher counts", "Parallel steps never both run", "The next step starts immediately regardless", "Steps at the same order complete before the flow advances beyond them."], ["Business Processes", "A user reports they cannot start a transaction at all. Which security is the first suspect?", "Initiate permission on that business process security policy", "The report sharing tab", "The org subtype", "Their password strength", "Initiation rights come from the BP security policy's initiating groups."], ["Business Processes", "What is a practical use of trigger on entry of a step for notifications?", "Alerting the assignee or stakeholders the moment work becomes available", "Announcing tenant maintenance", "Resetting passwords", "Closing positions", "Entry triggers notify when the step starts awaiting action."], ["Business Processes", "Why review the process history after go-live issues?", "It shows exactly which step, person, or routing caused delays or unexpected outcomes", "It changes the definition automatically", "It hides errors", "It is required for payroll", "History is the audit trail for diagnosing event behavior."], ["Reporting", "What is a Workday standard report?", "A delivered, predefined report provided by Workday", "A report a customer builds from scratch", "An exported spreadsheet", "A temporary ad hoc query only", "Standard reports ship with Workday and are ready to run subject to security."], ["Reporting", "Can you directly modify a delivered standard report?", "No, but many can be copied to a custom report and the copy modified", "Yes, all standard reports are editable in place", "Only during implementation", "Only with a tenant restart", "Delivered reports are read-only; copying to custom is the modification path."], ["Reporting", "Which task creates an editable version of a Report Writer-based standard report?", "Copy Standard Report to Custom Report", "Edit Standard Report", "Export Report Definition", "Delete Standard Report", "Copying a standard report produces a custom report you can tailor."], ["Reporting", "What tool is used to build custom reports?", "Workday Report Writer", "An external SQL client", "The org chart", "The business process editor", "Report Writer is the delivered tool for building custom reports."], ["Reporting", "What is a data source in Report Writer?", "A predefined query that returns instances of a primary business object with built-in security", "A CSV file upload", "A tenant backup", "An email distribution list", "Data sources supply secured instances of a business object to the report."], ["Reporting", "What is a business object in reporting terms?", "An entity such as Worker or Position whose fields the report can output", "A physical file", "A security group", "An approval step", "Business objects are the entities; fields hang off them and related objects."], ["Reporting", "How do you report on data from objects related to the primary business object?", "Through related business object fields available from the primary object", "You cannot cross objects", "By merging spreadsheets manually", "By editing the data source code", "Related object fields let one report traverse from, say, Worker to Position details."], ["Reporting", "What distinguishes an advanced custom report from a simple one?", "Advanced reports add capabilities such as filters, prompts, sub-filters, sharing, and richer output options", "Simple reports are faster in all cases and otherwise identical", "Advanced reports skip security", "Simple reports allow more tabs", "The advanced type unlocks the additional tabs and options used in real reporting."], ["Reporting", "What do prompts provide at report runtime?", "User-entered criteria, such as an organization or date, that focus the results", "Automatic emailing", "Field encryption", "Faster tenant backups", "Prompts collect runtime values that filter what the report returns."], ["Reporting", "What do report filters do?", "Restrict which instances are returned based on conditions", "Rename columns", "Change security policies", "Schedule the report", "Filters apply conditions to limit rows in the output."], ["Reporting", "When you share a custom report with another user, what still applies?", "Workday security — they see only data their own access allows", "They see everything the author sees", "Sharing removes security", "Sharing deletes prompts", "Report output is always constrained by the viewer's security, not the author's."], ["Reporting", "Two users run the same report and see different rows. What is the most likely reason?", "Their security access differs, so the data source returns different instances", "The report is broken", "Reports randomize data", "Prompts are cached globally", "Data source and field security tailor results per viewer."], ["Reporting", "What is a temporary report?", "A report flagged to be automatically cleaned up after a period", "A report that runs only at night", "A standard report", "A report without a data source", "Temporary reports are housekeeping-friendly: they expire and are removed."], ["Reporting", "Which delivered report is a go-to reference when planning business process configuration?", "Business Process Configuration Options", "All Active Employees", "View Security Group", "Compare Tenants", "It lists configuration options by business process type for planning."], ["Reporting", "Why apply tags or categories to custom reports?", "To make reports easier to find and organize", "To bypass security", "To speed up payroll", "To create data sources", "Tags/categories improve discoverability of reports in the tenant."], ["Reporting", "On an advanced report, where do you define the values users must supply before it runs?", "The Prompts tab", "The Columns tab", "The Share tab", "The Output tab", "The Prompts tab defines runtime criteria collected from the user."], ["Security", "Which sequence correctly describes how a user gets access to something in Workday?", "User is in security groups; groups are granted permissions in security policies; policies secure items", "Policies join groups; users secure items directly", "Items grant users to policies", "Groups secure policies which secure users", "Access flows: users to groups, groups to policies, policies to securable items."], ["Security", "Securable items such as tasks and reports are grouped into what?", "Domains", "Pay groups", "Job families", "Checklists", "Domains bundle related securable items for policy management."], ["Security", "Domains are organized within what higher-level structure?", "Functional areas", "Cost centers", "Job catalogs", "Report tags", "Functional areas (like Staffing) contain the related domains."], ["Security", "Which permissions exist on a domain security policy?", "View and modify for users, plus get and put for integrations", "Initiate and approve", "Rescind and cancel", "Copy and link", "Domain policies grant view/modify (UI) and get/put (web service) rights."], ["Security", "Which permissions are configured on a business process security policy?", "Who can initiate, approve, view, rescind, and cancel the process", "View and modify fields", "Get and put", "Report sharing", "BP policies control participation actions on events of that process type."], ["Security", "After editing security policies, what must you do for the changes to take effect?", "Run Activate Pending Security Policy Changes", "Restart the tenant", "Re-hire affected workers", "Nothing; edits apply instantly", "Policy edits are pending until activation with a timestamp comment."], ["Security", "You add a user to a security group. When does their new access apply?", "Immediately — group membership changes do not require activation", "After policy activation", "Next payroll run", "After 24 hours", "Unlike policy edits, membership changes take effect right away."], ["Security", "A named set of individuals must run tenant-wide security reports. Which group type fits?", "User-based security group", "Role-based (constrained)", "Segment-based", "Location membership", "User-based groups hold specific people and are unconstrained, giving tenant-wide access."], ["Security", "What defines membership in a role-based security group?", "Holding the specified assignable role via a position's role assignment", "Being listed by name", "Working at a location", "Belonging to a pay group", "Role-based groups derive members automatically from role assignments."], ["Security", "What does constrained mean for a role-based security group?", "Members access data only for the organizations where they hold the role (and configured subordinates)", "Members access everything in the tenant", "Members cannot log in", "Members are external", "Constrained groups return contextual access limited to the role's organizations."], ["Security", "When would you use a role-based unconstrained group?", "When role holders need tenant-wide access regardless of their organization scope", "When access must be limited to their org", "For integration systems only", "Never; it does not exist", "Unconstrained role groups grant access across all organizations."], ["Security", "Which group type derives membership from job attributes such as job profile or management level?", "Job-based security group", "User-based", "Service center", "Aggregation", "Job-based groups include workers matching selected job criteria."], ["Security", "Which group type includes workers based on their assigned location?", "Location membership security group", "User-based", "Intersection", "Integration system", "Location membership groups populate from workers' locations."], ["Security", "HR partners should see only documents in the Performance category. Which group type enables this?", "Segment-based security group", "User-based", "Role-based unconstrained", "Aggregation", "Segment-based groups grant access to a defined segment of secured items, like document categories."], ["Security", "What is an aggregation security group?", "A group whose members are the union of the included groups (membership in any qualifies)", "A group requiring membership in all included groups", "A group of locations", "A payroll group", "Aggregation is an OR of member groups, simplifying policy assignments."], ["Security", "What is an intersection security group?", "A group whose members must belong to all included groups, optionally excluding others", "A union of groups", "A list of named users", "A report category", "Intersection is an AND of groups, useful for combinations like role plus geography."], ["Security", "You need a group for HR Partners in France only. Which construction is cleanest?", "An intersection of the HR Partner role group and a France-based membership group", "A user-based list maintained by hand forever", "An aggregation of all HR groups", "A segment on pay components", "Intersection combines the role and geography criteria automatically."], ["Security", "Which group type is designed for accounts used by integrations (ISUs)?", "Integration system security group", "Employee as Self", "All Employees", "Matrix group", "Integration system security groups hold integration system users and scope their access."], ["Security", "What is the best practice for integration system users and their groups?", "A dedicated ISU per integration, in a security group granted only the domains it needs", "One shared ISU for all integrations with full access", "Reusing an employee's login", "No security for integrations", "Least-privilege, per-integration ISUs limit blast radius and ease auditing."], ["Security", "Which delivered group grants workers self-service access to their own data?", "Employee as Self", "All Users", "Implementers", "Manager", "Employee as Self is the delivered self-service group for a worker's own records."], ["Security", "What is the difference between All Employees and All Users?", "All Employees covers employees; All Users covers every account holder including non-employees", "They are identical", "All Users excludes managers", "All Employees includes integrations", "All Users is broader, spanning all account types; All Employees is employee-only."], ["Security", "Which delivered group is intended for implementation consultants configuring the tenant?", "Implementers", "Retirees", "All Contingent Workers", "Matrix Managers", "The Implementers group supports deployment-time configuration access."], ["Security", "Which delivered constrained group gives managers access to data for their own teams?", "Manager", "All Users", "User-based administrators", "Segment-based", "The delivered Manager group is role-based and constrained to the manager's organizations."], ["Security", "A user can see a task but retrieving data returns nothing for other organizations. Why?", "Their access comes from a constrained group scoped to their own organizations", "The tenant is offline", "The report is temporary", "Their password expired", "Constrained context limits data to the organizations tied to their role."], ["Security", "A security administrator must find which security policy controls a specific task. Which report answers this?", "View Security for Securable Item", "View Security Groups for User", "All Workers", "Business Process Configuration Options", "View Security for Securable Item shows the domains and policies securing an item."], ["Security", "Which report lists the security groups a specific user belongs to?", "View Security Groups for User", "View Security for Securable Item", "All Positions", "Unfilled Positions", "It resolves a user's effective group memberships."], ["Security", "Which analysis helps evaluate what an individual account can access and why?", "Security Analysis for Workday Account", "Payroll Register", "Org Chart", "Job Catalog Audit", "Security analysis reports trace an account's access paths."], ["Security", "Which task controls whether whole functional areas are enabled in the tenant?", "Maintain Functional Areas", "Assign Roles", "Edit Position", "Copy Standard Report", "Functional areas can be enabled or disabled via Maintain Functional Areas."], ["Security", "If a functional area is disabled, what happens to its domains?", "Their items are unavailable regardless of policy grants", "Policies grant access anyway", "Domains move to another area", "Nothing changes", "Disabled functional areas suppress access to their contents."], ["Security", "How can subdomains relate to their parent domain's policy?", "They can inherit the parent policy unless given their own", "They never inherit", "They always override silently", "They delete the parent", "Subdomain policies inherit by default and can be overridden deliberately."], ["Security", "Granting modify on a domain implies what else?", "View access is included with modify", "Get access is removed", "Approval rights on processes", "Nothing else", "Modify encompasses view; integrations use get/put analogously."], ["Security", "Which permissions do integrations use on domain policies?", "Get (read) and put (write)", "View and approve", "Initiate and cancel", "Copy and share", "Get/put are the web-service equivalents of view/modify."], ["Security", "What immediate effect does assigning the HR Partner role on an organization have on security?", "The position's worker joins the corresponding role-based groups and gains their access", "Nothing until year end", "The worker loses self-service", "Policies must be rewritten", "Role assignments drive role-based group membership automatically and immediately."], ["Security", "Why did a new manager instantly gain team access after a job change?", "The Manager role assignment moved with the position, updating role-based group membership", "An admin manually granted 40 domains", "Security is not enforced for managers", "The tenant was refreshed", "Position-based role assignment plus role-based groups produce automatic access changes."], ["Security", "What is the purpose of Activate Previous Security Timestamp?", "Rolling security policies back to a prior activation point", "Deleting all policies", "Creating a new tenant", "Archiving reports", "Activating a previous timestamp reverts policy state to that moment."], ["Security", "Two changes were made: a policy edit and a group membership addition. Which is live before any activation?", "The group membership addition", "The policy edit", "Both", "Neither", "Membership is immediate; policy edits await activation."], ["Security", "What determines a user's effective access when they belong to several groups?", "The union of permissions granted to all their groups", "Only their first group", "Only constrained groups", "The most restrictive group only", "Access accumulates across group memberships."], ["Security", "Can the type of an existing security group be changed, say from user-based to role-based?", "No; you create a group of the desired type instead", "Yes, freely at any time", "Only on weekends", "Only for delivered groups", "Group type is fixed at creation; changing approach means a new group."], ["Security", "Which items are examples of segments used by segment-based groups?", "Document categories and pay component groups", "Supervisory organizations only", "Tenants", "Step order values", "Segments carve subsets of secured items, such as document categories."], ["Security", "What kind of group would let a shared services team act for many organizations they support?", "A service center or appropriately scoped constrained group covering supported organizations", "Employee as Self", "A temporary report", "A checklist", "Service center oriented groups scope external or shared-service reps to supported populations."], ["Security", "Access to run a report ultimately requires what?", "Access to the report and to the domains securing its data source and fields", "Only a link to the report", "Ownership of the tenant", "A pay group", "Reports respect domain security of their data sources and fields."], ["Security", "What should you check first when a user reports missing access to a task?", "Which domain or process secures it and whether any of the user's groups are in that policy", "The tenant logo", "The org subtype", "The report count", "Diagnosis starts at the securing policy and the user's group membership."], ["Security", "Which statement about delivered security groups is correct?", "Delivered groups cannot be deleted, but customers can create their own groups", "Delivered groups are editable into any type", "All delivered groups are user-based", "Delivered groups expire yearly", "Workday ships core groups; customers extend with custom groups."], ["Security", "A proxy policy in a non-production tenant is used for what?", "Allowing testers to act as another user for validation", "Bypassing production security permanently", "Emailing reports", "Approving payroll", "Proxy access supports testing by impersonation in non-production."], ["Security", "How does delegation differ from a security change?", "Delegation temporarily hands inbox tasks to another user without altering group membership", "Delegation rewrites policies", "Delegation deletes tasks", "They are identical", "Delegation is a business process convenience, not a security reconfiguration."], ["Security", "Which policy secures the ability to rescind a completed Change Job event?", "The Change Job business process security policy", "The Staffing domain policy alone", "The report share tab", "The job profile", "Rescind is a BP action controlled on that process's security policy."], ["Security", "What is the recommended first step before granting broad new access?", "Review which groups and policies already cover the need to avoid over-provisioning", "Add everyone to Implementers", "Disable functional areas", "Delete old groups", "Reusing existing structures keeps security clean and auditable."], ["Security", "Access differs between two members of the same role-based constrained group. Why can this happen?", "They hold the role for different organizations, so their constrained context differs", "Constrained groups guarantee identical access", "One user is lying", "Policies randomize access", "Context (which orgs they cover) individualizes constrained access."], ["Security", "Which functional area would you expect to contain staffing-related domains?", "Staffing", "Financial Accounting", "Inventory", "Projects", "Domains live under functional areas aligned to product areas like Staffing."], ["Security", "Why keep a comment when activating pending security policy changes?", "It documents the timestamp for audit and potential rollback", "Comments encrypt the change", "It emails all users", "It is required to log in", "Activation comments aid auditing and identifying rollback points."], ["Security", "A segment-based group typically pairs which two things?", "A set of users (via groups) with a segment of secured values they may access", "Two unrelated tenants", "A report and a dashboard", "A location and a pay group", "Segment-based security binds who (groups) to which subset (segment)."], ["Security", "Which choice best summarizes domain versus business process security policies?", "Domains secure tasks, reports, and data; process policies secure actions on events", "Domains secure approvals; process policies secure reports", "Both only secure integrations", "Neither affects end users", "Items and data are domain-secured; event participation is process-secured."], ["Security", "To let auditors view (but not change) data tenant-wide, what is a sound design?", "A user-based group granted view-only access in the relevant domain policies", "Adding auditors to Implementers", "Giving auditors modify everywhere", "Disabling security", "User-based, view-only grants provide unconstrained read access cleanly."], ["Security", "What happens to pending policy edits if they are never activated?", "They remain pending and have no effect on runtime security", "They apply after 30 days", "They delete the policies", "They block logins", "Only activation makes policy edits live."], ["Security", "Role-based group setup asks which organization roles and what else?", "How access applies to the role's organizations, such as including subordinate organizations", "The user's favorite color", "The report layout", "The payroll calendar", "Configuration includes the role and the applies-to scoping of organizations."], ["Security", "Which group type would automatically include everyone hired into a particular job profile?", "Job-based security group", "User-based", "Aggregation of user lists", "Service center", "Job-based membership derives from job attributes like job profile."], ["Security", "What is a functional area, in one sentence?", "A collection of related domains and business process types for a product area", "A physical office", "A report tab", "A step type", "Functional areas organize security content by product area."], ["Security", "The security team wants to review every group a departing administrator belonged to. Which is the direct source?", "View Security Groups for User for that account", "The org chart", "The job catalog", "The report tags", "That report enumerates the user's memberships for review."], ["Security", "Which action ensures integrations keep working after you tighten a domain policy?", "Confirm the integration's security group retains the needed get or put permissions before activating", "Delete the ISU", "Disable the domain", "Rename the tenant", "Policy changes must preserve integration get/put rights or interfaces will fail."], ["Security", "A worker's access should change automatically when they change jobs. Which design achieves this with least maintenance?", "Deriving access from role-, job-, or organization-based groups rather than user-based lists", "Hand-editing user-based groups weekly", "Sharing accounts", "Emailing spreadsheets", "Derived (criteria-based) groups self-maintain as staffing changes occur."], ["Security", "Which of these is NOT a security group type?", "Completion step group", "User-based", "Intersection", "Segment-based", "Completion steps belong to business processes, not security group types."], ["Security", "What do you review before deleting a custom security group?", "Which security policies reference the group, to avoid breaking access", "Nothing; deletion is always safe", "Only the tenant name", "The color scheme", "Groups referenced in policies must be unwired first to avoid gaps."], ["Security", "Constrained versus unconstrained is fundamentally a question of what?", "Whether access is limited to a contextual set of organizations or applies tenant-wide", "Password strength", "Report speed", "Step ordering", "The distinction is contextual scope versus tenant-wide reach."], ["Security", "A new custom report must be runnable by HR Partners only. Besides sharing, what must be true?", "HR Partners' groups must have access to the domains securing the report's data source", "Nothing else matters", "The report must be temporary", "The report must be standard", "Sharing exposes the report; domain security still governs the data."]];
+const SECTIONS = ["Staffing Setup","Organizations","Business Processes","Reporting","Security"];
+const WEIGHTS = {"Staffing Setup":.25,"Organizations":.20,"Business Processes":.25,"Reporting":.05,"Security":.25};
+const SECCOLORS = {"Staffing Setup":"#0875e1","Organizations":"#2f9e44","Business Processes":"#f38b00","Reporting":"#8e44ad","Security":"#d63a2f"};
+// Build question objects: {s, q, opts:[{t,ok}], r}
+const BANK = RAW.map((x,i)=>({id:i, s:x[0], q:x[1], correct:x[2], wrongs:[x[3],x[4],x[5]], r:x[6]}));
+
+function store(k,v){try{localStorage.setItem("hcmcore_"+k,JSON.stringify(v))}catch(e){}}
+function load(k,d){try{const v=localStorage.getItem("hcmcore_"+k);return v?JSON.parse(v):d}catch(e){return d}}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function opts(q){return shuffle([{t:q.correct,ok:true},{t:q.wrongs[0],ok:false},{t:q.wrongs[1],ok:false},{t:q.wrongs[2],ok:false}])}
+const VIEWS=["home","guide","learnsetup","learn","learnsum","examsetup","exam","results"];
+function show(v){VIEWS.forEach(x=>document.getElementById("view-"+x).classList.toggle("hidden",x!==v));window.scrollTo(0,0)}
+function goHome(){if(exam.active&&!confirm("Leave the exam in progress? Your attempt will be discarded."))return;stopTimer();exam.active=false;renderHome();show("home")}
+
+function renderHome(){
+  const counts={};BANK.forEach(q=>counts[q.s]=(counts[q.s]||0)+1);
+  document.getElementById("home-pills").innerHTML =
+    `<span class="pill"><b>${BANK.length}</b> questions total</span>`+
+    SECTIONS.map(s=>`<span class="pill" style="border-color:${SECCOLORS[s]}55"><b style="color:${SECCOLORS[s]}">${counts[s]||0}</b> ${s} (${Math.round(WEIGHTS[s]*100)}%)</span>`).join("");
+  const best=load("best",[]);
+  document.getElementById("home-best").innerHTML = best.length ?
+    best.slice(-5).reverse().map(b=>`<div class="chip" style="margin:3px 4px 3px 0;display:inline-block"><b>${b.pct}%</b> — ${b.n} questions — ${b.when} ${b.pct>=75?"&#9989;":"&#10060;"}</div>`).join("")
+    : "No exams taken yet in this browser.";
+}
+
+/* ---------------- STUDY GUIDE ---------------- */
+const CHAPTERS=[
+ "1 · Staffing Setup (25%)",
+ "2 · Organizations (20%)",
+ "3 · Business Processes (25%)",
+ "4 · Reporting (5%)",
+ "5 · Security (25%)",
+ "6 · Quick Review"
+];
+let gcur=0;
+function showGuide(i){gcur=i;renderGuide();show("guide")}
+function renderGuide(){
+  document.getElementById("g-toc").innerHTML=CHAPTERS.map((c,i)=>
+    `<button class="${i===gcur?"on":""}" onclick="showGuide(${i})">${c}</button>`).join("");
+  CHAPTERS.forEach((_,i)=>{
+    const el=document.getElementById("gc-"+i);
+    if(el)el.classList.toggle("hidden",i!==gcur);
+  });
+  document.getElementById("g-prev").disabled=gcur===0;
+  document.getElementById("g-next").disabled=gcur===CHAPTERS.length-1;
+  window.scrollTo(0,0);
+}
+function guideNav(d){gcur=Math.min(Math.max(gcur+d,0),CHAPTERS.length-1);renderGuide()}
+
+/* ---------------- LEARNING ---------------- */
+let learn={qs:[],i:0,right:0,streak:0,perSec:{}};
+function showLearnSetup(){
+  const sel=document.getElementById("learn-section");
+  sel.innerHTML='<option value="all">All topics</option>'+SECTIONS.map(s=>`<option>${s}</option>`).join("");
+  show("learnsetup");
+}
+function startLearning(){
+  const sec=document.getElementById("learn-section").value;
+  const cnt=document.getElementById("learn-count").value;
+  let pool=sec==="all"?BANK:BANK.filter(q=>q.s===sec);
+  pool=shuffle(pool);
+  if(cnt!=="all")pool=pool.slice(0,parseInt(cnt,10));
+  learn={qs:pool.map(q=>({q,opts:opts(q)})),i:0,right:0,streak:0,perSec:{}};
+  document.getElementById("l-sec").textContent=sec==="all"?"All topics":sec;
+  show("learn");renderLearnQ();
+}
+function renderLearnQ(){
+  const cur=learn.qs[learn.i],q=cur.q;
+  document.getElementById("l-pos").textContent=(learn.i+1)+" / "+learn.qs.length;
+  document.getElementById("l-bar").style.width=(learn.i/learn.qs.length*100)+"%";
+  document.getElementById("l-right").textContent=learn.right;
+  document.getElementById("l-streak").textContent=learn.streak;
+  document.getElementById("l-topic").textContent=q.s;
+  document.getElementById("l-q").textContent=q.q;
+  document.getElementById("l-fb").innerHTML="";
+  document.getElementById("l-next").disabled=true;
+  document.getElementById("l-next").textContent=(learn.i===learn.qs.length-1)?"Finish session":"Next question \u2192";
+  const box=document.getElementById("l-opts");box.innerHTML="";
+  cur.opts.forEach((o,idx)=>{
+    const d=document.createElement("div");d.className="opt";
+    d.innerHTML=`<span class="dot"></span><span>${esc(o.t)}</span>`;
+    d.onclick=()=>learnAnswer(idx);
+    box.appendChild(d);
+  });
+}
+function learnAnswer(idx){
+  const cur=learn.qs[learn.i];if(cur.done)return;cur.done=true;cur.pick=idx;
+  const nodes=document.getElementById("l-opts").children;
+  cur.opts.forEach((o,i2)=>{
+    nodes[i2].classList.add("locked");
+    if(o.ok)nodes[i2].classList.add("correct");
+    else if(i2===idx)nodes[i2].classList.add("wrong");
+  });
+  const ok=cur.opts[idx].ok;
+  const sec=cur.q.s;learn.perSec[sec]=learn.perSec[sec]||{r:0,n:0};learn.perSec[sec].n++;
+  if(ok){learn.right++;learn.streak++;learn.perSec[sec].r++;}else{learn.streak=0;}
+  document.getElementById("l-right").textContent=learn.right;
+  document.getElementById("l-streak").textContent=learn.streak;
+  document.getElementById("l-fb").innerHTML =
+    `<div class="feedback ${ok?"ok":"bad"}"><b>${ok?"Correct.":"Incorrect."}</b> ${esc(cur.q.r)}</div>`;
+  document.getElementById("l-next").disabled=false;
+}
+function learnNext(){
+  if(learn.i===learn.qs.length-1){return endLearning();}
+  learn.i++;renderLearnQ();
+}
+function endLearning(){
+  const answered=learn.qs.filter(x=>x.done).length;
+  if(!answered){goHome();return;}
+  const pct=Math.round(learn.right/answered*100);
+  document.getElementById("ls-score").textContent=pct+"%";
+  document.getElementById("ls-detail").textContent=`${learn.right} of ${answered} answered correctly.`;
+  document.getElementById("ls-secs").innerHTML=secBars(learn.perSec);
+  show("learnsum");
+}
+function secBars(per){
+  return Object.keys(per).map(s=>{
+    const p=per[s],pct=p.n?Math.round(p.r/p.n*100):0;
+    return `<div class="secbar"><div class="lbl"><span>${s}</span><span>${p.r}/${p.n} (${pct}%)</span></div>
+      <div class="bar"><div style="width:${pct}%;background:${SECCOLORS[s]||"#0875e1"}"></div></div></div>`;
+  }).join("");
+}
+
+/* ---------------- EXAM ---------------- */
+let exam={active:false,qs:[],i:0,secs:0,total:0,timerId:null};
+function showExamSetup(){show("examsetup")}
+function weightedSample(n){
+  const bySec={};SECTIONS.forEach(s=>bySec[s]=shuffle(BANK.filter(q=>q.s===s)));
+  const take={};let assigned=0;
+  SECTIONS.forEach(s=>{take[s]=Math.round(n*WEIGHTS[s]);assigned+=take[s];});
+  // fix rounding drift
+  let drift=n-assigned;const order=shuffle(SECTIONS.slice());let k=0;
+  while(drift!==0){const s=order[k%order.length];take[s]+=drift>0?1:-1;drift+=drift>0?-1:1;k++;}
+  let out=[];
+  SECTIONS.forEach(s=>{out=out.concat(bySec[s].slice(0,Math.min(take[s],bySec[s].length)));});
+  return shuffle(out).map(q=>({q,opts:opts(q),pick:null,flag:false}));
+}
+function startExam(n,minutes){
+  exam={active:true,qs:weightedSample(n),i:0,secs:minutes*60,total:n,timerId:null};
+  show("exam");renderExamQ();buildGrid();tick();exam.timerId=setInterval(tick,1000);
+}
+function fmt(s){const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;
+  return (h?String(h).padStart(2,"0")+":":"")+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")}
+function tick(){
+  const t=document.getElementById("e-timer");
+  t.textContent="Time remaining: "+fmt(exam.secs);
+  t.classList.toggle("low",exam.secs<=300);
+  if(exam.secs<=0){finishExam(true);return;}
+  exam.secs--;
+}
+function stopTimer(){if(exam.timerId){clearInterval(exam.timerId);exam.timerId=null}}
+function renderExamQ(){
+  const cur=exam.qs[exam.i],q=cur.q;
+  document.getElementById("e-num").textContent=`${exam.i+1} of ${exam.total}`;
+  document.getElementById("e-pos").textContent=`${exam.i+1} / ${exam.total}`;
+  document.getElementById("e-q").textContent=q.q;
+  document.getElementById("e-prev").disabled=exam.i===0;
+  document.getElementById("e-next").disabled=exam.i===exam.total-1;
+  const fb=document.getElementById("e-flag");
+  fb.classList.toggle("on",cur.flag);
+  fb.innerHTML=cur.flag?"&#9873; Flagged":"&#9873; Flag question";
+  const box=document.getElementById("e-opts");box.innerHTML="";
+  cur.opts.forEach((o,idx)=>{
+    const d=document.createElement("div");d.className="opt"+(cur.pick===idx?" sel":"");
+    d.innerHTML=`<span class="dot"></span><span>${esc(o.t)}</span>`;
+    d.onclick=()=>{cur.pick=idx;renderExamQ();refreshCounts();};
+    box.appendChild(d);
+  });
+  document.getElementById("e-bar").style.width=((exam.i+1)/exam.total*100)+"%";
+  refreshCounts();
+}
+function refreshCounts(){
+  const a=exam.qs.filter(x=>x.pick!==null).length;
+  const f=exam.qs.filter(x=>x.flag).length;
+  document.getElementById("e-answered").textContent=a+" / "+exam.total;
+  document.getElementById("e-flagged").textContent=f;
+  buildGrid();
+}
+function buildGrid(){
+  const g=document.getElementById("e-grid");g.innerHTML="";
+  exam.qs.forEach((x,i)=>{
+    const b=document.createElement("button");b.textContent=i+1;
+    if(x.pick!==null)b.classList.add("answered");
+    if(x.flag)b.classList.add("flagged");
+    if(i===exam.i)b.classList.add("current");
+    b.onclick=()=>{exam.i=i;renderExamQ();};
+    g.appendChild(b);
+  });
+}
+function examNav(d){exam.i=Math.min(Math.max(exam.i+d,0),exam.total-1);renderExamQ()}
+function toggleFlag(){const c=exam.qs[exam.i];c.flag=!c.flag;renderExamQ()}
+function trySubmit(){
+  const un=exam.qs.filter(x=>x.pick===null).length;
+  const msg=un?`You have ${un} unanswered question${un>1?"s":""}. Submit anyway?`:"Submit the exam and view your results?";
+  if(confirm(msg))finishExam(false);
+}
+function finishExam(timeUp){
+  stopTimer();exam.active=false;
+  let right=0;const per={};
+  exam.qs.forEach(x=>{
+    const s=x.q.s;per[s]=per[s]||{r:0,n:0};per[s].n++;
+    x.ok=x.pick!==null&&x.opts[x.pick].ok;
+    if(x.ok){right++;per[s].r++;}
+  });
+  const pct=Math.round(right/exam.total*100);
+  document.getElementById("r-score").textContent=pct+"%";
+  const band=document.getElementById("r-band");
+  band.textContent=pct>=75?"PASS":"BELOW PASS MARK";
+  band.className="passband "+(pct>=75?"pass":"fail");
+  document.getElementById("r-detail").textContent=
+    `${right} of ${exam.total} correct${timeUp?" — time expired":""}. Pass mark 75%.`;
+  document.getElementById("r-secs").innerHTML=secBars(per);
+  const best=load("best",[]);
+  best.push({pct,n:exam.total,when:new Date().toLocaleDateString()});
+  store("best",best.slice(-20));
+  renderReview("all");
+  show("results");
+}
+function renderReview(mode){
+  const box=document.getElementById("r-review");
+  let list=exam.qs.map((x,i)=>({x,i}));
+  if(mode==="wrong")list=list.filter(o=>!o.x.ok);
+  if(mode==="flag")list=list.filter(o=>o.x.flag);
+  if(!list.length){box.innerHTML='<div class="card muted">Nothing to show for this filter.</div>';return;}
+  box.innerHTML=list.map(({x,i})=>{
+    const optHtml=x.opts.map((o,j)=>{
+      let cls="opt locked";
+      if(o.ok)cls+=" correct";else if(j===x.pick)cls+=" wrong";
+      return `<div class="${cls}"><span class="dot"></span><span>${esc(o.t)}</span></div>`;
+    }).join("");
+    return `<div class="review-item ${x.ok?"correct":"wrong"}">
+      <div class="qnum">Question ${i+1} &middot; ${x.q.s} ${x.flag?"&middot; &#9873; flagged":""} ${x.pick===null?"&middot; <b style='color:var(--red)'>not answered</b>":""}</div>
+      <div class="qtext" style="font-size:15px">${esc(x.q.q)}</div>
+      ${optHtml}
+      <div class="feedback ${x.ok?"ok":"bad"}"><b>${x.ok?"Correct.":"Incorrect."}</b> ${esc(x.q.r)}</div>
+    </div>`;
+  }).join("");
+}
+function scrollToReview(){document.getElementById("review-anchor").scrollIntoView({behavior:"smooth"})}
+
+renderHome();show("home");
+</script>
+</body>
+</html>

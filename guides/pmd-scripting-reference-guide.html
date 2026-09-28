@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMD Scripting — Complete Reference Guide · Workday Extend</title>
+<style>
+:root{
+  --bg:#FFFFFF; --paper:#FBFCFD; --ink:#121821; --ink-2:#3C4656; --ink-3:#74808F;
+  --line:#E4E8EE; --line-2:#EEF1F5;
+  --primary:#0B5CAD; --primary-d:#084785; --primary-2:#EAF1F9;
+  --accent:#D9791F; --accent-d:#A85C12; --accent-2:#FBEFE0;
+  --ok:#1A7F4B; --note:#9A6612; --note-2:#FBF3E0;
+  --code-bg:#0F1826; --code-text:#D7DEEB; --code-dim:#7E8BA2;
+  --c-del:#F0A35E; --c-str:#86C994; --c-key:#7FA8E8; --c-ns:#E5A552; --c-num:#C99BE0; --c-com:#5E6B82;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+.delim{color:var(--accent);font-family:var(--mono);font-weight:700}
+
+/* layout */
+.wrap{display:grid;grid-template-columns:288px 1fr;max-width:1240px;margin:0 auto}
+.toc{position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--line);padding:26px 20px 40px;background:var(--paper)}
+.toc .tt{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:4px;letter-spacing:-.01em}
+.toc .tt .mk{font-family:var(--mono);color:var(--accent);background:var(--accent-2);padding:2px 6px;border-radius:6px;font-size:12px}
+.toc .sub{font-size:11.5px;color:var(--ink-3);font-family:var(--mono);margin-bottom:18px;letter-spacing:.02em}
+.toc a{display:block;color:var(--ink-2);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:7px;line-height:1.35;transition:background .14s,color .14s;border-left:2px solid transparent}
+.toc a:hover{background:var(--line-2);color:var(--ink)}
+.toc a.active{color:var(--primary);background:var(--primary-2);border-left-color:var(--primary);font-weight:600}
+
+.doc{padding:0 56px 120px;min-width:0}
+.cover{padding:54px 0 30px;border-bottom:2px solid var(--ink);margin-bottom:8px}
+.cover .ey{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-d);font-weight:600}
+.cover h1{font-size:40px;letter-spacing:-.025em;margin:12px 0 0;line-height:1.08;font-weight:800}
+.cover h1 .delim{font-size:.62em;vertical-align:.08em}
+.cover p{color:var(--ink-2);max-width:64ch;margin:16px 0 0;font-size:16px}
+.cover .meta{display:flex;gap:28px;flex-wrap:wrap;margin-top:22px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.cover .meta b{color:var(--primary);font-size:16px;font-weight:700;font-family:var(--sans);display:block}
+
+/* parts */
+.part{padding-top:30px;margin-top:18px;scroll-margin-top:14px}
+.part>h2{font-size:25px;letter-spacing:-.02em;font-weight:750;padding-bottom:10px;border-bottom:1px solid var(--line);margin:0 0 18px;color:var(--ink)}
+.doc h3{font-size:17.5px;margin:26px 0 8px;letter-spacing:-.01em;color:var(--ink)}
+.doc p{margin:0 0 13px;max-width:74ch}
+.doc ul{max-width:74ch;margin:0 0 13px;padding-left:22px}
+.doc li{margin:4px 0}
+.doc strong{font-weight:650}
+.doc em{font-style:italic;color:var(--ink-2)}
+.doc code{font-family:var(--mono);background:var(--primary-2);color:var(--primary-d);padding:1.5px 6px;border-radius:5px;font-size:.85em;font-weight:500}
+
+/* code blocks */
+pre.code{font-family:var(--mono);background:var(--code-bg);color:var(--code-text);border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:12.8px;line-height:1.62;margin:12px 0;white-space:pre;tab-size:2;border:1px solid #1E2A3D}
+pre.code.ex{margin:0}
+.t-del{color:var(--c-del);font-weight:700}.t-ns{color:var(--c-ns)}.t-str{color:var(--c-str)}.t-key{color:var(--c-key)}.t-num{color:var(--c-num)}.t-com{color:var(--c-com);font-style:italic}
+
+/* tables */
+table{border-collapse:collapse;width:100%;max-width:74ch;margin:12px 0;font-size:13.5px}
+table th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);padding:8px 10px;border-bottom:2px solid var(--line)}
+table td{padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:top}
+table.t3 tr.grp td{background:var(--paper);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-d);font-weight:700;border-bottom:1px solid var(--line)}
+.note{background:var(--note-2);border:1px solid #EAD9AE;border-radius:9px;padding:11px 14px;font-size:14px;color:#5A3D17;max-width:74ch}
+.kwgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;max-width:74ch;margin:6px 0 14px}
+.kwgrid span{font-family:var(--mono);font-size:12px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:5px 9px;text-align:center;color:var(--ink-2)}
+
+/* function reference */
+.fnfilter{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0;display:flex;align-items:center;gap:12px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.fnfilter input{flex:1;max-width:440px;font-family:var(--sans);font-size:14px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.fnfilter input:focus{outline:2px solid var(--primary-2);border-color:var(--primary)}
+.fnfilter #fnqc{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.nsblock{margin:22px 0}
+.nsh{display:flex;align-items:center;gap:10px;font-size:19px;scroll-margin-top:64px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.nsh .nsi{font-family:var(--mono);font-size:13px;color:#fff;background:var(--accent);width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.nsh .nsc{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400}
+.nsblurb{color:var(--ink-2);font-size:14px;margin:8px 0 14px}
+.fn{border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin:0 0 11px;background:var(--bg);break-inside:avoid}
+.fnhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fnsig{flex:1;min-width:240px}
+.fnsig pre.code{margin:0;font-size:13px;font-weight:500}
+.ret{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.ret b{color:var(--primary);font-weight:700}
+.fndesc{font-size:14px;color:var(--ink-2);margin:10px 0 0;max-width:none}
+table.pt{margin:10px 0 0;max-width:none;font-size:13px}
+table.pt th{font-size:10px}
+.fnex{margin-top:10px}
+.fnex .exl{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent-d);font-weight:700;display:block;margin-bottom:4px}
+
+/* print */
+@media print{
+  .toc,.fnfilter{display:none!important}
+  .wrap{display:block;max-width:none}
+  .doc{padding:0 8px}
+  .part{page-break-before:always}
+  .cover{page-break-after:avoid}
+  pre.code,.fn,table{break-inside:avoid}
+  body{font-size:10.5pt}
+  a{color:var(--ink);text-decoration:none}
+}
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .toc{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .doc{padding:0 22px 80px}
+  .cover h1{font-size:30px}
+}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="toc">
+    <div class="tt"><span class="mk">&lt;%&gt;</span> PMD Scripting</div>
+    <div class="sub">Complete Reference Guide</div>
+    <a href="#intro">1 · Introduction & the Script Model</a><a href="#lexical">2 · Lexical Structure</a><a href="#variables">3 · Variables &amp; Scope</a><a href="#types">4 · Data Types &amp; Literals</a><a href="#operators">5 · Operators</a><a href="#control">6 · Statements &amp; Control Flow</a><a href="#functions">7 · Functions &amp; Closures</a><a href="#builtins">8 · Built-in Functions: empty &amp; size</a><a href="#collections">9 · Working with Collections</a><a href="#modules">10 · Script Modules</a><a href="#endpoints">11 · Endpoints &amp; Data Binding</a><a href="#widgets">12 · Widgets &amp; Methods</a><a href="#events">13 · Events</a><a href="#logging">14 · Logging</a><a href="#functions-ref">15 · Complete Function Reference</a><a href="#patterns">16 · Patterns &amp; Best Practices</a><a href="#limits">17 · Limits &amp; Common Errors</a>
+  </nav>
+  <main class="doc">
+    <header class="cover">
+      <span class="ey">Workday Extend · Presentation Model Definition</span>
+      <h1><span class="delim">&lt;%</span> PMD Scripting<br>Complete Reference Guide <span class="delim">%&gt;</span></h1>
+      <p>Every construct of the PMD scripting language — notation, syntax, operators, control flow, modules, widgets, events, logging — and the full catalog of built-in functions across all 16 namespaces, each with signature, parameters, return type, and a worked example. Grounded in the official Workday developer documentation.</p>
+      <div class="meta">
+        <span><b id="m-fns">—</b>documented functions</span>
+        <span><b>16</b>function namespaces</span>
+        <span><b>17</b>reference parts</span>
+        <span><b>self-contained</b>offline · print to PDF</span>
+      </div>
+    </header>
+    <section class="part" id="intro"><h2>1 · Introduction & the Script Model</h2>
+<p><strong>PMD Scripting</strong> is the lightweight expression language embedded inside a Workday Extend <em>Presentation Model Definition</em> (PMD). Wherever a value in a PMD can be dynamic, you replace the literal with a script expression. The platform evaluates the expression at runtime and substitutes the result into the page.</p>
+
+<h3>The <span class="delim">&lt;%</span> &hellip; <span class="delim">%&gt;</span> delimiters</h3>
+<p>All embedded script lives between <code>&lt;%</code> and <code>%&gt;</code>. Anything outside the delimiters is treated as a literal string. A value can mix literal text and script, or be pure script:</p>
+<pre class="code">&quot;label&quot;: &quot;Welcome&quot;                         // literal text
+&quot;label&quot;: &quot;&lt;% &#x27;Welcome, &#x27; + worker.firstName %&gt;&quot;  // pure script
+&quot;label&quot;: &quot;Hi &lt;% worker.firstName %&gt;!&quot;      // mixed literal + script</pre>
+
+<h3>What a script returns</h3>
+<p>A PMD script is a sequence of zero or more statements. By default it returns the value of the <strong>last expression</strong> it evaluated. An explicit <code>return</code> returns its operand (or <code>null</code> if nothing follows). Statements may optionally be terminated with a semicolon <code>;</code>.</p>
+<pre class="code">&lt;% 
+  var first = worker.firstName;
+  var last  = worker.lastName;
+  first + &#x27; &#x27; + last        // last expression is returned
+%&gt;</pre>
+
+<h3>Where script appears</h3>
+<p>Script is used in three broad places: <strong>inline value bindings</strong> on widget properties (<code>value</code>, <code>label</code>, <code>visible</code>, &hellip;), <strong>event handlers</strong> (<code>onChange</code>, <code>onClick</code>, <code>onRowSelect</code>), and a <strong>page-level <code>script</code></strong> block that runs at page load to define functions and initialize state. Reusable logic is factored into <strong>script modules</strong> (<code>.script</code> files), covered in Part 10.</p>
+</section><section class="part" id="lexical"><h2>2 · Lexical Structure</h2>
+<h3>Comments</h3>
+<p>Single-line comments begin with <code>//</code>. Multi-line comments are wrapped in <code>/* &hellip; */</code>. Comments are removed before evaluation and never affect output.</p>
+<pre class="code">// a single-line comment
+/* a
+   multi-line comment */</pre>
+
+<h3>Identifiers &amp; variable names</h3>
+<p>An identifier must <strong>start</strong> with a letter (<code>a-z A-Z</code>), an underscore <code>_</code>, or a dollar sign <code>$</code>. Subsequent characters may also include digits <code>0-9</code>. Names are <strong>case-sensitive</strong> — <code>var1</code> and <code>Var1</code> are different variables.</p>
+<table class="t2"><tr><th>Valid</th><th>Invalid</th></tr>
+<tr><td><code>var1</code>, <code>_a99</code>, <code>$1</code></td><td><code>9v</code>, <code>!a99</code>, <code>1$</code></td></tr></table>
+
+<h3>Reserved keywords</h3>
+<p>These words are reserved and cannot be used as variable or property names:</p>
+<div class="kwgrid"><span>and</span><span>break</span><span>catch</span><span>const</span><span>continue</span><span>do</span><span>div</span><span>else</span><span>eq</span><span>false</span><span>finally</span><span>for</span><span>function</span><span>ge</span><span>gt</span><span>if</span><span>instanceof</span><span>lt</span><span>le</span><span>let</span><span>mod</span><span>ne</span><span>new</span><span>not</span><span>null</span><span>or</span><span>return</span><span>throw</span><span>true</span><span>try</span><span>typeof</span><span>var</span><span>while</span></div>
+
+<h3>Dot vs. bracket notation</h3>
+<p>Use dot notation to access object properties: <code>worker.firstName</code>. When a property name is a reserved keyword or contains a character the parser would read as an operator (such as a hyphen, which it reads as subtraction), switch to <strong>bracket notation</strong>:</p>
+<pre class="code">event.for.id        // ERROR: &#x27;for&#x27; is reserved
+event[&#x27;for&#x27;].id     // correct
+
+someVariable.a-b    // parsed as subtraction (a minus b)
+someVariable[&#x27;a-b&#x27;] // correct: reads the &#x27;a-b&#x27; property</pre>
+</section><section class="part" id="variables"><h2>3 · Variables &amp; Scope</h2>
+<p>Three keywords declare local variables. They differ by scope and mutability. The best-practice order is <strong>const &rarr; let &rarr; var</strong> — reach for the tightest scope that works.</p>
+
+<h3><code>const</code> — block-scoped, immutable</h3>
+<p>Defines a block-level variable whose value cannot be reassigned. A <em>block</em> is logic enclosed in <code>{ }</code>. Reassignment raises an error, and the variable is not visible outside its block.</p>
+<pre class="code">const tenant = &#x27;gms&#x27;;
+tenant = &#x27;amu&#x27;;   // ERROR: cannot reassign a const
+
+if (condition) {
+  const tax = 0.2;
+}
+console.info(tax); // ERROR: &#x27;tax&#x27; is out of scope here</pre>
+
+<h3><code>let</code> — block-scoped, reassignable</h3>
+<p>Block-scoped like <code>const</code>, but its value may change within the block. Use it when the value genuinely changes but you want to keep the scope small.</p>
+<pre class="code">let total = 0;
+total = total + amount;   // allowed</pre>
+
+<h3><code>var</code> — script-scoped</h3>
+<p>Has the entire script as its scope and takes precedence over context variables during name resolution. It is the widest scope; prefer <code>const</code>/<code>let</code> unless you need script-wide reach.</p>
+<pre class="code">var x;                 // basic declaration
+var theAnswer = 42;    // declaration with assignment
+// var x.y;            // INVALID</pre>
+</section><section class="part" id="types"><h2>4 · Data Types &amp; Literals</h2>
+<h3>Strings</h3>
+<p>Single or double quotes create a plain string literal.</p>
+<pre class="code">var a = &#x27;gms&#x27;;
+var b = &quot;amu&quot;;</pre>
+
+<h3>Template strings (backticks &amp; <code>{{ }}</code>)</h3>
+<p>Enclose a string in <strong>backticks</strong> to enable variable interpolation with the <strong>double-brace</strong> <code>{{var}}</code> syntax and to write multi-line text. This is a Workday-specific detail: interpolation is <code>{{name}}</code>, not <code>${name}</code>.</p>
+<pre class="code">var name = &#x27;Logan McNeil&#x27;;
+var greeting = `Hi, {{name}}`;            // &quot;Hi, Logan McNeil&quot;
+
+var message = `
+  Hi, {{name}}
+  How are you doing?
+`;                                         // multi-line</pre>
+
+<h3>Numbers, booleans, null</h3>
+<p>Numbers are unquoted (<code>42</code>, <code>0.2</code>). Booleans are <code>true</code> / <code>false</code>. The absence of a value is <code>null</code>.</p>
+
+<h3>Lists, maps, and sets</h3>
+<p>PMD supports three object collections. They are covered in depth in Parts 9 and 15.</p>
+<table class="t2"><tr><th>Type</th><th>Literal</th><th>Notes</th></tr>
+<tr><td><strong>List</strong></td><td><code>[1, 2, 3]</code></td><td>Ordered; index with <code>arr[0]</code>.</td></tr>
+<tr><td><strong>Map</strong></td><td><code>{'a': 1}</code> &middot; empty: <code>{:}</code></td><td>Unordered key&ndash;value pairs; the empty map literal is <code>{:}</code>, <em>not</em> <code>{}</code>.</td></tr>
+<tr><td><strong>Set</strong></td><td><code>{1, 2, 3}</code></td><td>Unordered, unique elements.</td></tr></table>
+<p class="note"><strong>Map key trap:</strong> in <code>{a: 'value'}</code> the key <code>a</code> is treated as a <em>variable</em>. If <code>a</code> is not declared you get an error. Quote the key — <code>{'a': 'value'}</code> — to use a literal string key.</p>
+</section><section class="part" id="operators"><h2>5 · Operators</h2>
+<p>PMD Scripting uses <strong>symbol</strong> operators for logic — <code>&amp;&amp;</code>, <code>||</code>, <code>!</code> — not the words <code>and</code>, <code>or</code>, <code>not</code> (those are reserved keywords). The full set:</p>
+<table class="t3"><tr><th>Operator</th><th>Symbol</th><th>Example</th></tr><tr class="grp"><td colspan="3">Arithmetic</td></tr><tr><td>Addition</td><td><code>+</code></td><td><code>val1 + val2</code></td></tr><tr><td>Subtraction</td><td><code>-</code></td><td><code>val1 - val2</code></td></tr><tr><td>Multiplication</td><td><code>*</code></td><td><code>val1 * val2</code></td></tr><tr><td>Division</td><td><code>/</code></td><td><code>val1 / val2</code></td></tr><tr><td>Modulus (remainder)</td><td><code>%</code></td><td><code>val1 % val2</code></td></tr><tr><td>Negation (unary)</td><td><code>-</code></td><td><code>-12</code></td></tr><tr><td>Increment</td><td><code>++</code></td><td><code>a++  /  ++a</code></td></tr><tr><td>Decrement</td><td><code>--</code></td><td><code>a--  /  --a</code></td></tr><tr class="grp"><td colspan="3">Comparison</td></tr><tr><td>Equal</td><td><code>==</code></td><td><code>val1 == val2</code></td></tr><tr><td>Not equal</td><td><code>!=</code></td><td><code>val1 != val2</code></td></tr><tr><td>Less than</td><td><code>&lt;</code></td><td><code>val1 &lt; val2</code></td></tr><tr><td>Less than or equal</td><td><code>&lt;=</code></td><td><code>val1 &lt;= val2</code></td></tr><tr><td>Greater than</td><td><code>&gt;</code></td><td><code>val1 &gt; val2</code></td></tr><tr><td>Greater than or equal</td><td><code>&gt;=</code></td><td><code>val1 &gt;= val2</code></td></tr><tr class="grp"><td colspan="3">Logical</td></tr><tr><td>Logical AND</td><td><code>&amp;&amp;</code></td><td><code>cond1 &amp;&amp; cond2</code></td></tr><tr><td>Logical OR</td><td><code>||</code></td><td><code>cond1 || cond2</code></td></tr><tr><td>Logical NOT</td><td><code>!</code></td><td><code>!cond1</code></td></tr><tr class="grp"><td colspan="3">Conditional</td></tr><tr><td>Ternary</td><td><code>?:</code></td><td><code>cond ? ifTrue : ifFalse</code></td></tr><tr><td>Null-coalescing</td><td><code>??</code></td><td><code>a ?? b</code></td></tr><tr><td>Optional chaining</td><td><code>?.</code></td><td><code>map.foo?.upperCase()</code></td></tr><tr class="grp"><td colspan="3">Range</td></tr><tr><td>Inclusive range</td><td><code>to</code></td><td><code>1 to 10   // 1..10</code></td></tr><tr><td>Exclusive range</td><td><code>until</code></td><td><code>1 until 10  // 1..9</code></td></tr><tr class="grp"><td colspan="3">Assignment</td></tr><tr><td>Side-effect forms</td><td><code>+= -= *= /= %=</code></td><td><code>a += 2  // a = a + 2</code></td></tr></table>
+
+<h3>Ternary, null-coalescing &amp; optional chaining</h3>
+<p>The ternary <code>?:</code> chooses between two values. The condition evaluates to false when it refers to an undefined variable or <code>null</code>. Null-coalescing <code>??</code> returns the left operand if it is non-null, otherwise the right. Optional chaining <code>?.</code> safely reads a nested property without erroring when an intermediate is null.</p>
+<pre class="code">!empty worker.middleName ? worker.middleName : &#x27;&#x27;   // ternary guard
+name ?? &#x27;Unknown&#x27;                                   // fallback when null
+map.foo.bar123?.upperCase()                         // no error if bar123 is null</pre>
+
+<h3>Ranges</h3>
+<p>The inclusive <code>to</code> and exclusive <code>until</code> operators build numeric ranges (step 1), most often to drive a <code>for</code> loop.</p>
+<pre class="code">for (var i : 1 to 50) { list.add(i); }   // 1 through 50 inclusive</pre>
+</section><section class="part" id="control"><h2>6 · Statements &amp; Control Flow</h2>
+<h3>Statements &amp; blocks</h3>
+<p>A statement may be an empty statement (<code>;</code>), a block, an assignment, or an expression. A <strong>block</strong> is multiple statements inside curly braces <code>{ }</code>. An assignment sets a variable: <code>myVar = 'a value'</code>.</p>
+
+<h3>Conditionals</h3>
+<pre class="code">if (empty selection.value) {
+  message.value = &#x27;Pick a row first&#x27;;
+} else if (selection.value[0] == &#x27;A&#x27;) {
+  message.value = &#x27;Option A&#x27;;
+} else {
+  message.value = &#x27;Other&#x27;;
+}</pre>
+
+<h3>Loops — <code>for</code></h3>
+<p>Two forms are supported: a C-style counter loop and a range loop.</p>
+<pre class="code">// counter form
+for (let i = 0; i &lt; items.size(); i++) {
+  total = total + items[i].amount;
+}
+
+// range form (inclusive)
+for (var i : 1 to 50) {
+  increments.add({ &#x27;id&#x27;: i, &#x27;descriptor&#x27;: i });
+}</pre>
+
+<h3>Loops — <code>while</code></h3>
+<pre class="code">while (isWeekend(date) || isHoliday(date, holidays)) {
+  date = date:add(date, &#x27;DAY&#x27;, 1);
+}
+// use break to exit early</pre>
+</section><section class="part" id="functions"><h2>7 · Functions &amp; Closures</h2>
+<h3>Defining &amp; calling functions</h3>
+<p>Define a function and assign it to a variable; call it with the standard convention. The body returns its last expression by default.</p>
+<pre class="code">var add = function(x, y) { x + y };
+add(17, 25);    // 42</pre>
+
+<h3>Closures (arrow functions)</h3>
+<p>An anonymous function uses the arrow form <code>(x) =&gt; { &hellip; }</code>. Many collection functions accept a closure.</p>
+<pre class="code">var target = someEndpoint.data.find(item =&gt; { item.id == id });
+workers.data.filter(w =&gt; { w.isManager == true });
+workers.data.map(w =&gt; { { &#x27;name&#x27;: w.descriptor } });</pre>
+
+<h3>The closure mutation rule</h3>
+<p>Inside a closure you <strong>cannot reassign</strong> a variable declared outside it, but you <em>can</em> mutate a collection it captures. Use a <code>for</code> loop when you must mutate a counter.</p>
+<pre class="code">const list = [];
+items.forEach(item =&gt; { list.add(item); });   // works (mutating a list)
+
+let n = 0;
+items.forEach(item =&gt; { n++; });               // does NOT work (reassigning)
+
+for (let i = 0; i &lt; items.size(); i++) { n++; } // works (not a closure)</pre>
+</section><section class="part" id="builtins"><h2>8 · Built-in Functions: empty &amp; size</h2>
+<h3><code>empty</code></h3>
+<p><code>empty(arg)</code> returns <strong>true</strong> when the argument is <code>null</code>, an empty string, a zero-length array, a zero-size collection, an empty map, or an object whose <code>isEmpty()</code> method returns true. Otherwise it returns false. The <code>!empty(&hellip;)</code> form is the dominant defensive idiom in production apps.</p>
+<pre class="code">if (!empty selection.value) {
+  var w = getWorkerById.invoke({ &#x27;id&#x27;: selection.value[0] });
+}
+panel.visible = !empty(results.data);</pre>
+
+<h3><code>size</code></h3>
+<p><code>size(arg)</code> returns 0 for <code>null</code>, otherwise the length of a string or array, or the size of a collection or map.</p>
+<pre class="code">size(&#x27;Hello&#x27;);     // 5
+size([1, 2, 3]);   // 3
+size(null);        // 0</pre>
+</section><section class="part" id="collections"><h2>9 · Working with Collections</h2>
+<p>Lists, maps, and sets each expose a rich set of functions (the complete catalog is in Part 15). The chainable <strong>list transforms</strong> are the heart of most PMD data work.</p>
+
+<h3>Chaining list transforms</h3>
+<pre class="code">workers.data
+  .filter(w =&gt; { w.isManager == true })          // keep managers
+  .map(w =&gt; { { &#x27;name&#x27;: w.descriptor,            // reshape each row
+               &#x27;title&#x27;: w.businessTitle } })
+  .distinct();                                   // drop duplicates</pre>
+
+<h3>Building a query string from a map</h3>
+<pre class="code">var params = {:};                               // empty MAP literal
+if (!empty(status.value)) { params.status = status.value[0]; }
+if (!empty(type.value))   { params.type   = type.value[0]; }
+
+var pairs = [];
+params.forEach((key, value) =&gt; { pairs.add(key + &#x27;=&#x27; + value); });
+var qs = pairs.join(&#x27;&amp;&#x27;);                        // &quot;status=OPEN&amp;type=TRAVEL&quot;</pre>
+
+<h3>Flattening nested data</h3>
+<pre class="code">var rows = report.Report_Entry.map(entry =&gt; {
+  entry.Lines.map(line =&gt; {
+    line.add(&#x27;Location&#x27;, entry.Location_Name);
+    return line;
+  });
+});
+rows = list:flatten(rows);</pre>
+</section><section class="part" id="modules"><h2>10 · Script Modules</h2>
+<p>A <strong>script module</strong> is a <code>.script</code> file that defines reusable logic once and exports it to any PMD that includes it. Maximum file size is <strong>100&nbsp;KB</strong> — chunk larger logic across modules.</p>
+
+<h3>The export map</h3>
+<p>The <strong>last statement</strong> of a module must return a map that exports its public properties. Exported properties are <strong>unmodifiable</strong> and must be <strong>stateless</strong> — always export functions, never values that can change.</p>
+<pre class="code">var getDaysBetween = function(date1, date2) { /* ... */ };
+var getMonth = function(date) { return date:extractValue(&#x27;MONTH&#x27;, date); };
+
+/* Export — last statement, returns a map */
+{
+  &quot;daysBetween&quot;: getDaysBetween,
+  &quot;getMonth&quot;: getMonth
+}</pre>
+<p class="note"><strong>Stateless rule:</strong> a captured value such as a random UUID is <em>not</em> stateless. Export a function that produces it instead of the captured value.</p>
+
+<h3>Loading modules — <code>include</code></h3>
+<p>A PMD loads modules through the <code>include</code> array. Files must live in <code>presentation/scripts</code>. When a module loads it runs each top-level statement, loads function declarations into memory, exports the returned map, and provides its name as a binding variable.</p>
+<pre class="code">&quot;include&quot;: [
+  &quot;dateCalculations.script&quot;,
+  &quot;workerDetail.script&quot;
+]</pre>
+
+<h3>Invoking exports</h3>
+<p>Invoke an exported property as <code>&lt;module&gt;.&lt;property&gt;(&lt;args&gt;)</code>.</p>
+<pre class="code">&lt;% var days = dateCalculations.daysBetween(startDate.value, endDate.value); %&gt;</pre>
+
+<h3>Predefined-variable rule</h3>
+<p>Predefined app variables (such as <code>userInfo</code>) are available in PMDs but <strong>not</strong> inside script modules. A PMD may pass them in as parameters, but the module's function must use a <em>different</em> parameter name.</p>
+</section><section class="part" id="endpoints"><h2>11 · Endpoints &amp; Data Binding</h2>
+<p>Endpoints are declared in the PMD's <code>endPoints</code> array and exposed to script by name. Each exposes <code>.data</code> (the payload) and <code>.invoke(&lt;map&gt;)</code>.</p>
+
+<h3>Declaration</h3>
+<pre class="code">&quot;endPoints&quot;: [
+  { &quot;name&quot;: &quot;workers&quot;, &quot;baseUrlType&quot;: &quot;workday-common&quot;,
+    &quot;url&quot;: &quot;/workers&quot;, &quot;authType&quot;: &quot;sso&quot; },
+  { &quot;name&quot;: &quot;getWorkerById&quot;, &quot;baseUrlType&quot;: &quot;workday-common&quot;,
+    &quot;url&quot;: &quot;&lt;% &#x27;/workers/&#x27; + id %&gt;&quot;, &quot;authType&quot;: &quot;sso&quot;,
+    &quot;deferred&quot;: true }
+]</pre>
+
+<h3>Invoking &amp; <code>deferred</code></h3>
+<p>An eager endpoint resolves on page load; a <code>deferred: true</code> endpoint stays idle until your script calls <code>.invoke(&hellip;)</code>. Pass URL params or a body as a map.</p>
+<pre class="code">var w = getWorkerById.invoke({ &#x27;id&#x27;: selection.value[0] });
+descriptor.value = w.descriptor;
+
+// pass a pre-built query string
+var data = expenses.invoke({ &#x27;params&#x27;: &#x27;status=OPEN&amp;type=TRAVEL&#x27; });
+dataGrid.setRows(data.data);</pre>
+</section><section class="part" id="widgets"><h2>12 · Widgets &amp; Methods</h2>
+<p>Script reads and writes widget properties by the widget's <code>id</code>.</p>
+<h3>Value, visibility, enablement</h3>
+<pre class="code">descriptor.value = workerData.descriptor;   // set a field value
+workerDetailSection.visible = true;          // show / hide
+field.enabled = false;                        // toggle editability</pre>
+
+<h3>Grids</h3>
+<p><code>setRows</code> replaces a grid's data; <code>rows</code> reads/writes the backing list; <code>selectedRows</code> is the user's selection. Reach a cell via <code>childrenMap</code>.</p>
+<pre class="code">dataGrid.setRows(filteredList);
+
+var id = reqGrid.selectedRows[0].childrenMap.idColumn.value;
+reqGrid.selectedRows[0].childrenMap.totalColumn.value = qty * unitCost;
+
+var names = grid.selectedRows.map(row =&gt; { row.childrenMap.name.value });</pre>
+</section><section class="part" id="events"><h2>13 · Events</h2>
+<p>Events wire script functions to user actions. Bind an event property to a script call inside <code>&lt;% %&gt;</code>.</p>
+<table class="t2"><tr><th>Event</th><th>Fires when</th></tr>
+<tr><td><code>onChange</code></td><td>a widget's value changes</td></tr>
+<tr><td><code>onRowSelect</code></td><td>a grid row is selected/deselected</td></tr>
+<tr><td><code>onClick</code></td><td>a button or actionable widget is clicked</td></tr>
+<tr><td>page <code>script</code></td><td>the page loads (define functions, initialize state)</td></tr></table>
+<pre class="code">{ &quot;type&quot;: &quot;date&quot;, &quot;id&quot;: &quot;startDate&quot;,
+  &quot;onChange&quot;: &quot;&lt;% updateBetween(); %&gt;&quot; }
+
+{ &quot;type&quot;: &quot;grid&quot;, &quot;id&quot;: &quot;dataGrid&quot;,
+  &quot;onRowSelect&quot;: &quot;&lt;% workerDetail.populate(dataGrid.selectedRows); %&gt;&quot; }</pre>
+</section><section class="part" id="logging"><h2>14 · Logging</h2>
+<p>The <code>console</code> namespace writes to the developer logs at four levels.</p>
+<table class="t2"><tr><th>Level</th><th>Use</th></tr>
+<tr><td><code>console.debug(&hellip;)</code></td><td>verbose diagnostic detail</td></tr>
+<tr><td><code>console.info(&hellip;)</code></td><td>informational checkpoints</td></tr>
+<tr><td><code>console.warn(&hellip;)</code></td><td>recoverable problems</td></tr>
+<tr><td><code>console.error(&hellip;)</code></td><td>failures</td></tr></table>
+<pre class="code">console.info(&#x27;Request map: &#x27; + json:asJSON(reqMap));
+console.error(&#x27;Save failed: &#x27;, record);</pre>
+<p>Output appears under <strong>Analytics &rarr; Logs</strong> on the Workday Developer Site. Filter with <code>wd_category is console</code> to isolate your script's messages.</p>
+</section><section class="part" id="functions-ref"><h2>15 · Complete Function Reference</h2><p>The complete catalog of PMD functions, organized by namespace. Every function works in two forms — a <strong>namespace</strong> call <code>ns:fn(subject, &hellip;)</code> and an <strong>instance method</strong> <code>subject.fn(&hellip;)</code>. Signatures show the namespace form; examples use whichever the documentation shows. Use the filter to jump to a function.</p><div class="fnfilter"><input type="text" id="fnq" placeholder="Filter all 180 functions by name or description…" oninput="filterAll()"><span id="fnqc"></span></div><div class="nsblock" data-ns="date"><h3 id="fn_date" class="nsh"><span class="nsi">◷</span> date Functions <span class="nsc">38</span></h3><p class="nsblurb">Time-zone aware dates: create, shift, compare, extract parts, and format.</p><div class="fn" data-k="date:after(date1, date2) returns true if the first date is after the second date.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:after(date1, date2)</pre></span><span class="ret">returns <b>Instance Method Syntax</b></span></div>
+          <p class="fndesc">Returns true if the first date is after the second date.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>date1</code></td><td>&mdash;</td></tr><tr><td><code>date2</code></td><td>A Date object to compare with the input Date instance. The Date object is typically the value of a date or time tag.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">d1.after(d2) → false  (03/01 vs 03/30)</pre></div>
+        </div><div class="fn" data-k="date:between(date1, date2, precision) returns the number of precision units between two dates.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:between(date1, date2, precision)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Returns the number of precision units between two dates.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>date2</code></td><td>The second date in a date range. Note: The input Date instance is the first date in the date range.</td></tr><tr><td><code>precision</code></td><td>The unit of measure for the comparison. Valid values (case- sensitive): YEAR MONTH DAY HOUR MINUTE SECOND MILLISECOND</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">d1.between(d2, &#x27;DAYS&#x27;) → 29</pre></div>
+        </div><div class="fn" data-k="date:checktodaysdate(date, timezone) returns true if the given date is today in the time zone.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:checkTodaysDate(date, timeZone)</pre></span><span class="ret">returns <b>Boolean</b></span></div>
+          <p class="fndesc">Returns true if the given date is today in the time zone.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>timeZone</code></td><td>A DateTimeZone object. To get a DateTimeZone object, call the getDateTimeZone function.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">d.checkTodaysDate(tz) → true</pre></div>
+        </div><div class="fn" data-k="date:createmonth(mm, yyyy) returns a date object that corresponds to the given month and year integers.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:createMonth(mm, yyyy)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a Date object that corresponds to the given month and year integers.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>mm</code></td><td>An integer month</td></tr><tr><td><code>yyyy</code></td><td>An integer year</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">date:createMonth(12, 2016) → a Date object with December and 2016</pre></div>
+        </div><div class="fn" data-k="date:createyear(yyyy) returns a date object with the given integer year. date:createyear(yyyy)">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:createYear(yyyy)</pre></span></div>
+          <p class="fndesc">Returns a Date object with the given integer year. date:createYear(yyyy)</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>yyyy</code></td><td>An integer year</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">date:createYear(2016) → a Date object with year 2016</pre></div>
+        </div><div class="fn" data-k="date:extractvalue(precision, date) returns the extracted integer number from a give date or time, using the provided precision.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:extractValue(precision, date)</pre></span><span class="ret">returns <b>Integer</b></span></div>
+          <p class="fndesc">Returns the extracted integer number from a give date or time, using the provided precision.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>precision</code></td><td>A string indicating the</td></tr><tr><td><code>date</code></td><td>or time precision. Valid values (case- sensitive): YEAR MONTH DAY HOUR (12-hour format) HOUR_OF_DAY (24-hour format) MINUTE SECOND MILLISECOND date A Date objec</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">timeInput.value) → the hour field of the date object</pre></div>
+        </div><div class="fn" data-k="date:format(dateformat) returns a string representation of the given date in the given format.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:format(dateFormat)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a string representation of the given date in the given format.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>dateFormat</code></td><td>A date format string. For valid date formats, see the Java documentation for java.text.Simpl eDateFormat .</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">dateWidget.value.format(&#x27;MM/dd/yyyy HH:mm:ss&#x27;) - → the date and 24-hour time format (</pre></div>
+        </div><div class="fn" data-k="date:get(precision) returns the integer value within the date, using the given precision.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:get(precision)</pre></span><span class="ret">returns <b>Integer</b></span></div>
+          <p class="fndesc">Returns the integer value within the date, using the given precision.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>precision</code></td><td>The unit of measure for the return value. Valid values (case- sensitive): YEAR MONTH DAY (The day of the month) DAY_OF_WEEK DAY_OF_YEAR HOUR MINUTE SECOND MILLI</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">dateWidget.value.get(&#x27;MINUTE&#x27;) → 30</pre></div>
+        </div><div class="fn" data-k="date:getdatetimezone(timezone) given the name of the time zone, returns a java datetimezone object. if the name is null, returns utc. often used with date:gettodaysdate to return the date with the specified time zone.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:getDateTimeZone(timeZone)</pre></span><span class="ret">returns <b>DateTimeZone</b></span></div>
+          <p class="fndesc">Given the name of the time zone, returns a Java DateTimeZone object. If the name is null, returns UTC. Often used with date:getTodaysDate to return the date with the specified time zone.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>timeZone</code></td><td>A time zone string. For valid time zones, see the Available Time Zones on Joda.org.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">date:getDateTimeZone(&#x27;America/Los_Angeles&#x27;) → DateTimeZone object with UTC-8</pre></div>
+        </div><div class="fn" data-k="date:minusdays(days) returns a new date with the specified number of days subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusDays(days)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of days subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>days</code></td><td>The number of days to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusDays(15)</pre></div>
+        </div><div class="fn" data-k="date:minushours(hours) returns a new date with the specified number of hours subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusHours(hours)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of hours subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>hours</code></td><td>The number of hours to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusHours(3)</pre></div>
+        </div><div class="fn" data-k="date:minusminutes(minutes) returns a new date with the specified number of minutes subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusMinutes(minutes)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of minutes subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>minutes</code></td><td>The number of minutes to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusMinutes(45)</pre></div>
+        </div><div class="fn" data-k="date:minusmonths(months) returns a new date with the specified number of months subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusMonths(months)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of months subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>months</code></td><td>The number of months to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusMonths(6)</pre></div>
+        </div><div class="fn" data-k="date:minusnanos(nanoseconds) returns a new date with the specified number of nanoseconds subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusNanos(nanoseconds)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of nanoseconds subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>nanoseconds</code></td><td>The number of nanoseconds to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusNanos(30000000)</pre></div>
+        </div><div class="fn" data-k="date:minusseconds(seconds) returns a new date with the specified number of seconds subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusSeconds(seconds)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of seconds subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>seconds</code></td><td>The number of seconds to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusSeconds(30)</pre></div>
+        </div><div class="fn" data-k="date:minusweeks(weeks) returns a new date with the specified number of weeks subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusWeeks(weeks)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of weeks subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>weeks</code></td><td>The number of weeks to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusWeeks(2)</pre></div>
+        </div><div class="fn" data-k="date:minusyears(years) returns a new date with the specified number of years subtracted.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:minusYears(years)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of years subtracted.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>years</code></td><td>The number of years to subtract.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.minusYears(10)</pre></div>
+        </div><div class="fn" data-k="date:month() returns the integer month of the given date.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:month()</pre></span><span class="ret">returns <b>Integer</b></span></div>
+          <p class="fndesc">Returns the integer month of the given date.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">dateWidget.value.month()</pre></div>
+        </div><div class="fn" data-k="date:now(timezonestring) returns the current date and time from the system clock in the specified time zone.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:now(timeZoneString)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns the current date and time from the system clock in the specified time zone.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>timeZoneString</code></td><td>A time zone string for the current time.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">date:now(&#x27;America/Denver&#x27;)</pre></div>
+        </div><div class="fn" data-k="date:parse(datestring) parses the input date string and returns a date object whose format is yyyy-mm-dd. if the date string uses a different date format, use parse(datestring, dateformat) instead. this function is equivalent to parsedatestring (datestring).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:parse(dateString)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Parses the input date string and returns a Date object whose format is yyyy-MM-dd. If the date string uses a different date format, use parse(dateString, dateFormat) instead. This function is equivalent to parseDateString (dateString).</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>dateString</code></td><td>A date string to parse, typically the value of a date tag.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">date:parse(&#x27;2021-07-04&#x27;)</pre></div>
+        </div><div class="fn" data-k="date:parsedatestring(datestring) returns a date object for the given date string whose format is yyyy-mm-dd. if the date string uses a different date format, use date:parseformatteddatestring instead.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:parseDateString(dateString)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a Date object for the given date string whose format is yyyy-MM-dd. If the date string uses a different date format, use date:parseFormattedDateString instead.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>dateString</code></td><td>A date string using the &#x27;yyyy-MM-dd&#x27; format.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">date:parseDateString(&#x27;2016-10-31&#x27;) → a Date Object with year = 2016, month = October, day = 31 Related Information parseFormattedDateString</pre></div>
+        </div><div class="fn" data-k="date:plusdays(days) returns a new date with the specified number of days added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusDays(days)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of days added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>days</code></td><td>The number of days to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusDays(15)</pre></div>
+        </div><div class="fn" data-k="date:plushours(hours) returns a new date with the specified number of hours added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusHours(hours)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of hours added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>hours</code></td><td>The number of hours to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusHours(3)</pre></div>
+        </div><div class="fn" data-k="date:plusminutes(minutes) returns a new date with the specified number of minutes added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusMinutes(minutes)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of minutes added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>minutes</code></td><td>The number of minutes to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusMinutes(45)</pre></div>
+        </div><div class="fn" data-k="date:plusmonths(months) returns a new date with the specified number of months added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusMonths(months)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of months added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>months</code></td><td>The number of months to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusMonths(6)</pre></div>
+        </div><div class="fn" data-k="date:plusnanos(nanoseconds) returns a new date with the specified number of nanoseconds added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusNanos(nanoseconds)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of nanoseconds added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>nanoseconds</code></td><td>The number of nanoseconds to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusNanos(30000000)</pre></div>
+        </div><div class="fn" data-k="date:plusseconds(seconds) returns a new date with the specified number of seconds added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusSeconds(seconds)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of seconds added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>seconds</code></td><td>The number of seconds to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusSeconds(30)</pre></div>
+        </div><div class="fn" data-k="date:plusweeks(weeks) returns a new date with the specified number of weeks added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusWeeks(weeks)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of weeks added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>weeks</code></td><td>The number of weeks to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusWeeks(2)</pre></div>
+        </div><div class="fn" data-k="date:plusyears(years) returns a new date with the specified number of years added.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:plusYears(years)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the specified number of years added.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>years</code></td><td>The number of years to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.plusYears(10)</pre></div>
+        </div><div class="fn" data-k="date:withdayofmonth(dayofmonth) returns a new date with the day of month altered.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withDayOfMonth(dayOfMonth)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the day of month altered.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>dayOfMonth</code></td><td>The output day of the month.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withDayOfMonth(20)</pre></div>
+        </div><div class="fn" data-k="date:withdayofyear(dayofyear) dayofyear the output day of the year. specify an integer between 1 and 365 (or 366).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withDayOfYear(dayOfYear)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">dayOfYear The output day of the year. Specify an integer between 1 and 365 (or 366).</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>dayOfYear</code></td><td>The output day of the year. Specify an integer between 1 and 365 (or 366).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withDayOfYear(60)</pre></div>
+        </div><div class="fn" data-k="date:withhour(hour) returns a new date with the hour altered.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withHour(hour)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the hour altered.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>hour</code></td><td>The output hour.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withHour(3)</pre></div>
+        </div><div class="fn" data-k="date:withminute(minute) returns a new date with the minute altered.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withMinute(minute)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the minute altered.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>minute</code></td><td>The output minute.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withMinute(45)</pre></div>
+        </div><div class="fn" data-k="date:withmonth(month) returns a new date with the month altered.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withMonth(month)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the month altered.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>month</code></td><td>The output integer month.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withMonth(6)</pre></div>
+        </div><div class="fn" data-k="date:withnano(nanosecond) returns a new date with the nanosecond altered.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withNano(nanosecond)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the nanosecond altered.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>nanosecond</code></td><td>The output nanosecond.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withNano(30000000)</pre></div>
+        </div><div class="fn" data-k="date:withsecond(second) returns a new date with the second altered.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withSecond(second)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the second altered.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>second</code></td><td>The output second.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withSecond(30)</pre></div>
+        </div><div class="fn" data-k="date:withyear(year) returns a new date with the year altered.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:withYear(year)</pre></span><span class="ret">returns <b>Date</b></span></div>
+          <p class="fndesc">Returns a new date with the year altered.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>year</code></td><td>The output year.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var newDate = dateWidget.value.withYear(2022)</pre></div>
+        </div><div class="fn" data-k="date:year() returns the integer year of the given date.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">date:year()</pre></span><span class="ret">returns <b>Integer</b></span></div>
+          <p class="fndesc">Returns the integer year of the given date.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">dateWidget.value.year()</pre></div>
+        </div></div><div class="nsblock" data-ns="string"><h3 id="fn_string" class="nsh"><span class="nsi">Ab</span> string Functions <span class="nsc">46</span></h3><p class="nsblurb">Casing, slicing, searching, padding, testing, and encoding text.</p><div class="fn" data-k="string:abbreviate(maxwidth) abbreviates the string by truncating it to the specified maximum width and replacing the last characters with ellipses.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:abbreviate(maxWidth)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Abbreviates the string by truncating it to the specified maximum width and replacing the last characters with ellipses.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>maxWidth</code></td><td>The number of characters to truncate to.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;foobar&#x27;.abbreviate(5) → fo</pre></div>
+        </div><div class="fn" data-k="string:capitalize() capitalizes the string by changing the first character to title case.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:capitalize()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Capitalizes the string by changing the first character to title case.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;abc123&#x27;.capitalize() → Abc123</pre></div>
+        </div><div class="fn" data-k="string:concat(string1, string2) concatenates exactly 2 strings into 1.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:concat(string1, string2)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Concatenates exactly 2 strings into 1.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>string1</code></td><td>The first string to concatenate</td></tr><tr><td><code>string2</code></td><td>The second string to concatenate</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">string:concat(&#x27;My&#x27;, &#x27; concatenated string.&#x27;) → &#x27;My concatenated string</pre></div>
+        </div><div class="fn" data-k="string:contains(searchstring) returns true if the string contains the specified case- sensitive searchstring.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:contains(searchString)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string contains the specified case- sensitive searchString.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>searchString</code></td><td>The String to search.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.contains(&#x27;Ox&#x27;) → false</pre></div>
+        </div><div class="fn" data-k="string:defaultifblank(defaultstring) returns the specified defaultstring if the string is whitespace, empty (&quot;&quot;) or null.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:defaultIfBlank(defaultString)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns the specified defaultString if the string is whitespace, empty (&quot;&quot;) or null.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>defaultString</code></td><td>The string to return if input string is blank.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27; &#x27;.defaultIfBlank(&#x27;default&#x27;) → &#x27;default&#x27;</pre></div>
+        </div><div class="fn" data-k="string:defaultifempty(defaultstring) returns the specified defaultstring if the string is empty (&quot;&quot;) or null.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:defaultIfEmpty(defaultString)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns the specified defaultString if the string is empty (&quot;&quot;) or null.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>defaultString</code></td><td>The string to return if input string is empty.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27; &#x27;.defaultIfEmpty(&#x27;default&#x27;) → &#x27;&#x27;</pre></div>
+        </div><div class="fn" data-k="string:endswith(suffix) returns true if the string ends with the specified suffix (case-sensitive).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:endsWith(suffix)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string ends with the specified suffix (case-sensitive).</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>suffix</code></td><td>The suffix to find (case-sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.endsWith(&#x27;Ox&#x27;) → false</pre></div>
+        </div><div class="fn" data-k="string:endswithignorecase(suffix) returns true if the string ends with the specified suffix, regardless of case.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:endsWithIgnoreCase(suffix)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string ends with the specified suffix, regardless of case.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>suffix</code></td><td>The suffix to find, regardless of case.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.endsWithIgnoreCase(&#x27;Ox&#x27;) → true</pre></div>
+        </div><div class="fn" data-k="string:formatlisttostring(separator, list) returns a string containing the values in the given list separated by the given list separator.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:formatListToString(separator, list)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a string containing the values in the given list separated by the given list separator.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>separator</code></td><td>A string to separate the values in the result</td></tr><tr><td><code>list</code></td><td>A list of values</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">string:formatListToString(&#x27;~&#x27;, list:toList(&#x27;first&#x27;, &#x27;second&#x27;)) → &#x27;first~second&#x27;</pre></div>
+        </div><div class="fn" data-k="string:fuzzyscore(query) returns the similarity score between the string and the specified query string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:fuzzyScore(query)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Returns the similarity score between the string and the specified query string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>query</code></td><td>The query string to compare.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;fuzz&#x27;.fuzzyScore(&#x27;furr&#x27;) → 4</pre></div>
+        </div><div class="fn" data-k="string:indexof(searchstring) finds the first index of the specified case-sensitive searchstring within the string. returns -1 if the string doesn&#x27;t contain the searchstring.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:indexOf(searchString)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Finds the first index of the specified case-sensitive searchString within the string. Returns -1 if the string doesn&#x27;t contain the searchString.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>searchString</code></td><td>The String to search (case-sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.indexOf(&#x27;ox&#x27;) → 17</pre></div>
+        </div><div class="fn" data-k="string:isalllowercase() returns true if the string contains only lowercase characters.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:isAllLowerCase()</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string contains only lowercase characters.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.isAllLowerCase() → false</pre></div>
+        </div><div class="fn" data-k="string:isalluppercase() returns true if the string contains only uppercase characters.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:isAllUpperCase()</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string contains only uppercase characters.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.isAllUpperCase() → false</pre></div>
+        </div><div class="fn" data-k="string:isblank() returns true if a string is empty (&quot;&quot;), null or whitespace only.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:isBlank()</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if a String is empty (&quot;&quot;), null or whitespace only.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;&#x27;.isBlank() → true</pre></div>
+        </div><div class="fn" data-k="string:isnumber() returns true if the string is a valid java number.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:isNumber()</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string is a valid Java number.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;123.999&#x27;.isNumber() → true</pre></div>
+        </div><div class="fn" data-k="string:isnumeric() returns true if the string contains only unicode digits.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:isNumeric()</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string contains only Unicode digits.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;123.999&#x27;.isNumeric() → false</pre></div>
+        </div><div class="fn" data-k="string:isstring(value) returns true if the given parameter is a string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:isString(value)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the given parameter is a string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>value</code></td><td>The value to check if it&#x27;s a string</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">string:isString(&#x27;id&#x27;) → true</pre></div>
+        </div><div class="fn" data-k="string:join(array, separator) returns a string containing the elements of the specified array. the specified separator string separates each element.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:join(array, separator)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a string containing the elements of the specified array. The specified separator string separates each element.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>array</code></td><td>The input array.</td></tr><tr><td><code>separator</code></td><td>The separator string.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">string:join([&#x27;A&#x27;, &#x27;B&#x27;, &#x27;C&#x27;], &#x27;-&#x27;) → &#x27;A-B-C&#x27;</pre></div>
+        </div><div class="fn" data-k="string:lastindexof(searchstring) finds the last index of the specified searchstring within the string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:lastIndexOf(searchString)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Finds the last index of the specified searchString within the string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>searchString</code></td><td>A string to find within the input string.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;foobarfoobar&#x27;.lastIndexOf(&#x27;oo&#x27;) → 7</pre></div>
+        </div><div class="fn" data-k="string:leftpad(size) size the length of the string including padded spaces on the left.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:leftPad(size)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">size The length of the string including padded spaces on the left.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>size</code></td><td>The length of the string including padded spaces on the left.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;abc&#x27;.leftPad(10) → &#x27; abc&#x27;</pre></div>
+        </div><div class="fn" data-k="string:length() returns the string length or 0 if the string is null.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:length()</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Returns the string length or 0 if the string is null.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.length() → 19</pre></div>
+        </div><div class="fn" data-k="string:lowercase() converts all of the characters in the string to lowercase, using the default locale.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:lowerCase()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Converts all of the characters in the string to lowercase, using the default locale.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.lowerCase() → &#x27;the quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:remove(substring) removes all occurrences of the specified substring (case-sensitive) from the string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:remove(subString)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Removes all occurrences of the specified substring (case-sensitive) from the string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>subString</code></td><td>The string to remove (case-sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.remove(&#x27;The &#x27;) → &#x27;quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:removeend(substring) removes the specified substring (case-sensitive) only if it is at the end of the string, otherwise returns the source string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:removeEnd(subString)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Removes the specified substring (case-sensitive) only if it is at the end of the string, otherwise returns the source string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>subString</code></td><td>The string to remove (case- sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.removeEnd(&#x27;big&#x27;) → &#x27;The quick brown fox&#x27; &#x27;The quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:removestart(substring) removes the specified substring (case-sensitive) only if it is at the beginning of the string, otherwise returns the source string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:removeStart(subString)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Removes the specified substring (case-sensitive) only if it is at the beginning of the string, otherwise returns the source string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>subString</code></td><td>The string to remove (case- sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.removeStart(&#x27;big&#x27;) → &#x27;The quick brown fox&#x27; &#x27;The quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:reverse() reverses the string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:reverse()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Reverses the string.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.reverse() → &#x27;xof nworb kciuq ehT&#x27;</pre></div>
+        </div><div class="fn" data-k="string:rightpad(size) pads the string with the specified number of spaces ( &#x27; &#x27; ) on the right.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:rightPad(size)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Pads the string with the specified number of spaces ( &#x27; &#x27; ) on the right.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>size</code></td><td>The length of the string including padded spaces on the right.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;abc&#x27;.rightPad(10) → &#x27;abc &#x27;</pre></div>
+        </div><div class="fn" data-k="string:split(separatorchars) splits the string into a list, separated by the specified character. returns null if the input string is null. the output list doesn&#x27;t include any empty string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:split(separatorChars)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Splits the string into a list, separated by the specified character. Returns null if the input string is null. The output list doesn&#x27;t include any empty string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>separatorChars</code></td><td>The separator characters to match. If you specify multiple separator characters, the split function splits the string by either of the single characters in sepa</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">Returns [&#x27;The&#x27;, &#x27;quick&#x27;, &#x27;brown&#x27;, &#x27;fox&#x27;]</pre></div>
+        </div><div class="fn" data-k="string:splitbyregex(regex) splits the input text by the characters that match the regular expression and returns a list of the split substrings.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:splitByRegex(regex)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Splits the input text by the characters that match the regular expression and returns a list of the split substrings.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>regex</code></td><td>The regex value separating each list item in the string.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;1#2##3###4&#x27;.splitByRegex(&#x27;#+&#x27;).toJson() → [&quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;]</pre></div>
+        </div><div class="fn" data-k="string:startswith(prefix) returns true if the string starts with the specified prefix (case-sensitive).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:startsWith(prefix)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string starts with the specified prefix (case-sensitive).</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>prefix</code></td><td>The prefix to find (case-sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.startsWith(&#x27;the&#x27;) → false</pre></div>
+        </div><div class="fn" data-k="string:startswithignorecase(prefix) returns true if the string begins with the specified prefix, regardless of case.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:startsWithIgnoreCase(prefix)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the string begins with the specified prefix, regardless of case.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>prefix</code></td><td>The prefix to find, regardless of case.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.startsWithIgnoreCase(&#x27;the&#x27;) → true</pre></div>
+        </div><div class="fn" data-k="string:stripprefix(prefix) strips the specified prefix from the start of the string (case-sensitive).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:stripPrefix(prefix)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Strips the specified prefix from the start of the string (case-sensitive).</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>prefix</code></td><td>The prefix to find (case-sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.stripPrefix(&#x27;The &#x27;) → &#x27;quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:stripsuffix(suffix) strips the specified suffix from the end of the string (case-sensitive).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:stripSuffix(suffix)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Strips the specified suffix from the end of the string (case-sensitive).</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>suffix</code></td><td>The suffix to find (case-sensitive).</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.stripSuffix(&#x27; fox&#x27;) → &#x27;The quick brown&#x27;</pre></div>
+        </div><div class="fn" data-k="string:substring(startindex) returns a substring at the specified start position of the string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:substring(startIndex)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a substring at the specified start position of the string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>startIndex</code></td><td>The starting position in the given string.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.substring(4) → &#x27;quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:substringafter(separator) returns the substring after the first occurrence of the specified separator (case-sensitive). returns empty if not found.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:substringAfter(separator)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns the substring after the first occurrence of the specified separator (case-sensitive). Returns empty if not found.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>separator</code></td><td>The separator string to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.substringAfter(&#x27; &#x27;) → &#x27;quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:substringafterlast(separator) returns the remainder of the string after the last occurrence given substring (case-sensitive). returns empty if not found.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:substringAfterLast(separator)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns the remainder of the string after the last occurrence given substring (case-sensitive). Returns empty if not found.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>separator</code></td><td>The separator string to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.substringAfterLast(&#x27;quick&#x27;) → &#x27; brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:substringbefore(separator) returns the substring before the first occurrence of the specified separator (case-sensitive). returns empty if not found.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:substringBefore(separator)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns the substring before the first occurrence of the specified separator (case-sensitive). Returns empty if not found.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>separator</code></td><td>The separator string to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.substringBefore(&#x27; &#x27;) → &#x27;The&#x27;</pre></div>
+        </div><div class="fn" data-k="string:todecimal() returns the decimal number representation of the given string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:toDecimal()</pre></span><span class="ret">returns <b>Decimal</b></span></div>
+          <p class="fndesc">Returns the decimal number representation of the given string.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;123.45&#x27;.toDecimal() → 123</pre></div>
+        </div><div class="fn" data-k="string:toint() returns the integer representation of the given string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:toInt()</pre></span><span class="ret">returns <b>Integer</b></span></div>
+          <p class="fndesc">Returns the integer representation of the given string.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;123&#x27;.toInt() → 123</pre></div>
+        </div><div class="fn" data-k="string:tostring() returns the string representation of a given value.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:toString()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns the string representation of a given value.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;123&#x27;.toString() → &#x27;123&#x27;</pre></div>
+        </div><div class="fn" data-k="string:trim() returns a copy of a given string, omitting any leading and trailing white space.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:trim()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a copy of a given string, omitting any leading and trailing white space.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox &#x27;.trim() → &#x27;The quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:trimtoempty() returns a copy of a given string, omitting any leading and trailing white space. returns an empty string ( &#x27;&#x27; ) if the trimmed string is empty or null.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:trimToEmpty()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a copy of a given string, omitting any leading and trailing white space. Returns an empty string ( &#x27;&#x27; ) if the trimmed string is empty or null.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27; &#x27;.trimToEmpty() → &#x27;&#x27;</pre></div>
+        </div><div class="fn" data-k="string:truncate(maxwidth) truncates the string with the specified maximum width.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:truncate(maxWidth)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Truncates the string with the specified maximum width.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>maxWidth</code></td><td>The number of characters.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.truncate(9) → &#x27;The quick&#x27;</pre></div>
+        </div><div class="fn" data-k="string:uncapitalize() uncapitalizes the string, changing the first character to lowercase.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:uncapitalize()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Uncapitalizes the string, changing the first character to lowercase.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.uncapitalize() → &#x27;the quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="string:uppercase() converts all of the characters in the string to uppercase, using the default locale.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:upperCase()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Converts all of the characters in the string to uppercase, using the default locale.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick brown fox&#x27;.upperCase() → &#x27;THE QUICK BROWN FOX&#x27;</pre></div>
+        </div><div class="fn" data-k="string:urlencode() encodes the given string as a standard utf-8 encoded url. use urlencode to encode form data or query parameters (which follow the ? ) in the url. to encode path segments within a url or wql queries, use pathencode .">
+          <div class="fnhead"><span class="fnsig"><pre class="code">string:urlEncode()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Encodes the given string as a standard UTF-8 encoded URL. Use urlEncode to encode form data or query parameters (which follow the ? ) in the URL. To encode path segments within a URL or WQL queries, use pathEncode .</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;foo bar&#x27;.urlEncode() → foo+bar</pre></div>
+        </div></div><div class="nsblock" data-ns="number"><h3 id="fn_number" class="nsh"><span class="nsi">#</span> number Functions <span class="nsc">8</span></h3><p class="nsblurb">Math helpers and numeric conversions.</p><div class="fn" data-k="number:convertnumbertoint(number) converts a given number object to an int object. the conversion truncates decimal values.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:convertNumberToInt(number)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Converts a given number object to an int object. The conversion truncates decimal values.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>number</code></td><td>A number object value</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">number:convertNumberToInt(theNumber.value) → an int object with value 123</pre></div>
+        </div><div class="fn" data-k="number:convertstringtoint(string) converts a given string to an int object.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:convertStringToInt(string)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Converts a given string to an int object.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>string</code></td><td>A string value to convert. The string value must contain an integer value. It can&#x27;t contain alpha characters nor decimal values.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">number:convertStringToInt(&#x27;123&#x27;) → an int object with value 123</pre></div>
+        </div><div class="fn" data-k="number:format() returns a number representation of the given number in the given format.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:format()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a number representation of the given number in the given format.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">number:format(0.12, &#x27;#%&#x27;) → 12% number:format(0</pre></div>
+        </div><div class="fn" data-k="number:max(collection) returns the maximum number in a collection. the collection can be either a list or set of numbers.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:max(collection)</pre></span></div>
+          <p class="fndesc">Returns the maximum number in a collection. The collection can be either a list or set of numbers.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>collection</code></td><td>&mdash;</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">number:max([3, 2, 45]) → 45 number:max({99, -1, 24</pre></div>
+        </div><div class="fn" data-k="number:min(collection) returns the minimum number in a collection. the collection can be either a list or set of numbers.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:min(collection)</pre></span></div>
+          <p class="fndesc">Returns the minimum number in a collection. The collection can be either a list or set of numbers.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>collection</code></td><td>&mdash;</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">number:min([3, 2, 45]) → 2 number:min({99, -1, 24</pre></div>
+        </div><div class="fn" data-k="number:pow(base, exponent) returns the value of the base raised to the exponent.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:pow(base, exponent)</pre></span></div>
+          <p class="fndesc">Returns the value of the base raised to the exponent.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>base</code></td><td>A number to multiply by itself a number of times.</td></tr><tr><td><code>exponent</code></td><td>An integer or decimal exponent. A negative exponent gives the reciprocal of the base raised to the (positive) exponent. The exponent cannot be decimal if the ba</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">number:pow(17, 8) → 2147483647 number:pow(17, -8) Returns 1</pre></div>
+        </div><div class="fn" data-k="number:sqrt(number) returns the square root of the given number.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:sqrt(number)</pre></span><span class="ret">returns <b>Decimal</b></span></div>
+          <p class="fndesc">Returns the square root of the given number.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>number</code></td><td>A number to multiply by itself a number of times. exponent An integer exponent, which is the number of times to multiply the base by itself.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">number:sqrt(5.0) → 2</pre></div>
+        </div><div class="fn" data-k="number:tobigdecimal() converts an arithmetic expression to a big decimal number with the given scale using the given rounding mode.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">number:toBigDecimal()</pre></span><span class="ret">returns <b>BigDecimal</b></span></div>
+          <p class="fndesc">Converts an arithmetic expression to a Big Decimal number with the given scale using the given rounding mode.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">number:toBigDecimal((123456 / 2) * 0.6, 2, &#x27;HALF_DOWN&#x27;) → 37036</pre></div>
+        </div></div><div class="nsblock" data-ns="list"><h3 id="fn_list" class="nsh"><span class="nsi">[ ]</span> list Functions <span class="nsc">35</span></h3><p class="nsblurb">Ordered collections: build, transform, query, and reshape lists.</p><div class="fn" data-k="list:add(index, element) inserts the specified element at the specified 0- based index position in the list. if the element already exists in the list, this function still adds it at the specified position in the list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:add(index, element)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Inserts the specified element at the specified 0- based index position in the list. If the element already exists in the list, this function still adds it at the specified position in the list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>index</code></td><td>The index position in the list.</td></tr><tr><td><code>element</code></td><td>The object element to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 3].add(1, 2) → [1, 2, 3]</pre></div>
+        </div><div class="fn" data-k="list:addall(index, elements) inserts all elements in the specified collection into the list at the specified position.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:addAll(index, elements)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Inserts all elements in the specified collection into the list at the specified position.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>index</code></td><td>The index position in the list.</td></tr><tr><td><code>elements</code></td><td>The collection of elements to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 3].addAll(1, [2]) → [1, 2, 3]</pre></div>
+        </div><div class="fn" data-k="list:createmaplist(list, key) transforms a list of values and returns a mapped list of key/value pairs. each value in this list will be objects, each referenced by the given key. createmaplist is useful for transforming raw data into objects.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:createMapList(list, key)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Transforms a list of values and returns a mapped list of key/value pairs. Each value in this list will be objects, each referenced by the given key. createMapList is useful for transforming raw data into objects.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>An array of values.</td></tr><tr><td><code>key</code></td><td>The attribute key for the transformed list.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:createMapList(theList, &#x27;key&#x27;) → [{&#x27;key&#x27;: &#x27;my&#x27;}, {&#x27;key&#x27;: &#x27;list&#x27;}]</pre></div>
+        </div><div class="fn" data-k="list:createmaplistwithkeys(list, keylist) transforms a list of values and returns a mapped list of key/value pairs using a given list of keys. the number of values must match the number of keys. if both input lists have different sizes, createmaplistwithkeys returns an empty map. createmaplistwithkeys is useful for transforming raw data int">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:createMapListWithKeys(list, keyList)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Transforms a list of values and returns a mapped list of key/value pairs using a given list of keys. The number of values must match the number of keys. If both input lists have different sizes, createMapListWithKeys returns an empty map. createMapListWithKeys is useful for transforming raw data int</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>An array of values</td></tr><tr><td><code>keyList</code></td><td>An array of keys to use in the transformed list. The number of keys in keyList must match the number of values in list .</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">theKeyList is [&#x27;key1&#x27;, &#x27;key2&#x27;]. list:createMapListWithKeys(theList, theKeyList) </pre></div>
+        </div><div class="fn" data-k="list:distinct() removes duplicates from the list and returns the new list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:distinct()</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Removes duplicates from the list and returns the new list.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 1, 2, 3].distinct() → [1, 2, 3]</pre></div>
+        </div><div class="fn" data-k="list:exclude(list, key, value) returns objects from a given list whose values don&#x27;t match the comparison value for the given key.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:exclude(list, key, value)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns objects from a given list whose values don&#x27;t match the comparison value for the given key.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>A map list of Objects</td></tr><tr><td><code>key</code></td><td>An attribute key in the map list</td></tr><tr><td><code>value</code></td><td>A comparison value</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">theList.exclude(&#x27;key&#x27;,&#x27;value0&#x27;) → [{&#x27;key&#x27;:&#x27;value1&#x27;}, ...]</pre></div>
+        </div><div class="fn" data-k="list:excludeemptyattribute(list, key) list a map list of objects key an attribute key to find">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:excludeEmptyAttribute(list, key)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">list A map list of Objects key An attribute key to find</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>A map list of Objects</td></tr><tr><td><code>key</code></td><td>An attribute key to find</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:excludeEmptyAttribute(theList, &#x27;key0&#x27;) Because the object {&quot;key2&quot;, &quot;value2&quot;} doesn&#x27;t contain an attribute whose key matches key0, exclu</pre></div>
+        </div><div class="fn" data-k="list:excluderegex(list, regexvalue) returns string values from a given list that don&#x27;t match a regex value.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:excludeRegex(list, regexValue)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns string values from a given list that don&#x27;t match a Regex value.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>A list of strings.</td></tr><tr><td><code>regexValue</code></td><td>A Regex expression.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:excludeRegex(theList, &#x27;[a-z]</pre></div>
+        </div><div class="fn" data-k="list:filter(closure(item, index) creates a new list with all elements that pass the test implemented by the specified closure function. the closure function accepts a 2nd parameter, which is a zero-based index for generating the list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:filter(closure(item, index)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Creates a new list with all elements that pass the test implemented by the specified closure function. The closure function accepts a 2nd parameter, which is a zero-based index for generating the list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure(item</code></td><td>&mdash;</td></tr><tr><td><code>index</code></td><td>for implementing incremental logic. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[ &quot;a&quot;, &quot;b&quot;, &quot;c&quot; ].filter((item, index) =&gt; index % 2 == 0) → [&quot;a&quot;, &quot;c&quot;] list:filter(list, closure(item,index))</pre></div>
+        </div><div class="fn" data-k="list:filteremptyattribute(list, key) given a map list of objects, returns the objects that don&#x27;t contain an attribute with the given key. if an object doesn&#x27;t contain an attribute value that matches the given key, the filteremptyattribute treats that attribute as an empty attribute. filteremptyattribute includes an object with an empty">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:filterEmptyAttribute(list, key)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Given a map list of objects, returns the objects that don&#x27;t contain an attribute with the given key. If an object doesn&#x27;t contain an attribute value that matches the given key, the filterEmptyAttribute treats that attribute as an empty attribute. filterEmptyAttribute includes an object with an empty</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>A list of object maps.</td></tr><tr><td><code>key</code></td><td>An attribute key to find in the map list.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:filterEmptyAttribute(theList, &#x27;key0&#x27;) Because the object {&quot;key2&quot;, &quot;value2&quot;} is the only object that doesn&#x27;t contain an attribute whose</pre></div>
+        </div><div class="fn" data-k="list:filterregex(list, regexvalue) returns a filtered list of strings that match a regex value.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:filterRegex(list, regexValue)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns a filtered list of strings that match a Regex value.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>A list of strings.</td></tr><tr><td><code>regexValue</code></td><td>A Regex expression.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:filterRegex(theList, &#x27;[a-z]+</pre></div>
+        </div><div class="fn" data-k="list:first() returns the first element of the list, or null if the list is empty.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:first()</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Returns the first element of the list, or null if the list is empty.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">[&#x27;key1&#x27;, &#x27;key2&#x27;].first() → key1</pre></div>
+        </div><div class="fn" data-k="list:firstnonempty() returns the first occurrence of a non-null and non-empty parameter in a variable set of parameters.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:firstNonEmpty()</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns the first occurrence of a non-null and non-empty parameter in a variable set of parameters.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">list:firstNonEmpty((list:emptyList(), list:toList(&#x27;nonEmpty&#x27;))) Returns [&#x27;nonEmp</pre></div>
+        </div><div class="fn" data-k="list:flatten(list) flattens a list containing sublists, and returns a list with a single level containing all elements in the sublists.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:flatten(list)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Flattens a list containing sublists, and returns a list with a single level containing all elements in the sublists.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>An array containing 1 or more sub- arrays.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:flatten(aList) → [1, 2, 3, 4, 5]</pre></div>
+        </div><div class="fn" data-k="list:get(index) returns the element at the specified 0-based index position in the list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:get(index)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Returns the element at the specified 0-based index position in the list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>index</code></td><td>The index position in the list.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 2, 3].get(1) → 2</pre></div>
+        </div><div class="fn" data-k="list:indexof(element) returns the 0-based index of the first occurrence of the specified element in the list. returns -1 if the list doesn&#x27;t contain the element.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:indexOf(element)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Returns the 0-based index of the first occurrence of the specified element in the list. Returns -1 if the list doesn&#x27;t contain the element.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>element</code></td><td>The object element in the list.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 2, 3].indexOf(2) → 1</pre></div>
+        </div><div class="fn" data-k="list:islist(object) returns whether or not the given object is a list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:isList(object)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns whether or not the given object is a list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>object</code></td><td>An Object to check</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:isList([&#x27;my&#x27;, &#x27;list&#x27;]) → true</pre></div>
+        </div><div class="fn" data-k="list:join() creates and returns a comma-separated string containing all elements in the list. if the list has only 1 item, the returned string contains that item without the separator.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:join()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Creates and returns a comma-separated string containing all elements in the list. If the list has only 1 item, the returned string contains that item without the separator.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">[1,2,3,4,5].join() → &#x27;1,2,3,4,5&#x27;</pre></div>
+        </div><div class="fn" data-k="list:last() returns the last element of the list, or null if the list is empty.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:last()</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Returns the last element of the list, or null if the list is empty.</p>
+          
+        </div><div class="fn" data-k="list:lastindexof(element) returns the 0-based index of the last occurrence of the specified element in the list. returns -1 if the list doesn&#x27;t contain the element.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:lastIndexOf(element)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Returns the 0-based index of the last occurrence of the specified element in the list. Returns -1 if the list doesn&#x27;t contain the element.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>element</code></td><td>The object element in the List.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 2, 2, 3].lastIndexOf(2) → 2</pre></div>
+        </div><div class="fn" data-k="list:map(closure(item, index) creates a new list containing the results of calling the specified function on every element in the list. the closure function accepts a 2nd parameter, which is a zero-based index for generating the list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:map(closure(item, index)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Creates a new list containing the results of calling the specified function on every element in the list. The closure function accepts a 2nd parameter, which is a zero-based index for generating the list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure(item</code></td><td>&mdash;</td></tr><tr><td><code>index</code></td><td>for implementing incremental logic. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[ &quot;a&quot;, &quot;b&quot;, &quot;c&quot; ].map((item, index) =&gt; item + index) → [ &quot;a0&quot;, &quot;b1&quot;, &quot;c2&quot; ] In this next example, logos is a Graph API mutation input variab</pre></div>
+        </div><div class="fn" data-k="list:mapattribute(list, key) returns a list of attribute values whose key matches a given key in a list of key/value pairs.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:mapAttribute(list, key)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns a list of attribute values whose key matches a given key in a list of key/value pairs.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>A map list of Objects with</td></tr><tr><td><code>key</code></td><td>An attribute key in the list</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:mapAttribute(theList, &#x27;key&#x27;) → [&#x27;value0&#x27;, &#x27;value1&#x27;]</pre></div>
+        </div><div class="fn" data-k="list:nonnull(list) filters the null elements in a list, and returns a list that contains only non-null objects.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:nonNull(list)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Filters the null elements in a list, and returns a list that contains only non-null objects.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>An array of Objects.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:nonNull(aList) → [&#x27;string1&#x27;, &#x27;string2&#x27;]</pre></div>
+        </div><div class="fn" data-k="list:reduce(closure) executes the specified reducer function on each element of the list, resulting in a single output value.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:reduce(closure)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Executes the specified reducer function on each element of the list, resulting in a single output value.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The BiFunction (with 2 parameters) that reduces the element into a single output value. Within a closure, you can&#x27;t redefine the variables that are declared out</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1,2,3].reduce((x, y) =&gt; {x + y}) → 6</pre></div>
+        </div><div class="fn" data-k="list:remove(element) removes the element from the list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:remove(element)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Removes the element from the list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>element</code></td><td>The object element to remove.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 2, 3].remove(2) → [1, 3]</pre></div>
+        </div><div class="fn" data-k="list:removeall(elements) removes from the list all of its elements that the specified collection contains.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:removeAll(elements)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Removes from the list all of its elements that the specified collection contains.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>elements</code></td><td>The collection of elements to remove.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 2, 3].removeAll([2, 3]) → [1]</pre></div>
+        </div><div class="fn" data-k="list:removeat(index) removes the element at the specified index position in the list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:removeAt(index)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Removes the element at the specified index position in the list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>index</code></td><td>The zero-based index position in the list.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[ &#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27; ].removeAt(1) → [ &#x27;a&#x27;, &#x27;c&#x27; ]</pre></div>
+        </div><div class="fn" data-k="list:retainall(elements) retains only the elements in the list that the specified collection contains.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:retainAll(elements)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Retains only the elements in the list that the specified collection contains.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>elements</code></td><td>The collection of elements to keep.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 2, 3].retainAll([2, 3, 4]) → [2, 3]</pre></div>
+        </div><div class="fn" data-k="list:reverse() reverses a list and returns the new reversed list. the first element becomes the last, and the last element becomes the first.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:reverse()</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Reverses a list and returns the new reversed list. The first element becomes the last, and the last element becomes the first.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 2, 3].reverse() → [3, 2, 1]</pre></div>
+        </div><div class="fn" data-k="list:set(index, element) replaces the element at the specified 0-based index in the list with the specified element.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:set(index, element)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Replaces the element at the specified 0-based index in the list with the specified element.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>index</code></td><td>The index position in the list.</td></tr><tr><td><code>element</code></td><td>The object element that replaces the existing element.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[0, 2, 3].set(0, 1) → [1, 2, 3]</pre></div>
+        </div><div class="fn" data-k="list:sort() sorts the elements of the list and returns the new sorted list. this function converts the elements into strings, then compares their sequences of utf-8 code unit values. note that this function isn&#x27;t an in-place sort algorithm. your original list remains the same after sorting.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:sort()</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Sorts the elements of the list and returns the new sorted list. This function converts the elements into strings, then compares their sequences of UTF-8 code unit values. Note that this function isn&#x27;t an in-place sort algorithm. Your original list remains the same after sorting.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">[1, 3, 2, 5, 4].sort() → [1, 2, 3, 4, 5]</pre></div>
+        </div><div class="fn" data-k="list:sublist(fromindex, toindex) returns the portion of the list between the specified fromindex (inclusive) and toindex (exclusive).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:subList(fromIndex, toIndex)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns the portion of the list between the specified fromIndex (inclusive) and toIndex (exclusive).</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>fromIndex</code></td><td>The 0-based starting index (inclusive).</td></tr><tr><td><code>toIndex</code></td><td>The ending index (exclusive). Specify the 0-based ending position plus 1.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">[0, 1, 2, 3].subList(1, 3) → [1,2]</pre></div>
+        </div><div class="fn" data-k="list:tolist(value1, valuen) returns a list containing non-null objects in a variable set of parameters.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:toList(value1, valueN)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns a list containing non-null objects in a variable set of parameters.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>value1</code></td><td>&mdash;</td></tr><tr><td><code>valueN</code></td><td>A set of comma- delimited values</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">list:toList(&#x27;1&#x27;, &#x27;2&#x27;, null) → [&#x27;1&#x27;, &#x27;2&#x27;]</pre></div>
+        </div><div class="fn" data-k="list:tolistincludenull() returns a list containing objects in a variable set of parameters, including null values.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:toListIncludeNull()</pre></span></div>
+          <p class="fndesc">Returns a list containing objects in a variable set of parameters, including null values.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">list:toListIncludeNull(&#x27;1&#x27;, &#x27;2&#x27;, null) → [&#x27;1&#x27;, &#x27;2&#x27;, null]</pre></div>
+        </div><div class="fn" data-k="list:tomap(list, key) converts a list to a map. the tomap function extracts the values of a given key, and uses the values as the new keys in the new map.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">list:toMap(list, key)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Converts a list to a map. The toMap function extracts the values of a given key, and uses the values as the new keys in the new map.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>list</code></td><td>A list of Objects</td></tr><tr><td><code>key</code></td><td>An attribute in the given list whose values will be the keys in the transformed list</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">theList.toMap(&#x27;id&#x27;) → {&#x27;1&#x27;:{...}, &#x27;2&#x27;:{...}}</pre></div>
+        </div></div><div class="nsblock" data-ns="map"><h3 id="fn_map" class="nsh"><span class="nsi">{:}</span> map Functions <span class="nsc">16</span></h3><p class="nsblurb">Key-value collections: build, read, transform, and serialize maps.</p><div class="fn" data-k="map:add(key, value) adds the key:value pair to the map. if the key already exists in the map, this function replaces the existing value with the specified value.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:add(key, value)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Adds the key:value pair to the map. If the key already exists in the map, this function replaces the existing value with the specified value.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>key</code></td><td>The key to add.</td></tr><tr><td><code>value</code></td><td>The value to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1}.add(&#x27;bar&#x27;, 2) → {&quot;bar&quot;: 2, &quot;foo&quot;: 1}</pre></div>
+        </div><div class="fn" data-k="map:addall(anothermap) copies all of the key-value mappings from anothermap to the map. it replaces existing key- value mappings in the map.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:addAll(anotherMap)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Copies all of the key-value mappings from anotherMap to the map. It replaces existing key- value mappings in the map.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>anotherMap</code></td><td>The map to copy.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1}.addAll({&#x27;bar&#x27;: 2, &#x27;baz&#x27;: 3}) → {&#x27;bar&#x27;:2, &#x27;foo&#x27;:1, &#x27;baz&#x27;:3}</pre></div>
+        </div><div class="fn" data-k="map:containskey(key) returns true if the map contains a mapping for the specified key. this function takes linear time.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:containsKey(key)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the map contains a mapping for the specified key. This function takes linear time.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>key</code></td><td>The key to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;bar&#x27;:2, &#x27;foo&#x27;:1}.containsKey(&#x27;bar&#x27;) → true</pre></div>
+        </div><div class="fn" data-k="map:containsvalue(value) returns true if the map contains one or more keys that match the specified value. this function takes linear time.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:containsValue(value)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the map contains one or more keys that match the specified value. This function takes linear time.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>value</code></td><td>The value to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;bar&#x27;:2, &#x27;foo&#x27;:1}.containsValue(2) → true</pre></div>
+        </div><div class="fn" data-k="map:get(key) returns the value of the specified map key, or null if the map doesn&#x27;t contain the key. if the key is a string, you can use somemap[somekey].">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:get(key)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Returns the value of the specified map key, or null if the map doesn&#x27;t contain the key. If the key is a string, you can use someMap[someKey].</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>key</code></td><td>The key to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1, &#x27;bar&#x27;: 2}.get(&#x27;foo&#x27;) → 1 {&#x27;foo&#x27;: 1, &#x27;bar&#x27;: 2}[&#x27;foo&#x27;] Also returns 1</pre></div>
+        </div><div class="fn" data-k="map:getkeys(map) returns a list of all keys from a given map of key/value pairs. if the given map is null, getkeys returns an empty list. alternatively, you can use the keys ( ) function, which returns a set that contains the map keys. if you need to use a list, you can convert the returned set to a list.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:getKeys(map)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns a list of all keys from a given map of key/value pairs. If the given map is null, getKeys returns an empty list. Alternatively, you can use the keys ( ) function, which returns a set that contains the map keys. If you need to use a list, you can convert the returned set to a list.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>map</code></td><td>The input Map.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">map:getKeys(theMap) → [&#x27;key0&#x27;, &#x27;key1&#x27;]</pre></div>
+        </div><div class="fn" data-k="map:getobject(map, key) finds a value in a key/value map using a given key. getobject is null-safe. alternatively, you can use somemap[somekey].">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:getObject(map, key)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Finds a value in a key/value map using a given key. getObject is null-safe. Alternatively, you can use someMap[someKey].</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>map</code></td><td>The input Map.</td></tr><tr><td><code>key</code></td><td>A key to find in the map</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">map:getObject({&#x27;key&#x27; : &#x27;value1&#x27;}, &#x27;key&#x27;) Returns &#x27;value1&#x27;</pre></div>
+        </div><div class="fn" data-k="map:getvaluesfromkeys() returns all values that match a list of keys in a given map of key/value pairs. if the given map is null, getvaluesfromkeys returns an empty list. getvaluesfromkeys returns only the values whose keys match the given keys. if a given key doesn&#x27;t match anything in the map, getvaluesfromkeys ignores it">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:getValuesFromKeys()</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns all values that match a list of keys in a given map of key/value pairs. If the given map is null, getValuesFromKeys returns an empty list. getValuesFromKeys returns only the values whose keys match the given keys. If a given key doesn&#x27;t match anything in the map, getValuesFromKeys ignores it</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">keyList is [&#x27;key0&#x27;, &#x27;key2&#x27;]. map:getValuesFromKeys(theMap, keyList) → [&#x27;value0&#x27;, &#x27;value2&#x27;] </pre></div>
+        </div><div class="fn" data-k="map:keys() returns a new set that contains the keys for each element in the specified map. the order depends on the map implementation.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:keys()</pre></span><span class="ret">returns <b>Set</b></span></div>
+          <p class="fndesc">Returns a new set that contains the keys for each element in the specified map. The order depends on the map implementation.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1, &#x27;bar&#x27;: 2}.keys() → {&#x27;bar&#x27;, &#x27;foo&#x27;}</pre></div>
+        </div><div class="fn" data-k="map:map(closure) calls the specified function on every element of the map, and creates a new map with the result elements. you can modify either key, value, or both.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:map(closure)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Calls the specified function on every element of the map, and creates a new map with the result elements. You can modify either key, value, or both.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The BiFunction (with 2 parameters) called for each map element. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;a&#x27;:1, &#x27;b&#x27;:2}.map((k, v) =&gt; {k.upperCase() -&gt; v * 5}) → {&#x27;A&#x27;:5, &#x27;B&#x27;:10}</pre></div>
+        </div><div class="fn" data-k="map:mapkey(closure) calls the specified function on every element of the map, and creates a new map with the result elements. you can only modify the key. the values will remain the same. note that the size of a map can change if the transformed keys have duplicate values.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:mapKey(closure)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Calls the specified function on every element of the map, and creates a new map with the result elements. You can only modify the key. The values will remain the same. Note that the size of a map can change if the transformed keys have duplicate values.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The function called for each map element. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;a&#x27;:1, &#x27;b&#x27;:2}.mapKey(k =&gt; {k.upperCase()}) → {&#x27;A&#x27;:1, &#x27;B&#x27;:2}</pre></div>
+        </div><div class="fn" data-k="map:mapvalue(closure) calls the specified function on every element of the map, and creates a new map with the result elements. you can only modify the value. the keys will remain the same.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:mapValue(closure)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Calls the specified function on every element of the map, and creates a new map with the result elements. You can only modify the value. The keys will remain the same.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The function called for each map element. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;a&#x27;:1, &#x27;b&#x27;:2}.mapValue(v =&gt; {v*5}) → {&#x27;a&#x27;:5, &#x27;b&#x27;:10}</pre></div>
+        </div><div class="fn" data-k="map:put(key, value) adds or updates the mapping for a key from the map.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:put(key, value)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Adds or updates the mapping for a key from the map.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>key</code></td><td>The key to find.</td></tr><tr><td><code>value</code></td><td>The value of the map element to add or update.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1, &#x27;bar&#x27;: 2}.put(&#x27;key&#x27;, &#x27;value&#x27;) → {&#x27;bar&#x27;:2, &#x27;foo&#x27;:1, &#x27;key&#x27;: &#x27;value&#x27;}</pre></div>
+        </div><div class="fn" data-k="map:remove(key) removes the mapping for a key from the map if the key is present.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:remove(key)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Removes the mapping for a key from the map if the key is present.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>key</code></td><td>The key of the map element to remove.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1, &#x27;bar&#x27;: 2}.remove(&#x27;bar&#x27;) → {&#x27;foo&#x27;:1}</pre></div>
+        </div><div class="fn" data-k="map:tojson() returns a json string representation of the given map. this function is the same as the json:stringify(map) .">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:toJson()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a JSON string representation of the given map. This function is the same as the json:stringify(map) .</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1, &#x27;bar&#x27;: 2}.toJson() → {&quot;foo&quot;: 1,&quot;bar&quot;:2}</pre></div>
+        </div><div class="fn" data-k="map:values() returns a new list object that contains the values for each element in the map object.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">map:values()</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns a new List object that contains the values for each element in the Map object.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;foo&#x27;: 1, &#x27;bar&#x27;: 2, &#x27;baz&#x27;: 3}.values() → [2, 1, 3]</pre></div>
+        </div></div><div class="nsblock" data-ns="set"><h3 id="fn_set" class="nsh"><span class="nsi">∪</span> set Functions <span class="nsc">15</span></h3><p class="nsblurb">Unordered unique collections and their transforms.</p><div class="fn" data-k="set:add(element) adds the element to the end of the set. if the element already exists in the set, this functon doesn&#x27;t replace the existing element.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:add(element)</pre></span><span class="ret">returns <b>Set</b></span></div>
+          <p class="fndesc">Adds the element to the end of the set. If the element already exists in the set, this functon doesn&#x27;t replace the existing element.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>element</code></td><td>The object element to add to the end of the set.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;key1&#x27;, &#x27;key2&#x27;}.add(&#x27;A&#x27;) → {&#x27;key1&#x27;, &#x27;key2&#x27;, &#x27;A&#x27;}</pre></div>
+        </div><div class="fn" data-k="set:addall(elements) adds all elements in the specified collection to the set, if they&#x27;re not already present. if an element already exists in the set, this functon doesn&#x27;t replace the existing element.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:addAll(elements)</pre></span><span class="ret">returns <b>Set</b></span></div>
+          <p class="fndesc">Adds all elements in the specified collection to the set, if they&#x27;re not already present. If an element already exists in the set, this functon doesn&#x27;t replace the existing element.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>elements</code></td><td>The collection of elements to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{1, 2}.addAll({3}) → {1, 2, 3}</pre></div>
+        </div><div class="fn" data-k="set:clear() removes all elements from the set.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:clear()</pre></span><span class="ret">returns <b>void</b></span></div>
+          <p class="fndesc">Removes all elements from the set.</p>
+          
+        </div><div class="fn" data-k="set:contains(element) returns true if the element exists in the set.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:contains(element)</pre></span><span class="ret">returns <b>Boolean</b></span></div>
+          <p class="fndesc">Returns true if the element exists in the set.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>element</code></td><td>The object element to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{&#x27;key1&#x27;, &#x27;key2&#x27;}.contains(&#x27;A&#x27;) → false</pre></div>
+        </div><div class="fn" data-k="set:containsall(elements) returns true if all elements in the specified collection exist in the set.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:containsAll(elements)</pre></span><span class="ret">returns <b>Boolean</b></span></div>
+          <p class="fndesc">Returns true if all elements in the specified collection exist in the set.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>elements</code></td><td>The object element to find.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{1, 2, 3}.containsAll({2, 4}) → false</pre></div>
+        </div><div class="fn" data-k="set:filter(closure) returns a new set with all elements that pass the test implemented by the specified function. if you&#x27;re using the filter(closure) function to find only the first match, use the find (closure) function instead. you can reduce memory usage with the find(closure) function because it stops processing af">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:filter(closure)</pre></span><span class="ret">returns <b>Set</b></span></div>
+          <p class="fndesc">Returns a new set with all elements that pass the test implemented by the specified function. If you&#x27;re using the filter(closure) function to find only the first match, use the find (closure) function instead. You can reduce memory usage with the find(closure) function because it stops processing af</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The function that defines the set filter. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{1, 2, 3, 4, 5}.filter(x =&gt; {x % 2 != 0}) → {1, 3, 5}</pre></div>
+        </div><div class="fn" data-k="set:find(closure) returns the value of the first element in the set that passes the test implemented by the specified function.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:find(closure)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Returns the value of the first element in the set that passes the test implemented by the specified function.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The function that finds the element. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{1, 4, 8}.find(x =&gt; {x % 2 == 0}) → 4</pre></div>
+        </div><div class="fn" data-k="set:foreach(closure) performs the given action on each set item.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:forEach(closure)</pre></span><span class="ret">returns <b>None</b></span></div>
+          <p class="fndesc">Performs the given action on each set item.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The function that performs an action on a set item. The forEach function ignores any return value from the closure. Within a closure, you can&#x27;t redefine the var</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">var result = {}; {1, 2, 2, 3, 4, 4}.forEach( item =&gt; { if (item % 2 == 0) { result.add(item) } } ); result;</pre></div>
+        </div><div class="fn" data-k="set:isempty() returns true if the set is empty.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:isEmpty()</pre></span><span class="ret">returns <b>Boolean</b></span></div>
+          <p class="fndesc">Returns true if the set is empty.</p>
+          
+        </div><div class="fn" data-k="set:join() creates and returns a comma-separated string containing all elements in the set. if the set has only 1 item, the returned string contains that item without the separator. this function doesn&#x27;t guarantee the order of elements in the returned string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:join()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Creates and returns a comma-separated string containing all elements in the set. If the set has only 1 item, the returned string contains that item without the separator. This function doesn&#x27;t guarantee the order of elements in the returned string.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">{1,2,3,4,5}.join() → &#x27;1,2,3,4,5&#x27;</pre></div>
+        </div><div class="fn" data-k="set:map(closure) calls the specified function on every element in the set, and returns a new set with the result elements.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:map(closure)</pre></span><span class="ret">returns <b>Set</b></span></div>
+          <p class="fndesc">Calls the specified function on every element in the set, and returns a new set with the result elements.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The function that finds the element. Within a closure, you can&#x27;t redefine the variables that are declared outside the closure.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{1,2,3}.map(x =&gt; {x * 2}) → {2,4,6}</pre></div>
+        </div><div class="fn" data-k="set:reduce(closure) executes the specified reducer function on each element of the set, resulting in a single output value.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:reduce(closure)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Executes the specified reducer function on each element of the set, resulting in a single output value.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>closure</code></td><td>The BiFunction (with 2 parameters) that reduces the element into a single output value. Within a closure, you can&#x27;t redefine the variables that are declared out</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{1,2,3}.reduce((x, y) =&gt; {x + y}) → 6</pre></div>
+        </div><div class="fn" data-k="set:remove(element) removes the element from the set.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:remove(element)</pre></span><span class="ret">returns <b>Set</b></span></div>
+          <p class="fndesc">Removes the element from the set.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>element</code></td><td>The object element to remove.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">{1,2,3,4,5}.remove(4) → {1,2,3,5}</pre></div>
+        </div><div class="fn" data-k="set:tojson() returns a json string representation of the given set. this function is the same as the json:stringify(set) .">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:toJson()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a JSON string representation of the given set. This function is the same as the json:stringify(set) .</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">{1, 2}.toJson() → &quot;[1,2]&quot;</pre></div>
+        </div><div class="fn" data-k="set:tostring() returns a string representation of the set.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">set:toString()</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a string representation of the set.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">{1,2,3,4,5}.toString() → [1, 2, 3, 4, 5]</pre></div>
+        </div></div><div class="nsblock" data-ns="json"><h3 id="fn_json" class="nsh"><span class="nsi">{}</span> json Functions <span class="nsc">6</span></h3><p class="nsblurb">Serialize, parse, build, and query JSON.</p><div class="fn" data-k="json:jsonpath(json, path) extracts data from a json document using a jsonpath expression.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">json:JSONPath(json, path)</pre></span></div>
+          <p class="fndesc">Extracts data from a JSON document using a JSONPath expression.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">json:JSONPath(data, &#x27;$.store.book[0].title&#x27;)</pre></div>
+        </div><div class="fn" data-k="json:asjson(object) returns a json string for the given object.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">json:asJSON(object)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns a JSON string for the given object.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>object</code></td><td>An Object to convert as JSON.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">json:asJSON(myData) → {&quot;key&quot;: &quot;value&quot;}</pre></div>
+        </div><div class="fn" data-k="json:attribute(key, value) creates a json attribute (or in java terms, an entry in a map) with ‘key’ and ‘value’. use json:attribute with json:create .">
+          <div class="fnhead"><span class="fnsig"><pre class="code">json:attribute(key, value)</pre></span></div>
+          <p class="fndesc">Creates a JSON attribute (or in Java terms, an entry in a map) with ‘key’ and ‘value’. Use json:attribute with json:create .</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>key</code></td><td>The key in a key/value pair.</td></tr><tr><td><code>value</code></td><td>pair. value The value in a key/value pair. The value can either be an object or an array of objects.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">json:create(json:attribute(&#x27;key0&#x27;, &#x27;value0&#x27;), json:attribute(&#x27;key1&#x27;, list:toList(1,2,3))) Result: {&quot;key0&quot;: &quot;value0&quot;, &quot;key1&quot;: [1,2,3]}</pre></div>
+        </div><div class="fn" data-k="json:create(attribute1, attributen) returns a json object with the given attributes. use json:create with the json:attribute function. note: for pmd scripting, we recommend that you specify the json map using {} instead of the json:create function.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">json:create(attribute1, attributeN)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Returns a JSON object with the given attributes. Use json:create with the json:attribute function. Note: For PMD Scripting, we recommend that you specify the JSON map using {} instead of the json:create function.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>attribute1</code></td><td>&mdash;</td></tr><tr><td><code>attributeN</code></td><td>delimited attributes to convert to JSON. Use json:attribute .</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">json:create(json:attribute(&#x27;key0&#x27;, &#x27;value0&#x27;), json:attribute(&#x27;key1&#x27;, &#x27;value1&#x27;)) → {&quot;key0&quot;: &quot;value0&quot;, &quot;key1&quot;: &quot;value1&quot;}</pre></div>
+        </div><div class="fn" data-k="json:parse(jsonstring) converts a json string to the corresponding data object.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">json:parse(jsonString)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Converts a JSON string to the corresponding data object.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>jsonString</code></td><td>A JSON string to convert.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">json:parse(&#x27;[1, 2]&#x27;) → [1, 2]</pre></div>
+        </div><div class="fn" data-k="json:stringify(object) an alias of the json:asjson function. you can use json:stringify instead of json:asjson . if you&#x27;re using a variable of type map, list, or set, the {object}.tojson function is more concise.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">json:stringify(object)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">An alias of the json:asJSON function. You can use json:stringify instead of json:asJSON . If you&#x27;re using a variable of type Map, List, or Set, the {object}.toJson function is more concise.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>object</code></td><td>An Object to convert to JSON.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">json:stringify([{&#x27;a&#x27;:1},{&#x27;b&#x27;:2}]) → &quot;[{&#x27;a&#x27;:1},{&#x27;b&#x27;:2}]&quot; Related Information asJSON (object)</pre></div>
+        </div></div><div class="nsblock" data-ns="regex"><h3 id="fn_regex" class="nsh"><span class="nsi">.*</span> regex Functions <span class="nsc">5</span></h3><p class="nsblurb">Pattern matching, finding, replacing, and splitting with regular expressions.</p><div class="fn" data-k="regex:find(text, regex) returns all substrings in the input text that match the regular expression.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">regex:find(text, regex)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Returns all substrings in the input text that match the regular expression.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>text</code></td><td>The input string.</td></tr><tr><td><code>regex</code></td><td>The regular expression to match within the input string.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">regex:find(&#x27;ABC123DEF&#x27;, &#x27;[a-zA-Z]+&#x27;) → [&#x27;ABC&#x27;, &#x27;DEF&#x27;]</pre></div>
+        </div><div class="fn" data-k="regex:match(text, regex) returns true if the entire input text matches the regular expression. otherwise, returns false. if either text or regex are null, returns false.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">regex:match(text, regex)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the entire input text matches the regular expression. Otherwise, returns false. If either text or regex are null, returns false.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>text</code></td><td>The input string.</td></tr><tr><td><code>regex</code></td><td>The regular expression to match with the input string. regex:match(&#x27;ABCDEF&#x27;, &#x27;[a-zA-Z]+&#x27;) Returns true . regex:match(&#x27;ABC123DEF&#x27;, &#x27;[a-zA-Z]+&#x27;) Returns false . T</td></tr></table>
+        </div><div class="fn" data-k="regex:replace() replaces all substrings of the input text that match the regular expression with the specified replacement string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">regex:replace()</pre></span><span class="ret">returns <b>string</b></span></div>
+          <p class="fndesc">Replaces all substrings of the input text that match the regular expression with the specified replacement string.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick quick brown fox&#x27;.replaceIgnoreCase(&#x27;Quick&#x27;, &#x27;Small&#x27;) → &#x27;The Small Small brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="regex:replaceonce(text, regex, replacement) replaces the first substring of the input text that matches the regular expression with the specified replacement string.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">regex:replaceOnce(text, regex, replacement)</pre></span><span class="ret">returns <b>string</b></span></div>
+          <p class="fndesc">Replaces the first substring of the input text that matches the regular expression with the specified replacement string.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>text</code></td><td>The input string.</td></tr><tr><td><code>regex</code></td><td>A regular expression to match within the input text.</td></tr><tr><td><code>replacement</code></td><td>The string that replaces the matched substring. regex:replaceOnce(&#x27;ABC123DEF&#x27;, &#x27;[a-zA-Z]+&#x27;, &#x27;000&#x27;) Returns &#x27;000123DEF&#x27; . Table of Contents Description Return Ty</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">&#x27;The quick quick brown fox&#x27;.replaceOnceIgnoreCase(&#x27;Quick&#x27;, &#x27;Small&#x27;) → &#x27;The Small quick brown fox&#x27;</pre></div>
+        </div><div class="fn" data-k="regex:split(text, regex) splits the input text by the characters that match the regular expression and returns a list of the split substrings. equivalent to string:splitbyregex(str, regex) .">
+          <div class="fnhead"><span class="fnsig"><pre class="code">regex:split(text, regex)</pre></span><span class="ret">returns <b>List</b></span></div>
+          <p class="fndesc">Splits the input text by the characters that match the regular expression and returns a list of the split substrings. Equivalent to string:splitByRegex(str, regex) .</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>text</code></td><td>The input string.</td></tr><tr><td><code>regex</code></td><td>The regular expression value separating each list item in the input text. regex:split(&#x27;123ABC456&#x27;, &#x27;[a-zA-Z]+&#x27;) Returns [&#x27;123&#x27;, &#x27;456&#x27;] . Table of Contents Descr</td></tr></table>
+        </div></div><div class="nsblock" data-ns="bool"><h3 id="fn_bool" class="nsh"><span class="nsi">T|F</span> bool Functions <span class="nsc">2</span></h3><p class="nsblurb">Boolean aggregation over multiple expressions.</p><div class="fn" data-k="bool:all(expression1, expressionn) returns true if all of the subexpressions return true and false if not.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">bool:all(expression1, expressionN)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if all of the subexpressions return true and false if not.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>expression1</code></td><td>&mdash;</td></tr><tr><td><code>expressionN</code></td><td>separated set of expressions that evaluate to a boolean</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">bool:all(true, false) → false</pre></div>
+        </div><div class="fn" data-k="bool:any(expr1, exprn) returns true if any subexpression is true, otherwise false.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">bool:any(expr1, exprN)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if any subexpression is true, otherwise false.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">bool:any(true, false) → true</pre></div>
+        </div></div><div class="nsblock" data-ns="converter"><h3 id="fn_converter" class="nsh"><span class="nsi">⇄</span> converter Functions <span class="nsc">2</span></h3><p class="nsblurb">Type conversions between booleans, ints, and strings.</p><div class="fn" data-k="converter:booleanasint(bool) converts a boolean to an integer (true→1, false→0).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">converter:booleanAsInt(bool)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Converts a boolean to an integer (true→1, false→0).</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">converter:booleanAsInt(true) → 1</pre></div>
+        </div><div class="fn" data-k="converter:booleanasstring(bool) converts a boolean to a string (&#x27;1&#x27; or &#x27;0&#x27;).">
+          <div class="fnhead"><span class="fnsig"><pre class="code">converter:booleanAsString(bool)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Converts a boolean to a string (&#x27;1&#x27; or &#x27;0&#x27;).</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">converter:booleanAsString(true) → &#x27;1&#x27;</pre></div>
+        </div></div><div class="nsblock" data-ns="object"><h3 id="fn_object" class="nsh"><span class="nsi">◆</span> object Functions <span class="nsc">1</span></h3><p class="nsblurb">General-purpose object helpers.</p><div class="fn" data-k="object:firstnonnull(a, b, ...) returns the first argument that isn&#x27;t null — handy for fallback chains.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">object:firstNonNull(a, b, ...)</pre></span><span class="ret">returns <b>Object</b></span></div>
+          <p class="fndesc">Returns the first argument that isn&#x27;t null — handy for fallback chains.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">object:firstNonNull(a1, a2, &#x27;n/a&#x27;)</pre></div>
+        </div></div><div class="nsblock" data-ns="graph"><h3 id="fn_graph" class="nsh"><span class="nsi">⟐</span> graph Functions <span class="nsc">2</span></h3><p class="nsblurb">Build Graph API instance ID objects.</p><div class="fn" data-k="graph:createid(id) creates a graph api instance id object from a string id.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">graph:createId(id)</pre></span><span class="ret">returns <b>Map</b></span></div>
+          <p class="fndesc">Creates a Graph API instance ID object from a string id.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>id</code></td><td>The ID of the Graph API instance ID object. graph:createId(&#x27;ID1&#x27;) Returns { &quot;id&quot;: { &quot;id&quot;: &quot;ID1&quot;, &quot;type&quot;: &quot;WID&quot; } } graph:createId(null) Returns null. Related In</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">graph:createId(&#x27;ID1&#x27;)</pre></div>
+        </div><div class="fn" data-k="graph:createids(ids) creates a list of graph api instance id objects from a list of strings.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">graph:createIds(ids)</pre></span><span class="ret">returns <b>List of maps</b></span></div>
+          <p class="fndesc">Creates a list of Graph API instance ID objects from a list of strings.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>ids</code></td><td>List of strings. A list of IDs. graph:createIds([&#x27;ID1&#x27;, &#x27;ID2&#x27;]) Returns [ { &quot;id&quot;: { &quot;id&quot;: &quot;ID1&quot;, &quot;type&quot;: &quot;WID&quot; } }, { &quot;id&quot;: { &quot;id&quot;: &quot;ID2&quot;, &quot;type&quot;: &quot;WID&quot; }  ] g</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">graph:createIds([&#x27;ID1&#x27;,&#x27;ID2&#x27;])</pre></div>
+        </div></div><div class="nsblock" data-ns="grid"><h3 id="fn_grid" class="nsh"><span class="nsi">▦</span> grid Functions <span class="nsc">1</span></h3><p class="nsblurb">Read aggregate values from grid widgets.</p><div class="fn" data-k="grid:getsubtotal(grid, columnid) returns the total of the values in a numeric grid column.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">grid:getSubtotal(grid, columnId)</pre></span><span class="ret">returns <b>BigDecimal</b></span></div>
+          <p class="fndesc">Returns the total of the values in a numeric grid column.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>grid</code></td><td>The id that references the grid.</td></tr><tr><td><code>columnId</code></td><td>A string containing the ID of the column containing the values to add.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">grid:getSubtotal(myGrid, &#x27;amount&#x27;) → 101</pre></div>
+        </div></div><div class="nsblock" data-ns="file"><h3 id="fn_file" class="nsh"><span class="nsi">⎙</span> file Functions <span class="nsc">1</span></h3><p class="nsblurb">File-related helpers.</p><div class="fn" data-k="file:bytecounttodisplaysize(size) formats a byte count as a human-readable size.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">file:byteCountToDisplaySize(size)</pre></span><span class="ret">returns <b>int</b></span></div>
+          <p class="fndesc">Formats a byte count as a human-readable size.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>size</code></td><td>A size integer</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">file:byteCountToDisplaySize(2048) → &#x27;2 KB&#x27;</pre></div>
+        </div></div><div class="nsblock" data-ns="fileType"><h3 id="fn_fileType" class="nsh"><span class="nsi">⧉</span> fileType Functions <span class="nsc">1</span></h3><p class="nsblurb">Resolve MIME types from file names.</p><div class="fn" data-k="filetype:getfiletype(filename) returns the mime type for a file name.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">fileType:getFileType(fileName)</pre></span><span class="ret">returns <b>String</b></span></div>
+          <p class="fndesc">Returns the MIME type for a file name.</p>
+          <table class="pt"><tr><th>Parameter</th><th>Description</th></tr><tr><td><code>fileName</code></td><td>The name of the file.</td></tr></table><div class="fnex"><span class="exl">Example</span><pre class="code ex">fileType:getFileType(&#x27;myFile.pdf&#x27;) → &#x27;application/pdf&#x27;</pre></div>
+        </div></div><div class="nsblock" data-ns="validate"><h3 id="fn_validate" class="nsh"><span class="nsi">✓</span> validate Functions <span class="nsc">1</span></h3><p class="nsblurb">Regex-based validation helpers.</p><div class="fn" data-k="validate:match(regex, string) returns true if the whole string matches the regex.">
+          <div class="fnhead"><span class="fnsig"><pre class="code">validate:match(regex, string)</pre></span><span class="ret">returns <b>boolean</b></span></div>
+          <p class="fndesc">Returns true if the whole string matches the regex.</p>
+          <div class="fnex"><span class="exl">Example</span><pre class="code ex">validate:match(&#x27;.*&#x27;, &#x27;my string&#x27;) → true</pre></div>
+        </div></div></section><section class="part" id="patterns"><h2>16 · Patterns &amp; Best Practices</h2>
+<h3>Null-safe display</h3>
+<pre class="code">&quot;value&quot;: &quot;&lt;% !empty getOpportunity.name ? getOpportunity.name : &#x27;&#x27; %&gt;&quot;</pre>
+<h3>Reset a page region</h3>
+<pre class="code">var reset = function() {
+  searchTerm.value = &#x27;&#x27;;
+  resultsGrid.setRows([]);
+  detailSection.visible = false;
+};</pre>
+<h3>Conditional parameter assembly</h3>
+<pre class="code">var params = {:};
+if (!empty(from.value)) { params.fromDate = date:format(from.value, &#x27;yyyy-MM-dd&#x27;); }
+if (!empty(to.value))   { params.toDate   = date:format(to.value, &#x27;yyyy-MM-dd&#x27;); }</pre>
+<h3>Guidelines</h3>
+<ul>
+<li>Prefer <code>const</code>, then <code>let</code>, then <code>var</code>.</li>
+<li>Keep exported module properties <strong>stateless</strong> — export functions, not mutable values.</li>
+<li>Guard every external value with <code>empty</code>/<code>!empty</code> before using it.</li>
+<li>Use bracket notation for keyword or hyphenated property names.</li>
+<li>Reuse logic through script modules instead of copying inline scripts between pages.</li>
+<li>Encode user-supplied values with <code>string:urlEncode</code> before placing them in a URL.</li>
+<li>Coerce query-param strings with <code>number:convertStringToInt</code> before arithmetic.</li>
+</ul>
+</section><section class="part" id="limits"><h2>17 · Limits &amp; Common Errors</h2>
+<h3>Limits</h3>
+<ul>
+<li>A single <code>.script</code> file is capped at <strong>100&nbsp;KB</strong>.</li>
+<li>Exported module variables must be static/stateless.</li>
+<li>Predefined app variables are unavailable inside script modules (pass them as parameters).</li>
+</ul>
+<h3>Common errors &amp; fixes</h3>
+<table class="t2"><tr><th>Symptom</th><th>Cause &amp; fix</th></tr>
+<tr><td>Condition always true</td><td>Used <code>=</code> (assignment) instead of <code>==</code> (comparison).</td></tr>
+<tr><td>Literal <code>null</code> on screen</td><td>Missing <code>!empty</code> guard before displaying a value.</td></tr>
+<tr><td>Empty map behaves oddly</td><td>Used <code>{}</code> (empty block) instead of <code>{:}</code> (empty map).</td></tr>
+<tr><td><code>and</code>/<code>or</code> not recognized</td><td>Use the symbol operators <code>&amp;&amp;</code> / <code>||</code>.</td></tr>
+<tr><td>String concatenates instead of adding</td><td>A query-param value is a string; convert with <code>number:convertStringToInt</code>.</td></tr>
+<tr><td>Subtraction error on a property</td><td>Hyphen in a property name; use bracket notation <code>obj['a-b']</code>.</td></tr>
+<tr><td>Closure can't change a counter</td><td>Closures can't reassign outer variables; use a <code>for</code> loop.</td></tr>
+</table>
+</section>
+    <footer style="margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-3);font-size:12px;font-family:var(--mono)">
+      <span class="delim">&lt;%</span> PMD Scripting Complete Reference · single-file, offline · grounded in Workday Extend developer documentation <span class="delim">%&gt;</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+const esc=s=>(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const KEYWORDS=['var','let','const','return','if','else','for','while','function','true','false','null','empty','size','break','typeof','instanceof','new','do','try','catch','finally','throw','to','until'];
+function hl(raw){
+  let s=esc(raw);
+  s=s.replace(/(\/\/[^\n]*)/g,'\u0001com\u0001$1\u0002');
+  s=s.replace(/(\/\*[\s\S]*?\*\/)/g,'\u0001com\u0001$1\u0002');
+  s=s.replace(/(&lt;%|%&gt;)/g,'\u0001del\u0001$1\u0002');
+  s=s.replace(/('(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)/g,'\u0001str\u0001$1\u0002');
+  s=s.replace(/\b([a-z][a-zA-Z]*):([a-zA-Z]\w*)/g,'\u0001ns\u0001$1:$2\u0002');
+  s=s.replace(/\b(\d+\.?\d*)\b/g,'\u0001num\u0001$1\u0002');
+  s=s.replace(new RegExp('\\b('+KEYWORDS.join('|')+')\\b','g'),'\u0001key\u0001$1\u0002');
+  return s.replace(/\u0001com\u0001([\s\S]*?)\u0002/g,'<span class="t-com">$1</span>')
+          .replace(/\u0001del\u0001([\s\S]*?)\u0002/g,'<span class="t-del">$1</span>')
+          .replace(/\u0001str\u0001([\s\S]*?)\u0002/g,'<span class="t-str">$1</span>')
+          .replace(/\u0001ns\u0001([\s\S]*?)\u0002/g,'<span class="t-ns">$1</span>')
+          .replace(/\u0001num\u0001([\s\S]*?)\u0002/g,'<span class="t-num">$1</span>')
+          .replace(/\u0001key\u0001([\s\S]*?)\u0002/g,'<span class="t-key">$1</span>');
+}
+// highlight all code blocks
+document.querySelectorAll('pre.code').forEach(p=>{p.innerHTML=hl(p.textContent);});
+// function count
+document.getElementById('m-fns').textContent=String(document.querySelectorAll('.fn').length);
+// TOC scroll-spy
+const links=[...document.querySelectorAll('.toc a')];
+const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a)a.classList.add('active');}});},{rootMargin:'-10% 0px -80% 0px'});
+document.querySelectorAll('.part').forEach(p=>obs.observe(p));
+// function filter
+function filterAll(){
+  const q=document.getElementById('fnq').value.toLowerCase().trim();
+  let n=0;
+  document.querySelectorAll('.nsblock').forEach(block=>{
+    let any=false;
+    block.querySelectorAll('.fn').forEach(fn=>{
+      const hit=!q||fn.dataset.k.includes(q);
+      fn.hidden=!hit; if(hit){any=true;n++;}
+    });
+    block.hidden=q && !any;
+  });
+  document.getElementById('fnqc').textContent=q?(n+' match'+(n!==1?'es':'')):'';
+}
+</script>
+</body>
+</html>

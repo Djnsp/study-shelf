@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workday Studio — Reference &amp; Quiz Lab</title>
+<style>
+  :root{
+    /* Studio console palette */
+    --ink:#0e1419;          /* canvas background */
+    --ink2:#121a23;         /* deep panel */
+    --surface:#172230;      /* component node surface */
+    --surface2:#1d2a3a;     /* raised surface */
+    --line:#26384b;         /* hairline */
+    --line2:#33495f;
+    --text:#e6edf3;         /* primary text */
+    --muted:#8b9bab;        /* secondary text */
+    --faint:#5e7186;        /* tertiary */
+    --blue:#3b9eff;         /* Workday-ish primary */
+    --blue-dim:#1f4f78;
+    --amber:#f5a623;        /* message / payload highlight */
+    --amber-dim:#5a4318;
+    --ok:#3ecf8e;           /* success log */
+    --ok-dim:#16432f;
+    --err:#ff5d5d;          /* error log */
+    --err-dim:#4a1d1d;
+    --code-bg:#0b1218;
+    --radius:14px;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--ink);color:var(--text);font-family:var(--sans);
+    line-height:1.6;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 85% -8%, rgba(59,158,255,.08), transparent 60%),
+      radial-gradient(700px 420px at 5% 0%, rgba(245,166,35,.05), transparent 55%);
+  }
+  ::selection{background:rgba(59,158,255,.32)}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ---------- top bar ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(14,20,25,.82);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .bar{max-width:1180px;margin:0 auto;min-height:64px;padding:11px 22px;display:flex;align-items:center;gap:18px}
+  .brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}
+  .glyph{
+    width:34px;height:34px;border-radius:9px;flex:none;
+    background:linear-gradient(145deg,var(--blue),#1d6fc0);
+    display:grid;place-items:center;font-family:var(--mono);font-weight:700;color:#04101c;
+    box-shadow:0 0 0 1px rgba(59,158,255,.4),0 6px 18px rgba(59,158,255,.25);
+  }
+  .brand .txt{display:flex;flex-direction:column;justify-content:center;line-height:1.18}
+  .brand h1{font-size:1rem;margin:0;letter-spacing:.2px;font-weight:660;white-space:nowrap}
+  .brand .txt span{font-size:.67rem;color:var(--faint);font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase}
+  .modeswitch{display:flex;background:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .modeswitch button{
+    font:inherit;font-size:.82rem;font-weight:600;color:var(--muted);
+    background:none;border:0;padding:7px 16px;border-radius:999px;cursor:pointer;transition:.18s;
+  }
+  .modeswitch button.active{background:var(--blue);color:#04101c}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+  .view{display:none;animation:fade .25s ease}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);margin-bottom:16px}
+
+  /* ---------- home / landing ---------- */
+  .home{padding:50px 0 6px}
+  .home-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;
+    padding-bottom:46px;border-bottom:1px solid var(--line)}
+  .home h2{font-size:clamp(1.95rem,3.7vw,2.85rem);line-height:1.06;margin:14px 0 18px;letter-spacing:-.5px;font-weight:720}
+  .home h2 em{font-style:normal;color:var(--blue)}
+  .home .lead{color:var(--muted);font-size:1.03rem;margin:0 0 28px;max-width:540px}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px}
+  .cta-row a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+  .cta-row a.btn:hover{text-decoration:none}
+  .stat-row{display:flex;gap:28px;flex-wrap:wrap}
+  .stat-row>div{display:flex;flex-direction:column;gap:3px}
+  .stat-row b{font-family:var(--mono);font-size:1.45rem;color:var(--text);font-weight:700;line-height:1}
+  .stat-row span{font-size:.68rem;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
+
+  /* console card (hero right) */
+  .console{background:linear-gradient(160deg,var(--surface),var(--ink2));border:1px solid var(--line2);
+    border-radius:16px;overflow:hidden;box-shadow:0 28px 70px -28px rgba(0,0,0,.7)}
+  .console-bar{display:flex;align-items:center;gap:8px;padding:11px 15px;background:rgba(0,0,0,.28);border-bottom:1px solid var(--line)}
+  .cdot{width:11px;height:11px;border-radius:50%}
+  .cdot.r{background:#ff5f57}.cdot.y{background:#febc2e}.cdot.g{background:#28c840}
+  .cfile{margin-left:8px;font-family:var(--mono);font-size:.73rem;color:var(--muted)}
+  .console-body{padding:20px 20px 22px}
+  .pipe{position:relative;padding-left:26px}
+  .pipe::before{content:"";position:absolute;left:8px;top:14px;bottom:14px;width:2px;
+    background:linear-gradient(var(--blue),var(--amber),var(--ok))}
+  .pstep{position:relative;margin:0 0 9px;background:var(--ink);border:1px solid var(--line2);border-radius:9px;
+    padding:9px 12px;font-family:var(--mono);font-size:.77rem;display:flex;align-items:center;gap:8px;color:var(--text)}
+  .pstep:last-child{margin-bottom:0}
+  .pstep::before{content:"";position:absolute;left:-22px;top:50%;transform:translateY(-50%);
+    width:10px;height:10px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--ink)}
+  .pstep.a::before{background:var(--amber)} .pstep.o::before{background:var(--ok)}
+  .pstep small{margin-left:auto;color:var(--faint)}
+  .mini{margin:18px 0 0;font-size:.71rem;line-height:1.55;border-left-color:var(--amber);padding:12px 14px}
+
+  /* section directory */
+  .dir{padding:42px 0 12px}
+  .dir-h{font-size:.8rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.6px;color:var(--blue);margin:0 0 4px}
+  .dir-sub{color:var(--muted);margin:0 0 22px;font-size:.95rem}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:13px;
+    padding:18px;transition:.16s;color:inherit}
+  .card:hover{border-color:var(--blue);transform:translateY(-3px);text-decoration:none;background:var(--surface2)}
+  .card .cnum{font-family:var(--mono);font-size:.74rem;color:var(--amber);font-weight:700}
+  .card h4{margin:7px 0 6px;font-size:1.04rem;font-weight:640}
+  .card p{margin:0;color:var(--muted);font-size:.85rem;line-height:1.5}
+
+  /* assembly flow signature */
+  .flow{display:flex;align-items:center;gap:0;margin:34px 0 4px;flex-wrap:wrap;font-family:var(--mono);font-size:.78rem}
+  .node{
+    display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line2);
+    padding:9px 13px;border-radius:9px;white-space:nowrap;
+  }
+  .node b{color:var(--text);font-weight:600}
+  .node i{color:var(--faint);font-style:normal}
+  .node .dot{width:7px;height:7px;border-radius:50%;background:var(--blue)}
+  .node.amber .dot{background:var(--amber)}
+  .node.ok .dot{background:var(--ok)}
+  .route{width:30px;height:2px;background:linear-gradient(90deg,var(--line2),var(--blue));flex:none;position:relative}
+  .route::after{content:"";position:absolute;right:-1px;top:-3px;border-left:7px solid var(--blue);border-top:4px solid transparent;border-bottom:4px solid transparent}
+
+  /* ---------- section nav ---------- */
+  .toc{
+    position:sticky;top:69px;z-index:30;background:rgba(14,20,25,.88);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:8px;
+  }
+  .toc-inner{display:flex;gap:7px;overflow-x:auto;padding:2px 0;scrollbar-width:thin}
+  .toc a{
+    font-family:var(--mono);font-size:.76rem;color:var(--muted);white-space:nowrap;
+    border:1px solid var(--line);padding:6px 12px;border-radius:8px;background:var(--ink2);transition:.15s;
+  }
+  .toc a:hover{color:var(--text);border-color:var(--line2);text-decoration:none}
+
+  /* ---------- content sections ---------- */
+  section.doc{padding:42px 0;border-bottom:1px solid var(--line);scroll-margin-top:120px}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+  .sec-num{font-family:var(--mono);font-size:.8rem;color:var(--amber);font-weight:700;flex:none}
+  section.doc h3{font-size:1.7rem;margin:0;letter-spacing:-.3px;font-weight:680}
+  .sec-sub{color:var(--muted);margin:8px 0 26px;max-width:760px}
+  section.doc h4{font-size:1.12rem;margin:30px 0 8px;color:var(--text);font-weight:640}
+  section.doc h5{font-size:.86rem;margin:22px 0 8px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;color:var(--blue)}
+  p{margin:0 0 14px}
+  .lead{color:var(--muted)}
+  ul,ol{margin:0 0 16px;padding-left:22px}
+  li{margin:5px 0}
+  strong{color:#fff;font-weight:640}
+  code:not(pre code){
+    font-family:var(--mono);font-size:.86em;background:var(--ink2);border:1px solid var(--line);
+    padding:1px 6px;border-radius:5px;color:var(--amber);
+  }
+
+  /* code blocks styled as Studio "message stream" */
+  pre{
+    position:relative;background:var(--code-bg);border:1px solid var(--line);border-left:3px solid var(--blue);
+    border-radius:10px;padding:16px 18px 16px 18px;overflow:auto;margin:0 0 18px;
+    font-family:var(--mono);font-size:.82rem;line-height:1.6;color:#cfe1f0;
+  }
+  pre.xml{border-left-color:var(--amber)}
+  pre.shell{border-left-color:var(--ok)}
+  pre .c{color:var(--faint)}        /* comment */
+  pre .k{color:var(--blue)}         /* keyword */
+  pre .s{color:var(--ok)}           /* string */
+  pre .t{color:var(--amber)}        /* tag/type */
+  .codelabel{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--faint);
+    margin:0 0 6px;display:flex;align-items:center;gap:7px;
+  }
+  .codelabel::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--blue)}
+
+  /* step cards */
+  .steps{counter-reset:step;list-style:none;padding:0;margin:18px 0}
+  .steps>li{
+    counter-increment:step;position:relative;padding:16px 16px 16px 56px;margin:0 0 12px;
+    background:var(--surface);border:1px solid var(--line);border-radius:11px;
+  }
+  .steps>li::before{
+    content:counter(step,decimal-leading-zero);position:absolute;left:14px;top:15px;
+    font-family:var(--mono);font-size:.78rem;font-weight:700;color:#04101c;
+    background:var(--blue);width:28px;height:28px;border-radius:7px;display:grid;place-items:center;
+  }
+  .steps>li b{display:block;margin-bottom:3px}
+
+  /* callouts */
+  .note{border:1px solid var(--line);background:var(--ink2);border-left:3px solid var(--amber);
+    padding:13px 16px;border-radius:8px;margin:0 0 18px;font-size:.92rem;color:var(--muted)}
+  .note b{color:var(--amber)}
+  .tip{border-left-color:var(--ok)}
+  .tip b{color:var(--ok)}
+  .warn{border-left-color:var(--err)}
+  .warn b{color:var(--err)}
+
+  /* param / cheat tables */
+  table{width:100%;border-collapse:collapse;margin:0 0 18px;font-size:.88rem}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--mono);font-size:.72rem;letter-spacing:.6px;text-transform:uppercase;color:var(--faint);font-weight:600}
+  td code{white-space:nowrap}
+  tbody tr:hover{background:var(--ink2)}
+
+  .pill{display:inline-block;font-family:var(--mono);font-size:.68rem;padding:2px 8px;border-radius:6px;
+    border:1px solid var(--line2);color:var(--muted);margin:0 0 0 0}
+  .pill.req{color:var(--err);border-color:var(--err-dim);background:var(--err-dim)}
+  .pill.opt{color:var(--ok);border-color:var(--ok-dim);background:var(--ok-dim)}
+
+  /* ---------- quiz ---------- */
+  .quiz-hero{padding:46px 0 24px}
+  .qmode{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}
+  .qcard{
+    flex:1;min-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;cursor:pointer;transition:.18s;
+  }
+  .qcard:hover{border-color:var(--blue);transform:translateY(-2px)}
+  .qcard h4{margin:0 0 6px;font-size:1.1rem}
+  .qcard p{margin:0;color:var(--muted);font-size:.9rem}
+  .qcard .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--blue);display:block;margin-bottom:10px}
+
+  .topicpick{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 22px}
+  .topicpick label{
+    font-family:var(--mono);font-size:.76rem;border:1px solid var(--line);background:var(--ink2);
+    padding:6px 11px;border-radius:8px;cursor:pointer;color:var(--muted);user-select:none;transition:.15s;
+  }
+  .topicpick input{display:none}
+  .topicpick input:checked+span{color:var(--blue)}
+  .topicpick label:has(input:checked){border-color:var(--blue);color:var(--blue)}
+
+  .qpanel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;margin:18px 0 40px;display:none}
+  .qpanel.active{display:block}
+  .progress{display:flex;align-items:center;gap:14px;margin-bottom:20px;font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+  .bar{flex:1;height:6px;background:var(--ink2);border-radius:999px;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--amber));width:0;transition:.3s}
+  .qtopic{font-family:var(--mono);font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  .qtext{font-size:1.12rem;font-weight:600;margin:0 0 20px;line-height:1.45}
+  .qtext code{font-size:.92em}
+  .opts{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+  .opt{
+    text-align:left;font:inherit;font-size:.95rem;color:var(--text);background:var(--ink2);
+    border:1px solid var(--line);border-radius:10px;padding:13px 16px;cursor:pointer;transition:.14s;
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .opt:hover:not(:disabled){border-color:var(--line2);background:var(--surface2)}
+  .opt .key{font-family:var(--mono);font-size:.8rem;color:var(--faint);flex:none;margin-top:1px}
+  .opt.correct{border-color:var(--ok);background:var(--ok-dim)}
+  .opt.correct .key{color:var(--ok)}
+  .opt.wrong{border-color:var(--err);background:var(--err-dim)}
+  .opt.wrong .key{color:var(--err)}
+  .opt.chosen{border-color:var(--blue)}
+  .opt:disabled{cursor:default}
+  .opt code{background:rgba(0,0,0,.3);border-color:transparent}
+  .explain{
+    border:1px solid var(--line);border-left:3px solid var(--ok);background:var(--ink2);
+    border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:.92rem;color:var(--muted);display:none;
+  }
+  .explain.show{display:block}
+  .explain b{color:var(--ok)}
+  .explain.miss{border-left-color:var(--err)}
+  .explain.miss b{color:var(--err)}
+  .qnav{display:flex;gap:12px;justify-content:space-between;align-items:center}
+  .btn{
+    font:inherit;font-weight:600;font-size:.9rem;border:1px solid var(--line2);background:var(--surface2);
+    color:var(--text);padding:11px 22px;border-radius:9px;cursor:pointer;transition:.15s;
+  }
+  .btn:hover{border-color:var(--blue)}
+  .btn.primary{background:var(--blue);color:#04101c;border-color:var(--blue)}
+  .btn.primary:hover{background:#5bb0ff}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.ghost{background:none}
+
+  .results{text-align:center;padding:20px 10px}
+  .score-ring{
+    width:150px;height:150px;border-radius:50%;margin:0 auto 22px;display:grid;place-items:center;
+    background:conic-gradient(var(--blue) var(--deg,0deg), var(--ink2) 0deg);position:relative;
+  }
+  .score-ring::before{content:"";position:absolute;inset:11px;border-radius:50%;background:var(--surface)}
+  .score-ring .pct{position:relative;font-family:var(--mono);font-size:2rem;font-weight:700}
+  .results h3{font-size:1.5rem;margin:0 0 6px}
+  .results .sub{color:var(--muted);margin-bottom:24px}
+  .review{text-align:left;margin-top:28px}
+  .review h4{margin:0 0 14px;font-size:1.05rem}
+  .ritem{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--ink2)}
+  .ritem .q{font-weight:600;margin-bottom:8px;display:flex;gap:10px}
+  .ritem .q .mk{flex:none;font-family:var(--mono);font-weight:700}
+  .ritem.ok .mk{color:var(--ok)} .ritem.no .mk{color:var(--err)}
+  .ritem .a{font-size:.88rem;color:var(--muted);margin:2px 0}
+  .ritem .a b{color:var(--ok)}
+  .ritem .yours{color:var(--err)}
+
+  footer{padding:40px 22px 60px;text-align:center;color:var(--faint);font-size:.82rem}
+  footer code{color:var(--muted)}
+
+  @media(max-width:900px){
+    .home-grid{grid-template-columns:1fr;gap:34px}
+    .console{order:-1}
+    .cards{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:640px){
+    .home{padding:36px 0 4px}
+    .qmode{flex-direction:column}
+    .sec-head{flex-direction:column;gap:2px}
+    .bar{gap:10px;min-height:58px}
+    .brand .txt span{display:none}
+    .brand h1{font-size:.95rem}
+    .glyph{width:30px;height:30px}
+    .modeswitch button{padding:6px 12px;font-size:.78rem}
+    .cards{grid-template-columns:1fr}
+    .stat-row{gap:22px}
+    .cta-row .btn{flex:1;justify-content:center}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="brand">
+      <div class="glyph">WS</div>
+      <div class="txt"><h1>Workday Studio</h1><span>Reference &amp; Quiz Lab</span></div>
+    </div>
+    <div class="modeswitch">
+      <button id="m-ref" class="active" onclick="setMode('ref')">Reference</button>
+      <button id="m-quiz" onclick="setMode('quiz')">Quiz</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ REFERENCE ============================ -->
+<div id="view-ref" class="view active">
+  <div class="wrap">
+    <div class="home">
+      <div class="home-grid">
+        <div class="home-copy">
+          <div class="eyebrow">Integration Architect Reference</div>
+          <h2>Build, batch and debug <em>Studio integrations</em> the way the field actually does it.</h2>
+          <p class="lead">An open-slate platform lets you connect any two systems — and with flexibility comes complexity. This is the field-tested playbook: components, messaging, hash maps, MVEL and XSLT, plus a quiz to lock it in.</p>
+          <div class="cta-row">
+            <a class="btn primary" href="#fundamentals">Browse the reference ↓</a>
+            <button class="btn" onclick="setMode('quiz')">Take the quiz →</button>
+          </div>
+          <div class="stat-row">
+            <div><b>9</b><span>Sections</span></div>
+            <div><b>56</b><span>Questions</span></div>
+            <div><b>2</b><span>Study modes</span></div>
+            <div><b>0</b><span>Dependencies</span></div>
+          </div>
+        </div>
+
+        <aside class="console" aria-hidden="true">
+          <div class="console-bar">
+            <span class="cdot r"></span><span class="cdot y"></span><span class="cdot g"></span>
+            <span class="cfile">PayrollInput.clar</span>
+          </div>
+          <div class="console-body">
+            <div class="pipe">
+              <div class="pstep">File In <small>inbound CSV</small></div>
+              <div class="pstep">CSV → XML <small>text schema</small></div>
+              <div class="pstep a">Splitter <small>per record</small></div>
+              <div class="pstep a">Create Message <small>&lt;wd:Payroll_Input_Data&gt;</small></div>
+              <div class="pstep o">Batch Out <small>fallback</small></div>
+            </div>
+            <pre class="mini"><span class="c">// header → variable, then batch it</span>
+props[<span class="s">'p.batch'</span>] = <span class="k">new</span> java.util.HashMap()
+<span class="c">// 150 records / batch, resubmit on fault</span></pre>
+          </div>
+        </aside>
+      </div>
+
+      <div class="dir">
+        <div class="dir-h">Reference directory</div>
+        <p class="dir-sub">Nine sections, ordered the way you build. Jump straight in.</p>
+        <div class="cards">
+          <a class="card" href="#fundamentals"><span class="cnum">00</span><h4>Fundamentals</h4><p>props vs vars, the message stream, and MVEL expression vs template capable.</p></a>
+          <a class="card" href="#build"><span class="cnum">01</span><h4>Build an Integration</h4><p>Split, eval, build the repeatable payload, wrap with header/footer, submit as a batch.</p></a>
+          <a class="card" href="#components"><span class="cnum">02</span><h4>Custom Components</h4><p>Install steps plus the Batch with Fallback parameters, output and known limits.</p></a>
+          <a class="card" href="#messages"><span class="cnum">03</span><h4>Events &amp; Messages</h4><p>Log files over PutIntegrationMessage, the 500 cap, percentage and parent-event reporting.</p></a>
+          <a class="card" href="#hashmaps"><span class="cnum">04</span><h4>Hash Maps</h4><p>Array, custom-report (RaaS), web-service and leftover-cleanup patterns for fast lookups.</p></a>
+          <a class="card" href="#dfo"><span class="cnum">05</span><h4>Field Overrides</h4><p>Return data the standard operation won't — e.g. Manager Name via Get_Workers.</p></a>
+          <a class="card" href="#mvel"><span class="cnum">06</span><h4>MVEL Expressions</h4><p>Concatenation, conditions, dates, padding, JSON, maps and RaaS extra paths.</p></a>
+          <a class="card" href="#xslt"><span class="cnum">07</span><h4>XSLT Functions</h4><p>Padding, change detection, min/max dates, namespace normalization, XML→CSV.</p></a>
+          <a class="card" href="#ssl"><span class="cnum">08</span><h4>SSL Certificates</h4><p>Keystore / truststore setup for HTTPS-Out to untrusted endpoints, incl. PKCS12.</p></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="wrap"><div class="toc-inner">
+      <a href="#fundamentals">00 · Fundamentals</a>
+      <a href="#build">01 · Build a Studio Integration</a>
+      <a href="#components">02 · Custom Components</a>
+      <a href="#messages">03 · Events &amp; Messages</a>
+      <a href="#hashmaps">04 · Hash Maps</a>
+      <a href="#dfo">05 · Field Overrides</a>
+      <a href="#mvel">06 · MVEL Expressions</a>
+      <a href="#xslt">07 · XSLT Functions</a>
+      <a href="#ssl">08 · SSL Certificates</a>
+    </div></div>
+  </div>
+
+  <div class="wrap">
+
+  <!-- 00 FUNDAMENTALS -->
+  <section class="doc" id="fundamentals">
+    <div class="sec-head"><span class="sec-num">00</span><h3>Studio Fundamentals</h3></div>
+    <p class="sec-sub">Orientation before the patterns. Studio is an Eclipse-based IDE where you assemble integrations on a canvas as a left-to-right flow of components that pass a <strong>message</strong> between them.</p>
+
+    <h4>The pieces you keep reaching for</h4>
+    <table>
+      <thead><tr><th>Concept</th><th>What it is</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Assembly</strong></td><td>The integration itself — a <code>.clar</code> project containing components wired together on the canvas.</td></tr>
+        <tr><td><strong>Component</strong></td><td>A node from the palette (Splitter, Router, Eval, Write, SOAP&nbsp;Out, etc.). Custom components add to this palette.</td></tr>
+        <tr><td><strong>Message stream</strong></td><td>The payload flowing through the assembly. Read the current message text with <code>parts[0].text</code>.</td></tr>
+        <tr><td><strong>Properties</strong> <span class="pill">props</span></td><td>Mutable state that lives for the whole integration run — counters, hash maps, logs. <code>props['p.count']</code>.</td></tr>
+        <tr><td><strong>Variables</strong> <span class="pill">vars</span></td><td>Scoped values, typically holding message fragments you build up. <code>vars['v.batch_header'].text</code>.</td></tr>
+        <tr><td><strong>Launch params</strong> <span class="pill">lp</span></td><td>Runtime inputs/attributes configured in the tenant. <code>lp.getReferenceData(...)</code>.</td></tr>
+        <tr><td><strong>Integration system</strong> <span class="pill">intsys</span></td><td>Tenant-side integration config — attributes, maps, RaaS services.</td></tr>
+      </tbody>
+    </table>
+
+    <h4>MVEL comes in two flavours</h4>
+    <p>You will constantly choose between the two MVEL editor types — they are distinguished by their palette icons and by how they treat strings.</p>
+    <table>
+      <thead><tr><th>Type</th><th>Strings</th><th>How to embed logic</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Expression Capable</strong></td><td>Must be quoted</td><td>No wrapper. <code>props['p.msg'] = 'Hi ' # props['p.name']</code></td></tr>
+        <tr><td><strong>Template Capable</strong></td><td>Not quoted</td><td>Wrap logic in <code>@{ &hellip; }</code>. <code>My name is @{props['p.first.name']}!</code></td></tr>
+      </tbody>
+    </table>
+    <div class="note tip"><b>Rule of thumb.</b> Template-capable is what you use inside Write steps and component fields that build text/XML. Expression-capable is what you use in Eval steps and conditions.</div>
+  </section>
+
+  <!-- 01 BUILD -->
+  <section class="doc" id="build">
+    <div class="sec-head"><span class="sec-num">01</span><h3>Build a Studio Integration, Step by Step</h3></div>
+    <p class="sec-sub">A representative outbound pattern: take an inbound file, split it, build a repeatable web-service payload per record, wrap it with a header/footer, and submit it as a batch. This is the backbone of most Payroll-Input-style integrations.</p>
+
+    <h4>The assembly shape</h4>
+    <div class="flow" style="margin-top:8px">
+      <div class="node"><span class="dot"></span><b>File&nbsp;In</b></div><div class="route"></div>
+      <div class="node"><span class="dot"></span><b>CSV&rarr;XML</b></div><div class="route"></div>
+      <div class="node amber"><span class="dot"></span><b>Splitter</b></div><div class="route"></div>
+      <div class="node amber"><span class="dot"></span><b>Eval</b></div><div class="route"></div>
+      <div class="node amber"><span class="dot"></span><b>Create&nbsp;Msg</b></div><div class="route"></div>
+      <div class="node ok"><span class="dot"></span><b>Batch&nbsp;Out</b></div>
+    </div>
+
+    <ol class="steps">
+      <li><b>Write the header and footer into variables</b>
+        Use two Write steps — one builds the static opening of the SOAP request, the other the closing. Store each in a variable so the batch step can wrap every record.
+      </li>
+      <li><b>Split the inbound file</b>
+        After converting CSV to XML with a text schema, drop a <strong>Splitter</strong> so each record is processed individually. Inside a splitter you get <code>util.isLastMessageInBatch()</code> for free.
+      </li>
+      <li><b>Eval per record</b>
+        Increment counters, set log values, or compute derived fields. This is expression-capable MVEL territory.
+      </li>
+      <li><b>Create the repeatable message</b>
+        For Payroll Input the repeatable element is <code>&lt;wd:Payroll_Input_Data&gt;</code>. A Write step dumps the built XML into the message stream, which becomes the unit the batch tool aggregates.
+      </li>
+      <li><b>Submit as a batch</b>
+        Pass the message plus your header/footer variables into a batching component. It aggregates records, appends the header/footer, and submits to Workday when the batch fills (or on the last record).
+      </li>
+    </ol>
+
+    <p class="codelabel">Write step — header into a variable (template capable)</p>
+    <pre class="xml"><span class="t">&lt;env:Envelope</span> <span class="k">xmlns:env</span>=<span class="s">"http://schemas.xmlsoap.org/soap/envelope/"</span><span class="t">&gt;</span>
+  <span class="t">&lt;env:Body&gt;</span>
+    <span class="t">&lt;wd:Submit_Payroll_Input_Request</span> <span class="k">xmlns:wd</span>=<span class="s">"urn:com.workday/bsvc"</span> <span class="k">wd:version</span>=<span class="s">"v23.2"</span><span class="t">&gt;</span></pre>
+
+    <p class="codelabel">Passing the variables into the batch tool's parameters</p>
+    <pre>vars[<span class="s">'v.batch_header'</span>].text
+vars[<span class="s">'v.batch_footer'</span>].text</pre>
+
+    <div class="note"><b>Why batch?</b> Batching offers significant performance gains over per-record SOAP calls. The catch: a single bad record fails the entire batch unless you handle the SOAP fault — which is exactly what the Batch&nbsp;with&nbsp;Fallback custom component in the next section automates.</div>
+  </section>
+
+  <!-- 02 CUSTOM COMPONENTS -->
+  <section class="doc" id="components">
+    <div class="sec-head"><span class="sec-num">02</span><h3>Custom Components</h3></div>
+    <p class="sec-sub">Community-built Studio components that appear in your palette like any delivered component. They encapsulate complex logic so you only configure the high-level parameters.</p>
+
+    <div class="note warn"><b>Unsupported.</b> Custom components are built by consultants, not by Workday. They are not supported by Workday Support or Product Development — you assume all responsibility when deploying them.</div>
+
+    <h4>Installing a custom component</h4>
+    <ol class="steps">
+      <li><b>Download</b> the tool (it is just a Studio project) and save it somewhere memorable.</li>
+      <li><b>Unzip to your Studio workspace.</b></li>
+      <li><b>Import:</b> <code>File &rarr; Import &rarr; General &rarr; Existing Projects into Workspace</code>, browse to the unzipped folder, Finish. The icon now appears under <strong>Workspace Components</strong> in your palette.</li>
+      <li><b>Add it to your collection:</b> <code>Workday &rarr; Manage Collections</code>, pick your project on the left, select the tool on the right, click the arrow. This guarantees the tool's code deploys with your project.</li>
+    </ol>
+
+    <h4>Reference component — Batch with Fallback</h4>
+    <p>You pass it the repeatable portion of a SOAP message; it batches records and submits. If a batch fails, it inspects the SOAP fault, removes the offending messages, logs them, and resubmits the clean batch — automatically.</p>
+
+    <h5>Required parameters</h5>
+    <table>
+      <thead><tr><th>Parameter</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Message Header <span class="pill req">required</span></td><td>The header that wraps the overall batch message.</td></tr>
+        <tr><td>Message Footer <span class="pill req">required</span></td><td>The footer that closes the overall batch message.</td></tr>
+        <tr><td>SOAP Application <span class="pill req">required</span></td><td>Pass-through to the SOAP&nbsp;Out application field, e.g. <code>Payroll</code>.</td></tr>
+        <tr><td>SOAP Version <span class="pill req">required</span></td><td>Pass-through to the SOAP&nbsp;Out version field, e.g. <code>v23.2</code>.</td></tr>
+      </tbody>
+    </table>
+    <h5>Optional parameters</h5>
+    <table>
+      <thead><tr><th>Parameter</th><th>Default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Batch Size <span class="pill opt">opt</span></td><td><code>150</code></td><td>Records per submitted batch; 150 is a good starting point.</td></tr>
+        <tr><td>Custom Error Message <span class="pill opt">opt</span></td><td>empty</td><td>Extra text logged with a failed record — e.g. the emplid — for troubleshooting. Set it per record so it stays dynamic.</td></tr>
+        <tr><td>Last Input <span class="pill opt">opt</span></td><td><code>util.isLastMessageInBatch()</code></td><td>Tells the component when the final record arrives so it flushes the remaining batch. Override only when not in a normal splitter.</td></tr>
+      </tbody>
+    </table>
+
+    <h5>What it outputs</h5>
+    <ul>
+      <li>A context message on the <strong>Messages</strong> tab, e.g. <em>"1000 out of 1012 submissions were successful. 7 batches were processed."</em></li>
+      <li>On failure, an <strong>Error</strong>-severity message, e.g. <em>"12 Submission Errors Encountered!"</em></li>
+      <li>On failure, a CSV on the <strong>Output Documents</strong> tab named <code>Submission_Errors.csv</code> with columns: Error Number, Title, Location, Message, Custom Message.</li>
+    </ul>
+
+    <div class="note"><b>Overriding Last Input.</b> If two input types need two different calls (one batchable, one not), the last record might be the un-batched type and never trigger a flush. The fix: manually call the component with <code>last_input = true</code> and an empty message — the component ignores the empty message but flushes everything remaining.</div>
+
+    <div class="note warn"><b>Known limits.</b> One instance at a time (no two different header/footer sets simultaneously); not suited for GET calls (response squelching makes it pointless); won't work with Import web services (generic response is incompatible).</div>
+  </section>
+
+  <!-- 03 MESSAGES -->
+  <section class="doc" id="messages">
+    <div class="sec-head"><span class="sec-num">03</span><h3>Integration Events &amp; Messages</h3></div>
+    <p class="sec-sub">How you surface progress and errors back to the tenant — and how to avoid the web-service cost of doing it naively.</p>
+
+    <h4>Log files instead of integration messages</h4>
+    <p>Each <code>PutIntegrationMessage</code> fires a web service call. On large files that adds up fast. Instead, accumulate errors and successes in a Java <code>StringBuilder</code>, then write a single log file at the end and attach it once.</p>
+    <div class="note warn"><b>Hard cap.</b> Workday 24 introduced a limit of <strong>500</strong> integration event messages. The log-file approach is the recommended alternative for high-volume error capture.</div>
+    <ol class="steps">
+      <li><b>Create Java String Builders</b> — one for the error log, one for the success log.</li>
+      <li><b>At the "employee exists?" router,</b> route failures to an async-mediation step whose eval appends a CSV line plus a line feed (a real line feed opens cleanly in Excel rather than one long line).</li>
+      <li><b>After splitting finishes,</b> write <code>props['p.error.log']</code> out, optionally with a header row.</li>
+      <li><b>Store to the Blobitory</b> and attach the file to the event with a single <code>PutIntegrationMessage</code>.</li>
+    </ol>
+
+    <h4>Percentage / progress messages</h4>
+    <p>Rather than a message per record, post one at chosen milestones (e.g. 25%, 50%, 75%) and update the progress bar on the event.</p>
+    <ol class="steps">
+      <li><b>Initialize properties</b> in <code>initialProps</code>: a current count (<code>0</code>), the reportable percentages (<code>[25,50,75]</code>), a change flag (<code>false</code>), and the current percentage (<code>0</code>).</li>
+      <li><b>Count all records</b> up front with an xpath in <code>countRecords</code>.</li>
+      <li><b>Per record</b> in <code>processRecord</code>: increment the count, compute the current percentage, check it against the reportable list, and store the most recent reportable percentage.</li>
+      <li><b>Call a sub-routine</b> when the count hits a milestone; copy the current stream into a variable, post a <code>PutIntegrationMessage</code> summary, then a <code>PutIntegrationEvent</code> with <code>is.percent.complete</code> to move the progress bar, then restore the stream.</li>
+    </ol>
+
+    <h4>Report messages to a parent event</h4>
+    <p>When a packaged integration launches your Studio integration inside its business process, you can attach output/messages to the <em>parent</em> event instead of the Studio event.</p>
+    <ol class="steps">
+      <li><b>Add a launch parameter</b> (e.g. "Parent Process") referencing the <code>Business Process</code> multi-instance object.</li>
+      <li><b>Get its WID:</b> <code>props['p.parent.process.wid'] = lp.getReferenceData("Parent Process","WID")</code></li>
+      <li><b>On PutIntegrationMessage,</b> add the delivered parameter <code>is.event.wid</code> and set it to that WID property.</li>
+      <li><b>On the packaged integration's BP,</b> configure the launch parameter as <em>Determine Value at Runtime &rarr; Subject</em>.</li>
+    </ol>
+  </section>
+
+  <!-- 04 HASH MAPS -->
+  <section class="doc" id="hashmaps">
+    <div class="sec-head"><span class="sec-num">04</span><h3>Integration Hash Maps</h3></div>
+    <p class="sec-sub">The single biggest performance lever for repetitive work — repeated web-service calls, full-file comparisons, change detection. Load the lookup set once, then <code>get()</code> in O(1) instead of calling the API per record.</p>
+
+    <h4>Array to hash map</h4>
+    <p>Convert a multi-value integration attribute into a map so you can cheaply test membership (a returned <code>'1'</code> means the key exists).</p>
+    <pre><span class="c">// 1) declare the map</span>
+props[<span class="s">'p.myHashMap'</span>] = <span class="k">new</span> java.util.HashMap()
+
+<span class="c">// 2) get the multi-value attribute as a list</span>
+props[<span class="s">'p.myAttributeList'</span>] = intsys.getAttributeReferenceDataList(<span class="s">'AttributeName'</span>, <span class="s">'RefIDType'</span>)
+
+<span class="c">// 3) size it, 4) load each value keyed to '1'</span>
+props[<span class="s">'p.myAttributesList.count'</span>] = props[<span class="s">'p.myAttributeList'</span>].size()
+foreach(x : props[<span class="s">'p.myAttributesList.count'</span>]){
+    props[<span class="s">'p.myHashMap'</span>].put(props[<span class="s">'p.myAttributeList'</span>].get(x-1), <span class="s">'1'</span>)
+}</pre>
+
+    <h4>Custom report (RaaS) hash map</h4>
+    <p>Split a RaaS response into <code>wd:Report_Entry</code> nodes and key each one by, say, Employee&nbsp;ID. The <code>.put()</code> takes <code>(lookupValue, valueToPut)</code> — store the whole XML node as the value so you can xpath into it later.</p>
+    <pre class="xml"><span class="t">&lt;wd:Report_Entry</span> <span class="k">xmlns:wd</span>=<span class="s">"urn:com.workday/bsvc"</span><span class="t">&gt;</span>
+  <span class="t">&lt;wd:Employee_ID&gt;</span>123456<span class="t">&lt;/wd:Employee_ID&gt;</span>
+  <span class="t">&lt;wd:Custom_ID&gt;</span>C123<span class="t">&lt;/wd:Custom_ID&gt;</span>
+<span class="t">&lt;/wd:Report_Entry&gt;</span></pre>
+    <div class="note tip"><b>Namespace gotcha.</b> Make sure your <code>wd:</code> namespace matches the report's. Studio defaults to <code>urn:com.workday/bsvc</code>; for custom reports it is more efficient to set the report's namespace on the Advanced tab so they match.</div>
+
+    <h4>Web-service hash map</h4>
+    <p>When you need the whole tenant set (e.g. all organizations to decide create-vs-update), pull it via a <strong>Paged Get</strong> and load each entry into a map keyed by its ID.</p>
+    <pre class="xml"><span class="t">&lt;wd:Get_Organizations_Request</span> <span class="k">xmlns:wd</span>=<span class="s">"urn:com.workday/bsvc"</span> <span class="k">wd:version</span>=<span class="s">"v19"</span><span class="t">&gt;</span>
+  <span class="t">&lt;wd:Response_Filter&gt;&lt;wd:Count&gt;</span>999<span class="t">&lt;/wd:Count&gt;&lt;/wd:Response_Filter&gt;</span>
+<span class="t">&lt;/wd:Get_Organizations_Request&gt;</span></pre>
+    <p>Point <code>is.paged.get.process.endpoint</code> at a sub-routine, split the paged response, and add <code>parts[0].text</code> to the map keyed by Organization&nbsp;ID.</p>
+
+    <h4>Cleaning up leftover data</h4>
+    <p>Some integrations must process whatever is <em>left</em> in the map after the main run (e.g. records present in the tenant but absent from the file). Retrieve the <code>keySet()</code>, turn it into XML, split it, and process each remaining key.</p>
+    <pre class="xml"><span class="t">&lt;root&gt;</span>
+  @foreach{props[<span class="s">'p.remaining.keys'</span>] as id}
+    <span class="t">&lt;ee&gt;</span>@{id}<span class="t">&lt;/ee&gt;</span>
+  @end{}
+<span class="t">&lt;/root&gt;</span></pre>
+  </section>
+
+  <!-- 05 DFO -->
+  <section class="doc" id="dfo">
+    <div class="sec-head"><span class="sec-num">05</span><h3>Document Field Overrides</h3></div>
+    <p class="sec-sub">Return data not available through the standard web-service operation — e.g. the Manager Name via <code>Get_Workers</code> — by wiring a Field Override Service into the request.</p>
+    <ol class="steps">
+      <li><b>In the tenant,</b> create the service with <code>Create Integration Field Override Service</code>, choosing the right business object (here, <strong>Worker</strong>).</li>
+      <li><b>In the assembly,</b> add a service-reference to your <code>workday-in</code> component with the <em>same name</em> as the Field Override Service.</li>
+      <li><b>Deploy,</b> then configure the overrides via the UI as you would any packaged integration.</li>
+      <li><b>In the request,</b> pass the integration system WID through <code>Field_And_Parameter_Criteria_Data</code>.</li>
+    </ol>
+    <pre class="xml"><span class="t">&lt;wd:Request_Criteria&gt;</span>
+  <span class="t">&lt;wd:Field_And_Parameter_Criteria_Data&gt;</span>
+    <span class="t">&lt;wd:Provider_Reference&gt;</span>
+      <span class="t">&lt;wd:ID</span> <span class="k">wd:type</span>=<span class="s">"WID"</span><span class="t">&gt;</span>@{lp.integrationSystemRefWID}<span class="t">&lt;/wd:ID&gt;</span>
+    <span class="t">&lt;/wd:Provider_Reference&gt;</span>
+  <span class="t">&lt;/wd:Field_And_Parameter_Criteria_Data&gt;</span>
+<span class="t">&lt;/wd:Request_Criteria&gt;</span></pre>
+    <p>The response carries the override under <code>wd:Integration_Field_Override_Data</code> with the field descriptor and its <code>wd:Value</code>.</p>
+  </section>
+
+  <!-- 06 MVEL -->
+  <section class="doc" id="mvel">
+    <div class="sec-head"><span class="sec-num">06</span><h3>MVEL Expression Reference</h3></div>
+    <p class="sec-sub">The everyday language of Studio Eval, Write and condition steps. New to it? Start with the basics below, then use the recipes as a copy-paste cookbook. Workday uses MVEL 1.3, and custom Java should be a last resort — only when no palette component does the job.</p>
+
+    <h4>New to MVEL? Start here</h4>
+    <p>MVEL is a tiny scripting language you type into Studio to <strong>grab a value, reshape it, store it, or decide which path the integration takes</strong>. You're not writing whole programs — just short expressions that act as the glue between components.</p>
+
+    <h5>Where you actually type it</h5>
+    <table>
+      <thead><tr><th>Place</th><th>What you write there</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Eval step</strong></td><td>Set or calculate values, e.g. bump a counter or build a name. Expression-capable.</td></tr>
+        <tr><td><strong>Router / condition</strong></td><td>A true/false test that decides which branch a record takes.</td></tr>
+        <tr><td><strong>Write step</strong></td><td>Build text or XML, dropping values in with <code>@{ }</code>. Template-capable.</td></tr>
+      </tbody>
+    </table>
+
+    <h5>Where your data lives — the buckets</h5>
+    <p>Almost every line reads from or writes to one of these. Learn the buckets and the rest falls into place.</p>
+    <table>
+      <thead><tr><th>Bucket</th><th>Think of it as…</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>props[&hellip;]</code></td><td>A sticky notepad that lasts the <em>whole run</em> — counters, hash maps, logs.</td><td><code>props['p.count']</code></td></tr>
+        <tr><td><code>vars[&hellip;]</code></td><td>Scratch values, usually pieces of the message you're assembling. Read its text with <code>.text</code>.</td><td><code>vars['v.header'].text</code></td></tr>
+        <tr><td><code>parts[0]</code></td><td>The message flowing through <em>right now</em>.</td><td><code>parts[0].text</code> · <code>parts[0].xpath('wd:ID')</code></td></tr>
+        <tr><td><code>lp</code></td><td>Inputs set up in the tenant (launch parameters / attributes).</td><td><code>lp.getReferenceData('Company','WID')</code></td></tr>
+        <tr><td><code>intsys</code></td><td>Tenant integration config — value maps, RaaS report services.</td><td><code>intsys.integrationMapLookup(&hellip;)</code></td></tr>
+        <tr><td><code>util</code></td><td>Built-in Studio helpers.</td><td><code>util.isLastMessageInBatch()</code></td></tr>
+      </tbody>
+    </table>
+
+    <h5>The rules you can't skip</h5>
+    <ol class="steps">
+      <li><b>Store a value with <code>=</code></b> <code>props['p.name'] = 'Bob'</code> puts the text "Bob" into the notepad slot called <code>p.name</code>.</li>
+      <li><b>Quote text, not values</b> Wrap text in single or double quotes. Numbers and buckets get <em>no</em> quotes. <code>'Bob'</code> is text; <code>props['p.age']</code> is a value; <code>21</code> is a number.</li>
+      <li><b>The last line is the answer</b> In a condition or Eval field, whatever the final line works out to is what the step hands back — you rarely need the word <code>return</code>.</li>
+      <li><b>One thing per line, or separate with <code>;</code></b> <code>a = 1; b = 2; a # b</code> runs three statements in a row.</li>
+      <li><b>Leave notes with comments</b> <code>//</code> comments to the end of the line; <code>/* &hellip; */</code> comments a block.</li>
+    </ol>
+
+    <p class="codelabel">A complete little Eval, reading top to bottom</p>
+    <pre><span class="c">// build a full name from two props</span>
+props[<span class="s">'p.full'</span>] = props[<span class="s">'p.first'</span>] #<span class="s">' '</span># props[<span class="s">'p.last'</span>]   <span class="c">// 'Ada Lovelace'</span>
+
+<span class="c">// is this person a manager? (a true/false value)</span>
+props[<span class="s">'p.isMgr'</span>] = props[<span class="s">'p.reports'</span>] &gt; 0
+
+props[<span class="s">'p.isMgr'</span>]   <span class="c">// <- last line = what a condition step would return</span></pre>
+
+    <h5>Operators at a glance</h5>
+    <table>
+      <thead><tr><th>Group</th><th>Operators</th><th>Reads as</th></tr></thead>
+      <tbody>
+        <tr><td>Maths</td><td><code>+</code> <code>-</code> <code>*</code> <code>/</code></td><td>add, subtract, multiply, divide <em>(for joining text use <code>#</code> — see gotchas)</em></td></tr>
+        <tr><td>Compare</td><td><code>==</code> <code>!=</code> <code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td><td>equal, not equal, less / greater than&hellip;</td></tr>
+        <tr><td>Logic</td><td><code>&amp;&amp;</code> <code>||</code> <code>!</code></td><td>and, or, not</td></tr>
+        <tr><td>Pick one</td><td><code>test ? a : b</code></td><td>if <em>test</em> is true use <em>a</em>, otherwise <em>b</em></td></tr>
+      </tbody>
+    </table>
+
+    <h5>Three things that trip up beginners</h5>
+    <div class="note warn"><b><code>+</code> adds, <code>#</code> joins.</b> <code>1 + 1</code> is <code>2</code>, but <code>1 # 1</code> is <code>'11'</code>. When you mean "stick these strings together," always reach for <code>#</code>.</div>
+    <div class="note tip"><b><code>==</code> compares the real value.</b> Unlike plain Java, <code>props['p.x'] == '124'</code> just works for text — no <code>.equals()</code> needed.</div>
+    <div class="note"><b>Checking for "nothing".</b> Use the <code>empty</code> keyword for null-or-blank tests: <code>props['p.list'] != empty ? 'has items' : 'is empty'</code>.</div>
+
+    <h5 style="margin-top:36px;border-top:1px solid var(--line);padding-top:28px">Common recipes</h5>
+    <p class="lead" style="margin-bottom:8px">The basics applied to real Studio tasks. Copy, paste, adapt.</p>
+
+    <h4>Concatenation — prefer <code>#</code> over <code>+</code></h4>
+    <p>Both join strings, but <code>+</code> on numeric values <em>adds</em> them. Use <code>#</code> to always concatenate.</p>
+    <pre>props[<span class="s">'p.employeeFirstName'</span>] = <span class="s">'Bob'</span>
+props[<span class="s">'p.employeeLastname'</span>]  = <span class="s">'Rumpelstiltskin'</span>
+props[<span class="s">'p.employeeFullName'</span>]  = props[<span class="s">'p.employeeFirstName'</span>] #<span class="s">' '</span># props[<span class="s">'p.employeeLastname'</span>]
+<span class="c">// -> 'Bob Rumpelstiltskin'   (1 # 1 -> '11', but 1 + 1 -> 2)</span></pre>
+
+    <h4>If statements — two forms</h4>
+    <p><strong>Expression capable</strong> uses the ternary: <code>?</code> is "then", <code>:</code> is "else".</p>
+    <pre>props[<span class="s">'p.result'</span>] = props[<span class="s">'p.valueToCheck'</span>] == <span class="s">'124'</span> ? <span class="s">'Value is Equal'</span> : <span class="s">'Value is NOT Equal'</span></pre>
+    <p><strong>Template capable</strong> uses block tags:</p>
+    <pre class="xml"><span class="t">&lt;root&gt;</span>
+  @if{props[<span class="s">'p.is.boolean'</span>]}            <span class="t">&lt;ee&gt;</span>Do something<span class="t">&lt;/ee&gt;</span>
+  @elseif{props[<span class="s">'p.numeric.value'</span>] == 1} <span class="t">&lt;ee&gt;</span>Do something else<span class="t">&lt;/ee&gt;</span>
+  @else{}                            <span class="t">&lt;ee&gt;</span>Else<span class="t">&lt;/ee&gt;</span>
+  @end{}
+<span class="t">&lt;/root&gt;</span></pre>
+
+    <h4>Foreach (template capable)</h4>
+    <pre class="xml"><span class="t">&lt;root&gt;</span>
+  @foreach{props[<span class="s">'p.is.list'</span>] as id}
+    <span class="t">&lt;ee&gt;</span>@{id}<span class="t">&lt;/ee&gt;</span>
+  @end{}
+<span class="t">&lt;/root&gt;</span></pre>
+
+    <h4>Dates</h4>
+    <p>Reformat with <code>SimpleDateFormat</code> — parse to a Date, then format.</p>
+    <pre>props[<span class="s">'p.parsed'</span>] = <span class="k">new</span> java.text.SimpleDateFormat(<span class="s">"yyyy-MM-dd"</span>).parse(<span class="s">'2013-10-03'</span>)
+props[<span class="s">'p.out'</span>]    = <span class="k">new</span> java.text.SimpleDateFormat(<span class="s">"MM/dd/yyyy"</span>).format(props[<span class="s">'p.parsed'</span>])
+<span class="c">// -> 10/03/2013</span></pre>
+    <p>Convert a dateTime to Zulu / GMT:</p>
+    <pre>props[<span class="s">'p.parse'</span>] = <span class="k">new</span> java.text.SimpleDateFormat(<span class="s">"yyyy-MM-dd'T'HH:mm:ss.SSSXXX"</span>).parse(props[<span class="s">'launch.parm.datetime'</span>])
+org.apache.commons.lang.time.DateFormatUtils.formatUTC(props[<span class="s">'p.parse'</span>], <span class="s">"yyyy-MM-dd'T'HH:mm:ss.SSSZZZ"</span>)
+<span class="c">// -8:00 input  ->  ...+00:00 output</span></pre>
+
+    <h4>Numbers &amp; padding</h4>
+    <pre>props[<span class="s">'p.num'</span>] = <span class="k">new</span> java.text.DecimalFormat(<span class="s">"##0.00"</span>).format(
+              <span class="k">new</span> java.text.DecimalFormat(<span class="s">"##0.00"</span>).parse(props[<span class="s">'p.salary'</span>]))
+
+org.apache.commons.lang.StringUtils.leftPad(<span class="s">'1234'</span>, 10, <span class="s">'0'</span>)   <span class="c">// 0000001234</span>
+org.apache.commons.lang.StringUtils.rightPad(<span class="s">'1234'</span>, 10, <span class="s">'0'</span>)  <span class="c">// 1234000000</span></pre>
+
+    <h4>String operations</h4>
+    <table>
+      <thead><tr><th>Need</th><th>MVEL</th></tr></thead>
+      <tbody>
+        <tr><td>Substring</td><td><code>props['p.s'].substring(0,2)</code> &rarr; first 2 chars</td></tr>
+        <tr><td>Index of char</td><td><code>props['p.ref'].indexOf("/")</code> — split an ID at a separator</td></tr>
+        <tr><td>Upper / lower</td><td><code>props['p.s'].toUpperCase()</code> · <code>.toLowerCase()</code></td></tr>
+        <tr><td>Strip non-digits</td><td><code>props['p.id'].toString().replaceAll('[^0-9]','')</code></td></tr>
+        <tr><td>List &rarr; string</td><td><code>util.listToCommaDelimString(list).replace(',','!')</code> for RaaS REST URLs</td></tr>
+      </tbody>
+    </table>
+    <div class="note tip"><b>Before <code>replaceAll</code>.</b> Coerce to a string with <code>.toString()</code> first — it takes a regex, then the replacement.</div>
+
+    <h4>JSON</h4>
+    <pre>props[<span class="s">'oauth.token'</span>] = <span class="k">new</span> org.json.JSONObject(parts[0].text).getString(<span class="s">"access_token"</span>)
+
+<span class="c">// JSON -> XML</span>
+props[<span class="s">'json.msg'</span>]   = <span class="k">new</span> org.json.JSONObject(parts[0].text)
+vars[<span class="s">'xml.variable'</span>] = org.json.XML.toString(props[<span class="s">'json.msg'</span>])</pre>
+    <div class="note"><b>Array input.</b> If the JSON top level is an array, wrap it in curly braces with a key before loading; a single object needs no wrapping. The Write step treats <code>{ }</code> as formatting, so stash them in properties and emit via <code>@{}</code>.</div>
+
+    <h4>Integration maps</h4>
+    <pre>intsys.integrationMapLookup(<span class="s">'Status'</span>, props[<span class="s">'position.status'</span>])
+intsys.integrationMapReverseLookup(<span class="s">'map_name'</span>, <span class="s">'key'</span>).get(0).getReferenceData(<span class="s">'REF_ID_TYPE'</span>)</pre>
+
+    <h4>RaaS extra path</h4>
+    <p>On a <code>workday-out-rest</code>, build the report path (and append a prompt string for prompted reports):</p>
+    <pre>@{intsys.reportService.getExtrapath(<span class="s">'&lt;Report Service Alias&gt;'</span>)}@{props[<span class="s">'p.companiesPromptString'</span>]}
+<span class="c">// customreport2/&lt;tenant&gt;/&lt;user&gt;/&lt;Report&gt;?Company!WID=...!...</span></pre>
+
+    <h4>Other handy bits</h4>
+    <table>
+      <thead><tr><th>Task</th><th>MVEL</th></tr></thead>
+      <tbody>
+        <tr><td>Comments</td><td><code>/* block */</code> and <code>// line</code> (Java standards apply)</td></tr>
+        <tr><td>Type discovery (scratchpad)</td><td><code>props['p.x'].getClass().getName()</code></td></tr>
+        <tr><td>URI-encode a URL</td><td><code>java.net.URLEncoder.encode(props['p.params'])</code></td></tr>
+        <tr><td>Throttle QPS</td><td><code>Thread.currentThread().sleep(50);</code> — only when calls fail from high QPS; it slows runs sharply</td></tr>
+        <tr><td>Custom Java</td><td>Create a class with a package, call its static method from MVEL; ship source as a JAR in <code>ws/WSAR-INF/lib</code> and remove the SRC contents</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 07 XSLT -->
+  <section class="doc" id="xslt">
+    <div class="sec-head"><span class="sec-num">07</span><h3>XSLT Functions</h3></div>
+    <p class="sec-sub">Transformation patterns for outbound files. Recursive XSLT templates are discouraged — reach for the right padding strategy by integration type first.</p>
+
+    <h4>Padding — pick by integration type</h4>
+    <ul>
+      <li><strong>Document Transformation:</strong> use XTT or ETV fixed-length functions.</li>
+      <li><strong>Studio integration:</strong> use a text-schema control to pad, or add Java's <code>StringUtils</code> via a namespace.</li>
+      <li><strong>Stuck with XSLT (e.g. EIB):</strong> use a non-recursive pad function — it shortens a long padding string instead of recursing.</li>
+    </ul>
+    <pre class="xml"><span class="k">xmlns:nf</span>=<span class="s">"java:org.apache.commons.lang.StringUtils"</span>
+<span class="t">&lt;xsl:value-of</span> <span class="k">select</span>=<span class="s">"nf:leftPad('nick',2,'x')"</span><span class="t">/&gt;</span></pre>
+
+    <h4>Change detection (connector XML)</h4>
+    <p>Detect whether a node changed by testing for the connector's <code>@pi:PriorValue</code> marker:</p>
+    <pre class="xml"><span class="t">&lt;xsl:if</span> <span class="k">test</span>=<span class="s">"descendant-or-self::pi:Pay_Data/*[@pi:PriorValue]"</span><span class="t">/&gt;</span></pre>
+
+    <h4>Date arithmetic</h4>
+    <pre class="xml"><span class="c">&lt;!-- add 1 day; needs xmlns:xs schema namespace --&gt;</span>
+<span class="t">&lt;xsl:value-of</span> <span class="k">select</span>=<span class="s">"($date) + 1 * xs:dayTimeDuration('P1D')"</span><span class="t">/&gt;</span></pre>
+
+    <h4>Max / min dates without sequence errors</h4>
+    <p>Atomize to <code>xs:date</code> inside <code>min()</code> / <code>max()</code> to avoid "a sequence of more than one is not allowed":</p>
+    <pre class="xml"><span class="t">&lt;xsl:variable</span> <span class="k">name</span>=<span class="s">"startDate"</span>
+  <span class="k">select</span>=<span class="s">"min(PaymentDates/wd:Company_Payment_Dates_Data/wd:Payment_Date/xs:date(.))"</span><span class="t">/&gt;</span></pre>
+
+    <h4>Normalize namespaces</h4>
+    <p>Force aggregated inputs (e.g. two reports with different namespaces) to the standard <code>urn:com.workday/bsvc</code> using identity-style element/attribute templates that re-create each node under one prefix.</p>
+    <div class="note tip"><b>Cheaper alternative.</b> For custom reports, edit the report namespace on the Advanced tab so they already match — no transform needed.</div>
+
+    <h4>Accent translation</h4>
+    <p>Vendors like ADP can't always take the full UTF-8 range Workday allows. Map a handful of accents with <code>translate()</code>, or strip combining marks:</p>
+    <pre class="xml"><span class="t">&lt;xsl:value-of</span> <span class="k">select</span>=<span class="s">"translate($s,'äöüáéíóú','aouaeiou')"</span><span class="t">/&gt;</span>
+replace(normalize-unicode($word, <span class="s">'NFKD'</span>), <span class="s">'[\P{L}]'</span>, <span class="s">''</span>)</pre>
+
+    <h4>XML to CSV</h4>
+    <pre class="xml"><span class="t">&lt;xsl:variable</span> <span class="k">name</span>=<span class="s">"sep"</span> <span class="k">select</span>=<span class="s">"','"</span><span class="t">/&gt;</span>
+<span class="t">&lt;xsl:variable</span> <span class="k">name</span>=<span class="s">"crlf"</span> <span class="k">select</span>=<span class="s">"'&amp;#10;'"</span><span class="t">/&gt;</span>
+<span class="c">&lt;!-- loop nodes, comma-separate children, emit a line feed per row --&gt;</span></pre>
+
+    <p>Also in the library: EBCDIC&nbsp;&harr;&nbsp;decimal conversions, integration map "ApplyMap" functions (text&rarr;object and text&rarr;text), and a working-days date-difference function that counts weekdays between two dates (no holidays).</p>
+  </section>
+
+  <!-- 08 SSL -->
+  <section class="doc" id="ssl">
+    <div class="sec-head"><span class="sec-num">08</span><h3>Third-Party SSL CA Certificates</h3></div>
+    <p class="sec-sub">Add a Java keystore / truststore to your assembly so HTTPS-Out can reach an otherwise-untrusted endpoint.</p>
+    <ol class="steps">
+      <li><b>Export a .CER for every layer</b> of the certificate chain from your browser (Base-64 X.509 / PEM) — bottom layer is the endpoint, top layer is the signing authority.</li>
+      <li><b>Create an empty <code>keystore.jks</code></b> with <code>keytool -genkey -alias Workday -keyalg RSA -keystore keystore.jks</code>; press Enter through the prompts and confirm <code>yes</code>.</li>
+      <li><b>Import the endpoint .CER</b> into the keystore with <code>keytool -import</code>.</li>
+      <li><b>Create a <code>truststore.jks</code></b> the same way and import a .CER for <em>each</em> chain layer (<code>-alias</code> labels the layer for later <code>-list</code>).</li>
+      <li><b>Add both .JKS files</b> to the <code>WSAR-INF</code> folder in Studio.</li>
+      <li><b>On the HTTP-Out element,</b> add https-properties: point Keystore File and Truststore File at the files and enter the passwords.</li>
+    </ol>
+    <pre class="shell"><span class="c"># PKCS12 (.p12 / .pfx) -> keystore.jks</span>
+keytool -importkeystore -srckeystore certificate.p12 \
+        -destkeystore keystore.jks -srcstoretype pkcs12</pre>
+    <div class="note"><b>Truststore vs keystore.</b> If you only need to trust the endpoint, a truststore alone may suffice — you don't necessarily need a keystore. A truststore may still be required alongside a keystore when presenting client credentials.</div>
+  </section>
+
+  </div>
+</div>
+
+<!-- ============================ QUIZ ============================ -->
+<div id="view-quiz" class="view">
+  <div class="wrap">
+    <div class="quiz-hero">
+      <div class="eyebrow">Knowledge Exam</div>
+      <h2>Test your Studio. <em>Run the event.</em></h2>
+      <p class="lead">Questions drawn straight from the patterns above — components, messaging, hash maps, MVEL and XSLT. Choose a mode, optionally filter by topic, and go.</p>
+
+      <div id="quiz-setup">
+        <h5 style="color:var(--blue);font-family:var(--mono);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;margin-top:30px">Filter topics <span style="color:var(--faint)">(all by default)</span></h5>
+        <div class="topicpick" id="topicpick"></div>
+
+        <div class="qmode">
+          <div class="qcard" onclick="startQuiz('learn')">
+            <span class="tag">Learning mode</span>
+            <h4>Practice &amp; learn</h4>
+            <p>Immediate feedback and a full explanation after every question. No timer, no pressure — work through the whole bank.</p>
+          </div>
+          <div class="qcard" onclick="startQuiz('exam')">
+            <span class="tag">Exam mode</span>
+            <h4>Timed-style exam</h4>
+            <p>20 random questions, answer first and score at the end with a full review of what you missed.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- active quiz -->
+      <div class="qpanel" id="qpanel">
+        <div class="progress">
+          <span id="qcounter">01 / 20</span>
+          <div class="bar"><i id="qbar"></i></div>
+          <span id="qscore">0 correct</span>
+        </div>
+        <div class="qtopic" id="qtopic"></div>
+        <div class="qtext" id="qtext"></div>
+        <div class="opts" id="opts"></div>
+        <div class="explain" id="explain"></div>
+        <div class="qnav">
+          <button class="btn ghost" onclick="quitQuiz()">Exit</button>
+          <button class="btn primary" id="nextbtn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+      </div>
+
+      <!-- results -->
+      <div class="qpanel" id="resultpanel">
+        <div class="results">
+          <div class="score-ring" id="ring"><span class="pct" id="ringpct">0%</span></div>
+          <h3 id="resulttitle">Done</h3>
+          <p class="sub" id="resultsub"></p>
+          <button class="btn primary" onclick="quitQuiz()">Back to start</button>
+          <div class="review" id="review"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Workday Studio — Reference &amp; Quiz Lab · single-file, offline · built from field tips &amp; tricks.
+  <br><code>props['p.note'] = 'Custom components are unsupported by Workday. Use at your own risk.'</code>
+</footer>
+
+<script>
+/* ---------------- mode switching ---------------- */
+function setMode(m){
+  document.getElementById('view-ref').classList.toggle('active', m==='ref');
+  document.getElementById('view-quiz').classList.toggle('active', m==='quiz');
+  document.getElementById('m-ref').classList.toggle('active', m==='ref');
+  document.getElementById('m-quiz').classList.toggle('active', m==='quiz');
+  window.scrollTo({top:0});
+}
+
+/* ---------------- question bank ---------------- */
+const BANK = [
+ // Fundamentals
+ {t:"Fundamentals",q:"How do you read the text of the current message in the stream?",o:["<code>vars['v.message']</code>","<code>parts[0].text</code>","<code>props['p.stream']</code>","<code>msg.getText()</code>"],a:1,e:"<code>parts[0].text</code> returns the current message content — used everywhere from JSON parsing to hash-map loading."},
+ {t:"Fundamentals",q:"In MVEL, what is the difference between <code>props</code> and <code>vars</code>?",o:["They are identical aliases","props persist for the whole run; vars are scoped, usually holding message fragments","vars persist; props are temporary","props are read-only"],a:1,e:"Properties live for the entire integration run (counters, maps, logs); variables are scoped and commonly hold built-up message fragments like a header."},
+ {t:"Fundamentals",q:"In a <strong>Template Capable</strong> MVEL field, how must strings and logic be handled?",o:["Strings quoted, logic wrapped in <code>@{ }</code>","Strings quoted, no wrapper","Strings unquoted, logic wrapped in <code>@{ }</code>","Strings unquoted, logic wrapped in <code>#{ }</code>"],a:2,e:"Template Capable: strings are NOT quoted and you wrap evaluated logic in <code>@{ }</code>. Expression Capable is the opposite — strings must be quoted, no wrapper."},
+ {t:"Fundamentals",q:"Which utility reliably tells a component it is processing the last record inside a splitter?",o:["<code>util.lastRecord()</code>","<code>splitter.isDone()</code>","<code>util.isLastMessageInBatch()</code>","<code>props['p.last']</code>"],a:2,e:"<code>util.isLastMessageInBatch()</code> is the default 'Last Input' used by batching components to know when to flush."},
+ {t:"Fundamentals",q:"Which MVEL version does Workday Studio use (per the guide)?",o:["1.3","2.0","1.6","3.1"],a:0,e:"The guide states Workday uses MVEL version 1.3."},
+
+ // Build
+ {t:"Build",q:"For a Payroll Input integration, which element is the repeatable portion you build per record?",o:["<code>&lt;wd:Worker_Data&gt;</code>","<code>&lt;wd:Payroll_Input_Data&gt;</code>","<code>&lt;wd:Report_Entry&gt;</code>","<code>&lt;env:Body&gt;</code>"],a:1,e:"<code>&lt;wd:Payroll_Input_Data&gt;</code> is the repeatable element; you wrap many of them with a shared header/footer to form the batch."},
+ {t:"Build",q:"What is the recommended way to supply a batch header and footer to a batching component?",o:["Hard-code them inside the component","Write each into a variable, then pass <code>vars['v.batch_header'].text</code>","Pass them as launch parameters only","Store them in the tenant"],a:1,e:"Use two Write steps to build header and footer into variables, then pass <code>.text</code> of each into the component's parameters."},
+ {t:"Build",q:"Why batch web service calls instead of submitting each record individually?",o:["It avoids needing a splitter","Significant performance gains","It removes the need for error handling","It bypasses the 500-message limit automatically"],a:1,e:"Batching gives significant performance gains; the trade-off is that one bad record fails the whole batch unless you handle the SOAP fault."},
+
+ // Custom components
+ {t:"Components",q:"Are custom (community) components supported by Workday?",o:["Yes, fully supported","No — built by consultants, unsupported; you assume all risk","Only in Sandbox tenants","Only with a support ticket"],a:1,e:"Custom components are internal consultant builds, NOT supported by Workday Support or Product Development. The end user assumes all responsibility."},
+ {t:"Components",q:"After importing a custom component project, what extra step ensures its code deploys with your integration?",o:["Restart Studio","Add the tool's project to your integration's collection via Manage Collections","Re-export the WSAR","Nothing — import is enough"],a:1,e:"You must add the tool's project to your project's collection (Workday → Manage Collections) so its code base deploys with yours."},
+ {t:"Components",q:"What is the default batch size of the Batch with Fallback component?",o:["50","100","150","999"],a:2,e:"The default batch size is 150, described as an optimal starting number (your mileage may vary)."},
+ {t:"Components",q:"When the Batch with Fallback component hits a failed batch, what does it do?",o:["Fails the whole integration","Retries the identical batch up to 3 times","Inspects the SOAP fault, removes offending messages, logs them, and resubmits the clean batch","Skips the entire batch silently"],a:2,e:"It inspects the SOAP fault to find which messages errored, logs them, and resubmits the batch without the invalid messages."},
+ {t:"Components",q:"What file does Batch with Fallback output when errors occur?",o:["<code>errors.txt</code>","<code>Submission_Errors.csv</code> with Error Number, Title, Location, Message, Custom Message","<code>fault.xml</code>","A PDF error report"],a:1,e:"A CSV named <code>Submission_Errors.csv</code> appears on the Output Documents tab with those five columns."},
+ {t:"Components",q:"The Batch with Fallback tool is explicitly NOT suited for which call type?",o:["Submit (PUT) calls","GET calls — response squelching makes it pointless","Payroll Input","Async calls"],a:1,e:"It's intended for inbound calls where the response isn't inspected; GET calls would have their useful response squelched."},
+ {t:"Components",q:"How do you force the batch component to flush remaining records when the true last record bypasses it?",o:["Call it with <code>last_input = true</code> and an empty message","Increase the batch size to 1","Re-run the integration","Add a second splitter"],a:0,e:"Manually call the component with last_input=true and an empty message (which it ignores) to flush everything that's left and close up shop."},
+
+ // Messages
+ {t:"Messages",q:"Why prefer accumulating a log file over calling PutIntegrationMessage per record?",o:["Log files are encrypted","Each PutIntegrationMessage is a web service call — avoiding them on large files cuts processing time","PutIntegrationMessage doesn't support CSV","Log files update the progress bar"],a:1,e:"PutIntegrationMessage fires a web service call every time; building a log and attaching it once dramatically reduces processing time."},
+ {t:"Messages",q:"What limit did Workday 24 introduce that the log-file approach helps avoid?",o:["500 integration event messages","1000 web service calls per minute","100 MB output files","50 batches"],a:0,e:"Workday 24 introduced a 500 integration-event-message restriction; logging is the recommended alternative."},
+ {t:"Messages",q:"Which parameter updates the progress bar on the integration event?",o:["<code>is.message.summary</code>","<code>is.percent.complete</code> on PutIntegrationEvent","<code>props['prop.percentages']</code>","<code>is.event.wid</code>"],a:1,e:"PutIntegrationEvent with <code>is.percent.complete</code> relays percentage back and moves the progress bar."},
+ {t:"Messages",q:"To attach Studio output to the PARENT (packaged) integration's event, which delivered parameter do you set on PutIntegrationMessage?",o:["<code>is.parent.event</code>","<code>is.event.wid</code>","<code>lp.parent</code>","<code>is.bp.wid</code>"],a:1,e:"Add <code>is.event.wid</code> and set it to the parent process WID obtained via <code>lp.getReferenceData('Parent Process','WID')</code>."},
+ {t:"Messages",q:"When configuring the 'Parent Process' launch parameter on the packaged integration's BP, what value do you choose?",o:["Static WID","Determine Value at Runtime → Subject","Prompt at launch","Tenant default"],a:1,e:"Configure it as Determine Value at Runtime and set the value to Subject, so it resolves to the parent BP at run time."},
+
+ // Hash maps
+ {t:"Hash Maps",q:"What is the primary benefit of an integration hash map?",o:["Encrypting data in transit","Reducing processing time by replacing repetitive web service calls / comparisons with O(1) lookups","Formatting output to CSV","Bypassing namespace mismatches"],a:1,e:"Hash maps reduce processing time for repetitive work — repeated web service calls, full-file comparisons, change detection — via fast key lookups."},
+ {t:"Hash Maps",q:"How do you declare a hash map in MVEL?",o:["<code>props['p.map'] = {}</code>","<code>props['p.map'] = new java.util.HashMap()</code>","<code>props['p.map'] = new Map()</code>","<code>vars['map'] = hashmap()</code>"],a:1,e:"Declare it as a real Java HashMap: <code>props['p.myHashMap'] = new java.util.HashMap()</code>."},
+ {t:"Hash Maps",q:"In <code>map.put(a, b)</code> when building a custom-report hash map, what are a and b?",o:["a = value, b = key","a = lookupValue (e.g. Employee ID), b = valueToPut (e.g. the XML node)","both are the Employee ID","a = column, b = row"],a:1,e:"<code>.put(lookupValue, valueToPut)</code> — key first (Employee_ID), value second (often the whole Report_Entry XML)."},
+ {t:"Hash Maps",q:"When splitting a custom report into a hash map, what namespace caution applies?",o:["Reports must use no namespace","Ensure your <code>wd:</code> namespace matches the report's; Studio defaults to <code>urn:com.workday/bsvc</code>","Always strip the namespace first","Namespaces are irrelevant to hash maps"],a:1,e:"Match the wd: namespace to the report. More efficiently, set the report's namespace on the Advanced tab so they match."},
+ {t:"Hash Maps",q:"To process records left in a hash map after the main run, you first retrieve the…",o:["<code>values()</code>","<code>keySet()</code>, convert to XML, then split it","<code>size()</code>","<code>entrySet().toString()</code>"],a:1,e:"Get the <code>keySet()</code> (an array), write it to XML, split it, and process each remaining key."},
+ {t:"Hash Maps",q:"Which component fetches the full tenant data set used to build a web-service hash map?",o:["Splitter","Paged Get","Aggregator","Router"],a:1,e:"A Paged Get with <code>is.paged.get.process.endpoint</code> pointed at a sub-routine retrieves all pages (e.g. all organizations)."},
+
+ // DFO
+ {t:"Field Overrides",q:"Which tenant task creates a Document Field Override service?",o:["Create Custom Report","Create Integration Field Override Service","Create EIB","Edit Web Service"],a:1,e:"Use the task <code>Create Integration Field Override Service</code> and choose the business object (e.g. Worker for Get_Workers)."},
+ {t:"Field Overrides",q:"In the Get_Workers request, where do you pass the integration system WID for the override provider?",o:["Response_Group","Field_And_Parameter_Criteria_Data → Provider_Reference","Request_References","Response_Filter"],a:1,e:"It goes in <code>Field_And_Parameter_Criteria_Data</code> (a child of Request_Criteria) via the Provider_Reference WID."},
+ {t:"Field Overrides",q:"The service-reference added to your workday-in component must be named…",o:["anything unique","the same name as the Field Override Service","StartHere","the business object name"],a:1,e:"Name the service-reference the same as your Field Override Service so they bind correctly."},
+ {t:"Field Overrides",q:"Where does the override value appear in the response?",o:["<code>wd:Worker_Reference</code>","<code>wd:Integration_Field_Override_Data</code>","<code>wd:Response_Filter</code>","<code>wd:User_ID</code>"],a:1,e:"The response carries <code>wd:Integration_Field_Override_Data</code> with the field descriptor and the <code>wd:Value</code>."},
+
+ // MVEL
+ {t:"MVEL",q:"In MVEL, where does a value go when you write <code>props['p.name'] = 'Bob'</code>?",o:["Into the current message text","Into a property — a 'notepad' slot that lasts the whole integration run","Into the tenant permanently","Into an XSLT variable"],a:1,e:"Properties (<code>props</code>) hold state for the entire run — counters, maps, logs. The <code>=</code> stores 'Bob' in the slot named p.name."},
+ {t:"MVEL",q:"In a Router/condition or Eval field, what does the step hand back?",o:["The first line","Whatever the LAST line evaluates to","Nothing unless you write <code>return</code>","All lines joined together"],a:1,e:"The last evaluated line is the step's result, so you rarely need an explicit <code>return</code> — handy for true/false condition fields."},
+ {t:"MVEL",q:"Which is correctly quoted MVEL?",o:["<code>props[p.name] = Bob</code>","<code>props['p.name'] = 'Bob'</code>","<code>props['p.name'] = \"21\" * 2</code> to get text","<code>props[\"p.name\"] = props['p.age']'</code>"],a:1,e:"Text goes in single or double quotes; bucket keys are quoted strings; numbers and property reads take no quotes."},
+ {t:"MVEL",q:"How do you read the text of the message flowing through right now?",o:["<code>vars['msg']</code>","<code>props['p.message']</code>","<code>parts[0].text</code>","<code>lp.message</code>"],a:2,e:"<code>parts[0]</code> is the current message; <code>.text</code> gives its text and <code>.xpath(...)</code> pulls out a field."},
+ {t:"MVEL",q:"You want to test whether a list is null or blank. Which keyword helps?",o:["<code>null</code> only","<code>empty</code> — e.g. <code>props['p.list'] != empty ? ... : ...</code>","<code>blank()</code>","<code>isNull()</code>"],a:1,e:"MVEL's <code>empty</code> keyword tests for null-or-empty in one go, commonly inside a ternary."},
+ {t:"MVEL",q:"Why does the guide recommend <code>#</code> over <code>+</code> for concatenation?",o:["<code>+</code> is deprecated","<code>+</code> on numeric values adds them instead of joining (1+1=2 vs 1#1='11')","<code>#</code> is faster","<code>+</code> only works on dates"],a:1,e:"<code>+</code> risks numeric addition; <code>#</code> always concatenates, so 1#1 yields '11'."},
+ {t:"MVEL",q:"In an Expression Capable if-statement, what do <code>?</code> and <code>:</code> mean?",o:["start / end","then / else","and / or","key / value"],a:1,e:"The ternary: <code>?</code> acts like 'then', <code>:</code> like 'else'."},
+ {t:"MVEL",q:"Which tags form a template-capable conditional block?",o:["<code>@start{} @stop{}</code>","<code>@if{} @elseif{} @else{} @end{}</code>","<code>{if} {else}</code>","<code>@when{} @otherwise{}</code>"],a:1,e:"Template capable uses <code>@if{...}</code>, optional <code>@elseif{...}</code>, <code>@else{}</code>, closed by <code>@end{}</code>."},
+ {t:"MVEL",q:"How do you strip everything but digits from a value?",o:["<code>.replace('[^0-9]','')</code>","<code>.toString().replaceAll('[^0-9]','')</code>","<code>.digitsOnly()</code>","<code>.filter('0-9')</code>"],a:1,e:"Coerce with <code>.toString()</code> then <code>replaceAll('[^0-9]','')</code> — replaceAll takes a regex."},
+ {t:"MVEL",q:"Which call left-pads '1234' to width 10 with zeros → 0000001234?",o:["<code>StringUtils.rightPad('1234',10,'0')</code>","<code>StringUtils.leftPad('1234',10,'0')</code>","<code>'1234'.padStart(10)</code>","<code>StringUtils.pad('1234',10)</code>"],a:1,e:"<code>org.apache.commons.lang.StringUtils.leftPad('1234',10,'0')</code> → 0000001234; rightPad gives 1234000000."},
+ {t:"MVEL",q:"How do you extract the <code>access_token</code> from a JSON response?",o:["<code>parts[0].xpath('access_token')</code>","<code>new org.json.JSONObject(parts[0].text).getString('access_token')</code>","<code>props['token'] = json.access_token</code>","<code>parts[0].json('access_token')</code>"],a:1,e:"Load the text into a JSONObject and call <code>.getString('access_token')</code>."},
+ {t:"MVEL",q:"Which expressions convert JSON to XML in MVEL?",o:["<code>org.json.XML.toString(jsonObject)</code> after loading a JSONObject","<code>xml.parse(json)</code>","<code>new XMLObject(json)</code>","<code>json.toXML()</code>"],a:0,e:"Load <code>new org.json.JSONObject(parts[0].text)</code>, then <code>org.json.XML.toString(...)</code> produces the XML."},
+ {t:"MVEL",q:"When should you use <code>Thread.currentThread().sleep(50)</code>?",o:["To speed up the integration","Only when requests fail due to high QPS — it slows runs exponentially","On every record for safety","To pause for user input"],a:1,e:"Sleep throttles QPS for fragile vendors. Use it ONLY when calls fail from high QPS; it slows the integration sharply."},
+ {t:"MVEL",q:"How do you URI-encode report parameters with invalid characters?",o:["<code>props['url'].replace(' ','%20')</code>","<code>java.net.URLEncoder.encode(props['p.report.parameters'])</code>","<code>util.encode(url)</code>","<code>uri:encode(url)</code>"],a:1,e:"<code>java.net.URLEncoder.encode(...)</code> turns e.g. 'Nick Fernandez' into 'Nick%20Fernandez'."},
+ {t:"MVEL",q:"How do you discover the runtime type of a property (in the scratchpad)?",o:["<code>typeof props['p.x']</code>","<code>props['p.x'].getClass().getName()</code>","<code>props['p.x'].type()</code>","<code>class(props['p.x'])</code>"],a:1,e:"<code>props['p.x'].getClass().getName()</code> reveals the Java type so you choose the right comparisons/functions."},
+ {t:"MVEL",q:"To call a prompted RaaS report from <code>workday-out-rest</code>, you append…",o:["nothing — prompts aren't supported","the report path plus a prompt string, e.g. <code>...getExtrapath(alias)}@{props['p.companiesPromptString']}</code>","the WID only","a SOAP envelope"],a:1,e:"Use <code>@{intsys.reportService.getExtrapath('alias')}</code> followed by the built prompt string property."},
+
+ // XSLT
+ {t:"XSLT",q:"Why are recursive XSLT padding templates discouraged?",o:["They don't compile","Performance — prefer text schema, Java StringUtils, or a non-recursive pad approach","They're unsupported in v2.0","They can't pad left"],a:1,e:"Recursion is frowned upon; choose padding by integration type (XTT/ETV, text schema, or Java's StringUtils), or a non-recursive pad function."},
+ {t:"XSLT",q:"How do you avoid 'a sequence of more than one is not allowed' when taking min/max of dates?",o:["Wrap in <code>distinct-values()</code>","Atomize to <code>xs:date(.)</code> inside the <code>min()</code>/<code>max()</code> path","Use <code>number()</code>","Sort first"],a:1,e:"Cast each node to <code>xs:date(.)</code> within the min()/max() select to avoid sequence and conversion errors."},
+ {t:"XSLT",q:"What's the cheaper alternative to a Normalize-Namespaces transform for custom reports?",o:["Use distinct prefixes everywhere","Edit the report namespace on the Advanced tab so they match","Disable namespaces in Studio","Use EIB instead"],a:1,e:"For custom reports it's more efficient to set the report's namespace on the Advanced tab so all inputs already share <code>urn:com.workday/bsvc</code>."},
+ {t:"XSLT",q:"Which test detects a changed value in connector XML (PriorValue)?",o:["<code>test=\"@changed='true'\"</code>","<code>test=\"descendant-or-self::pi:Pay_Data/*[@pi:PriorValue]\"</code>","<code>test=\"node()[@delta]\"</code>","<code>test=\"changed()\"</code>"],a:1,e:"Connector integrations expose <code>@pi:PriorValue</code>; testing for it under the node detects a change (e.g. Pay_Data)."},
+ {t:"XSLT",q:"Why translate accent characters for vendors like ADP?",o:["ADP requires lowercase","Some vendors can't handle the broad UTF-8 range Workday allows","XSLT can't store accents","To reduce file size"],a:1,e:"Workday supports a broad UTF-8 range; vendors such as ADP can't always handle accents, so you map/strip them via translate() or normalize-unicode."},
+ {t:"XSLT",q:"Which namespace lets XSLT call Java's StringUtils for padding?",o:["<code>xmlns:nf=\"java:org.apache.commons.lang.StringUtils\"</code>","<code>xmlns:java=\"StringUtils\"</code>","<code>xmlns:wd=\"java:StringUtils\"</code>","<code>xmlns:fn=\"http://java\"</code>"],a:0,e:"Add <code>xmlns:nf=\"java:org.apache.commons.lang.StringUtils\"</code> then call e.g. <code>nf:leftPad('nick',2,'x')</code>."},
+
+ // SSL
+ {t:"SSL",q:"For a 3-layer certificate chain, how many .CER files must you export?",o:["1","2","3 — one per layer","Just the endpoint"],a:2,e:"Export a .CER for EACH layer: bottom is the endpoint, top is the signing authority — repeat per layer."},
+ {t:"SSL",q:"How do you create a keystore from a PKCS12 (.p12 / .pfx) certificate?",o:["<code>keytool -genkey</code>","<code>keytool -importkeystore -srckeystore certificate.p12 -destkeystore keystore.jks -srcstoretype pkcs12</code>","<code>openssl convert</code>","You can't — PKCS12 is unsupported"],a:1,e:"Use <code>keytool -importkeystore ... -srcstoretype pkcs12</code>; .pfx is synonymous with .p12."},
+ {t:"SSL",q:"Where do the .JKS files go in the Studio project?",o:["The lib folder","The WSAR-INF folder","The src folder","The tenant"],a:1,e:"Add keystore.jks / truststore.jks to the WSAR-INF folder, then point the HTTP-Out https-properties at them."},
+ {t:"SSL",q:"If you only need to trust an endpoint (not present client credentials), what's true?",o:["You need both keystore and truststore","A truststore alone may suffice — you don't necessarily need a keystore","You need a keystore only","No certs are required"],a:1,e:"If you only trust the endpoint, a truststore alone may be enough; a keystore is for presenting your own credentials."}
+];
+
+/* ---------------- topic filter UI ---------------- */
+const topics = [...new Set(BANK.map(q=>q.t))];
+const tp = document.getElementById('topicpick');
+topics.forEach(t=>{
+  const l=document.createElement('label');
+  l.innerHTML=`<input type="checkbox" value="${t}"><span>${t}</span>`;
+  tp.appendChild(l);
+});
+
+/* ---------------- quiz engine ---------------- */
+let session=[], idx=0, score=0, mode='learn', answered=false, picks=[];
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function selectedTopics(){
+  return [...tp.querySelectorAll('input:checked')].map(i=>i.value);
+}
+
+function startQuiz(m){
+  mode=m;
+  const sel=selectedTopics();
+  let pool = sel.length ? BANK.filter(q=>sel.includes(q.t)) : BANK.slice();
+  pool = shuffle(pool);
+  session = (m==='exam') ? pool.slice(0, Math.min(20,pool.length)) : pool;
+  idx=0; score=0; picks=[];
+  document.getElementById('quiz-setup').style.display='none';
+  document.getElementById('resultpanel').classList.remove('active');
+  document.getElementById('qpanel').classList.add('active');
+  renderQ();
+}
+
+function renderQ(){
+  answered=false;
+  const q=session[idx];
+  const n=String(idx+1).padStart(2,'0'), tot=String(session.length).padStart(2,'0');
+  document.getElementById('qcounter').textContent=`${n} / ${tot}`;
+  document.getElementById('qbar').style.width=`${(idx/session.length)*100}%`;
+  document.getElementById('qscore').textContent=`${score} correct`;
+  document.getElementById('qtopic').textContent=q.t;
+  document.getElementById('qtext').innerHTML=q.q;
+  const ex=document.getElementById('explain'); ex.className='explain'; ex.innerHTML='';
+  const opts=document.getElementById('opts'); opts.innerHTML='';
+  const keys=['A','B','C','D'];
+  q.o.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.innerHTML=`<span class="key">${keys[i]}</span><span>${opt}</span>`;
+    b.onclick=()=>choose(i,b);
+    opts.appendChild(b);
+  });
+  const nb=document.getElementById('nextbtn');
+  nb.disabled=true;
+  nb.textContent = (idx===session.length-1)?'See results':'Next';
+}
+
+function choose(i,btn){
+  if(answered) return;
+  answered=true;
+  const q=session[idx];
+  picks[idx]=i;
+  const correct = i===q.a;
+  if(correct) score++;
+  const buttons=document.querySelectorAll('#opts .opt');
+  buttons.forEach((b,bi)=>{
+    b.disabled=true;
+    if(bi===q.a) b.classList.add('correct');
+    if(bi===i && !correct) b.classList.add('wrong');
+  });
+  document.getElementById('qscore').textContent=`${score} correct`;
+  if(mode==='learn'){
+    const ex=document.getElementById('explain');
+    ex.className='explain show'+(correct?'':' miss');
+    ex.innerHTML=`<b>${correct?'Correct.':'Not quite.'}</b> ${q.e}`;
+  }
+  document.getElementById('nextbtn').disabled=false;
+}
+
+function nextQuestion(){
+  if(idx<session.length-1){ idx++; renderQ(); }
+  else showResults();
+}
+
+function showResults(){
+  document.getElementById('qpanel').classList.remove('active');
+  const rp=document.getElementById('resultpanel'); rp.classList.add('active');
+  const pct=Math.round((score/session.length)*100);
+  document.getElementById('ring').style.setProperty('--deg', `${pct*3.6}deg`);
+  document.getElementById('ring').style.background =
+    `conic-gradient(${pct>=80?'var(--ok)':pct>=60?'var(--blue)':'var(--amber)'} ${pct*3.6}deg, var(--ink2) 0deg)`;
+  document.getElementById('ringpct').textContent=`${pct}%`;
+  document.getElementById('resulttitle').textContent =
+    pct>=90?'Studio Architect':pct>=75?'Strong pass':pct>=60?'Solid footing':'Keep practising';
+  document.getElementById('resultsub').textContent=`${score} of ${session.length} correct.`;
+  // review
+  const rev=document.getElementById('review');
+  rev.innerHTML='<h4>Review</h4>';
+  session.forEach((q,i)=>{
+    const got=picks[i], ok=got===q.a;
+    const div=document.createElement('div');
+    div.className='ritem '+(ok?'ok':'no');
+    let html=`<div class="q"><span class="mk">${ok?'\u2713':'\u2717'}</span><span>${q.q}</span></div>`;
+    if(!ok){
+      html+=`<div class="a yours">Your answer: ${got!=null?q.o[got]:'(skipped)'}</div>`;
+      html+=`<div class="a"><b>Correct: ${q.o[q.a]}</b></div>`;
+    }
+    html+=`<div class="a">${q.e}</div>`;
+    div.innerHTML=html;
+    rev.appendChild(div);
+  });
+  window.scrollTo({top:0});
+}
+
+function quitQuiz(){
+  document.getElementById('qpanel').classList.remove('active');
+  document.getElementById('resultpanel').classList.remove('active');
+  document.getElementById('quiz-setup').style.display='block';
+  window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>

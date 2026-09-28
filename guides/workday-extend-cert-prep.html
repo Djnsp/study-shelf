@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extend Pro | Workday Extend Certification Prep</title>
+<style>
+:root{
+  --blue:#0875e1; --blue-dark:#005cb9; --navy:#0b2545; --ink:#333333;
+  --soap:#f6f7f8; --border:#e8ebed; --border2:#d4d9dd;
+  --green:#43a047; --green-bg:#e8f5e9; --red:#e53935; --red-bg:#fdecea;
+  --amber:#ff9800; --amber-bg:#fff3e0; --purple:#6b46c1;
+  --mono:'Consolas','Menlo','Courier New',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--ink);background:var(--soap);line-height:1.55}
+header{background:var(--navy);color:#fff;padding:0 24px;display:flex;align-items:center;gap:24px;position:sticky;top:0;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.logo{font-size:19px;font-weight:700;padding:14px 0;white-space:nowrap}
+.logo span{color:#ffb74d;font-weight:400}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:none;color:#cfd8e3;font-size:14px;font-weight:600;padding:18px 16px;cursor:pointer;border-bottom:3px solid transparent}
+nav button:hover{color:#fff}
+nav button.active{color:#fff;border-bottom-color:#ffb74d}
+main{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px 24px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+h1{font-size:24px;color:var(--navy);margin-bottom:6px}
+h2{font-size:18px;color:var(--navy);margin-bottom:12px}
+h3{font-size:15px;color:var(--navy);margin:16px 0 8px}
+.sub{color:#667;font-size:14px;margin-bottom:18px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:12px;margin-right:6px;vertical-align:middle}
+.pill.mc{background:#e3f0fd;color:var(--blue-dark)}
+.pill.ae{background:#ede7f6;color:var(--purple)}
+.pill.dl{background:var(--amber-bg);color:#c77700}
+.pill.exam{background:var(--green-bg);color:#2e7d32}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.stat .big{font-size:26px;font-weight:700;color:var(--blue-dark)}
+.stat .lbl{font-size:12.5px;color:#667;text-transform:uppercase;letter-spacing:.4px}
+.wbar{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:10px 0 6px;font-size:12px;color:#fff;font-weight:700}
+.wbar div{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+.btn{background:var(--blue);color:#fff;border:none;border-radius:22px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--blue-dark)}
+.btn.sec{background:#fff;color:var(--blue-dark);border:1.5px solid var(--blue)}
+.btn.sec:hover{background:#eef6fe}
+.btn.warn{background:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:6px 14px;font-size:13px}
+select,input[type=number]{padding:8px 10px;border:1px solid var(--border2);border-radius:6px;font-size:14px;background:#fff}
+code,pre{font-family:var(--mono)}
+code{background:#eef1f4;padding:1px 5px;border-radius:4px;font-size:.9em;color:#b3005c}
+pre{background:#0d1b2a;color:#d9e2ec;padding:14px 16px;border-radius:8px;font-size:12.5px;line-height:1.5;overflow-x:auto;margin:10px 0}
+pre code{background:none;color:inherit;padding:0;font-size:inherit}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:20px}
+.sidebar{position:sticky;top:76px;align-self:start;max-height:calc(100vh - 96px);overflow-y:auto}
+.sidebar .card{padding:10px}
+.sidebar button{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 12px;font-size:13.5px;cursor:pointer;border-radius:6px;color:var(--ink)}
+.sidebar button:hover{background:var(--soap)}
+.sidebar button.active{background:#e3f0fd;color:var(--blue-dark);font-weight:700}
+.sidebar .grp{font-size:11px;font-weight:800;color:#889;text-transform:uppercase;letter-spacing:.6px;padding:12px 12px 4px}
+ul.pts{margin:8px 0 8px 20px}
+ul.pts li{margin-bottom:7px}
+.tip{background:var(--amber-bg);border-left:4px solid var(--amber);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+.tip b{color:#c77700}
+table.t{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px}
+table.t th{background:var(--navy);color:#fff;text-align:left;padding:8px 10px}
+table.t td{border:1px solid var(--border);padding:7px 10px;vertical-align:top}
+table.t tr:nth-child(even) td{background:var(--soap)}
+.opt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--border2);border-radius:8px;padding:12px 14px;margin-bottom:8px;font-size:14px;cursor:pointer;line-height:1.45}
+.opt:hover{border-color:var(--blue);background:#f5faff}
+.opt.sel{border-color:var(--blue);background:#e3f0fd}
+.opt.correct{border-color:var(--green);background:var(--green-bg)}
+.opt.wrong{border-color:var(--red);background:var(--red-bg)}
+.opt.dim{opacity:.65}
+.opt .l{font-weight:800;margin-right:8px;color:var(--blue-dark)}
+.expl{border-radius:8px;padding:12px 16px;margin-top:10px;font-size:13.5px}
+.expl.ok{background:var(--green-bg);border-left:4px solid var(--green)}
+.expl.no{background:var(--red-bg);border-left:4px solid var(--red)}
+.qmeta{font-size:12.5px;color:#778;margin-bottom:8px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.navgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px;margin-top:10px}
+.navgrid button{padding:8px 0;border:1.5px solid var(--border2);border-radius:6px;background:#fff;font-size:12.5px;font-weight:700;cursor:pointer;color:#556}
+.navgrid button.cur{border-color:var(--navy);background:var(--navy);color:#fff}
+.navgrid button.ans{background:#e3f0fd;border-color:var(--blue)}
+.navgrid button.flag{background:var(--amber-bg);border-color:var(--amber)}
+.timer{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--navy);background:#fff;border:1.5px solid var(--border2);border-radius:8px;padding:6px 14px}
+.timer.low{color:var(--red);border-color:var(--red)}
+.qcode{white-space:pre-wrap}
+.pbar{height:10px;background:var(--border);border-radius:6px;overflow:hidden;margin:6px 0}
+.pbar div{height:100%;background:var(--green)}
+.score{font-size:44px;font-weight:800}
+.pass{color:var(--green)} .fail{color:var(--red)}
+.review-q{border-top:1px solid var(--border);padding-top:16px;margin-top:16px}
+.hidden{display:none}
+.footer-note{text-align:center;color:#99a;font-size:12px;margin-top:30px}
+@media(max-width:860px){.layout{grid-template-columns:1fr}.sidebar{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Extend<span>Pro</span> Cert Prep</div>
+  <nav id="nav">
+    <button data-v="dash" class="active">Dashboard</button>
+    <button data-v="learn">Learn</button>
+    <button data-v="practice">Practice</button>
+    <button data-v="exam">Exam Simulator</button>
+  </nav>
+</header>
+<main id="main"></main>
+
+<script>
+"use strict";
+/* ==================== DATA (populated below) ==================== */
+const TOPICS = {
+  MC: {name:'Model Components', weight:30, cls:'mc'},
+  AE: {name:'App Experience', weight:60, cls:'ae'},
+  DL: {name:'Development Lifecycle', weight:10, cls:'dl'}
+};
+const QUESTIONS = [];   // filled by data blocks appended below
+const LEARN = [];       // filled by learn content block
+
+/* ==================== STATE ==================== */
+const store = {
+  get(k,d){ try{ const v = localStorage.getItem('xtdpro_'+k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{ localStorage.setItem('xtdpro_'+k, JSON.stringify(v)); }catch(e){} }
+};
+let view='dash', learnSec=0;
+let practice = {pool:[], idx:0, sel:null, checked:false, right:0, done:0, fTopic:'ALL', fSrc:'ALL'};
+let exam = null; // {qs, idx, answers[], flags[], secs, timerId, submitted, results}
+let history = store.get('history', []);
+
+/* ==================== HELPERS ==================== */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function fmtQ(t){ // escape, then restore `code` spans and code blocks marked with @@
+  let s = esc(t);
+  s = s.replace(/@@([\s\S]*?)@@/g, (m,c)=>'<pre class="qcode"><code>'+c+'</code></pre>');
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return s;
+}
+function pillFor(q){ return '<span class="pill '+TOPICS[q.t].cls+'">'+TOPICS[q.t].name+'</span>' + (q.src==='exam' ? '<span class="pill exam">Workday Practice Exam</span>':''); }
+
+/* ==================== ROUTER ==================== */
+document.getElementById('nav').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  if(exam && !exam.submitted && b.dataset.v!=='exam'){
+    if(!confirm('An exam is in progress. Leaving keeps the timer running. Continue?')) return;
+  }
+  setView(b.dataset.v);
+});
+function setView(v){
+  view=v;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
+  render();
+}
+function render(){
+  if(view==='dash') renderDash();
+  else if(view==='learn') renderLearn();
+  else if(view==='practice') renderPractice();
+  else renderExam();
+  window.scrollTo(0,0);
+}
+
+/* ==================== DASHBOARD ==================== */
+function bankCounts(){
+  const c={MC:0,AE:0,DL:0,exam:0};
+  QUESTIONS.forEach(q=>{c[q.t]++; if(q.src==='exam')c.exam++;});
+  return c;
+}
+function renderDash(){
+  const c = bankCounts();
+  const best = history.length? Math.max(...history.map(h=>h.pct)) : null;
+  const last = history.length? history[history.length-1] : null;
+  $('#main').innerHTML = `
+  <h1>Workday Pro &mdash; Workday Extend Certification</h1>
+  <div class="sub">Built from the official Exam Guide, the Workday Education course manuals (Workday Extend for Developers; Model Components &amp; Orchestrations for Developers), and your 9 Sep 2026 Questionmark practice exam.</div>
+
+  <div class="grid3">
+    <div class="stat"><div class="big">~50</div><div class="lbl">Questions on real exam</div></div>
+    <div class="stat"><div class="big">120 min</div><div class="lbl">Time limit &middot; one attempt</div></div>
+    <div class="stat"><div class="big">${QUESTIONS.length}</div><div class="lbl">Questions in this bank</div></div>
+    <div class="stat"><div class="big">${c.exam}</div><div class="lbl">Real practice-exam questions</div></div>
+    <div class="stat"><div class="big">${best===null?'&ndash;':best+'%'}</div><div class="lbl">Best simulated score</div></div>
+    <div class="stat"><div class="big">${history.length}</div><div class="lbl">Exams completed</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>Exam topic weights</h2>
+    <div class="wbar">
+      <div style="width:30%;background:var(--blue)">Model Components 30%</div>
+      <div style="width:60%;background:var(--purple)">App Experience 60%</div>
+      <div style="width:10%;background:var(--amber)">Dev Lifecycle 10%</div>
+    </div>
+    <div class="sub" style="margin:6px 0 0">Question bank: Model Components ${c.MC} &middot; App Experience ${c.AE} &middot; Development Lifecycle ${c.DL}. The Exam Simulator samples 50 questions in the official 30 / 60 / 10 ratio.</div>
+  </div>
+
+  <div class="card">
+    <h2>How to use this app</h2>
+    <ul class="pts">
+      <li><b>Learn</b> &mdash; condensed study notes for every task in the exam guide, with PMD / model component code samples and exam tips.</li>
+      <li><b>Practice</b> &mdash; work through the full bank with instant feedback and explanations. Filter to a topic you're weak on, or to the 18 real practice-exam questions.</li>
+      <li><b>Exam Simulator</b> &mdash; 50 questions, 120-minute countdown, question navigator with flagging, weighted sampling, and a score report broken down by topic. 70&ndash;75% is a typical Workday Pro passing bar &mdash; aim for 80%+ here.</li>
+    </ul>
+    ${last? `<div class="tip"><b>Last simulation:</b> ${last.pct}% (${last.right}/${last.total}) on ${last.date} &mdash; MC ${last.by.MC}, AE ${last.by.AE}, DL ${last.by.DL}</div>`:''}
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="setView('exam')">Start an exam</button>
+      <button class="btn sec" onclick="setView('learn')">Open study notes</button>
+      <button class="btn sec" onclick="setView('practice')">Practice questions</button>
+    </div>
+  </div>
+  <div class="footer-note">Offline single-file app &middot; progress saved locally in this browser when available</div>`;
+}
+
+/* ==================== LEARN ==================== */
+function renderLearn(){
+  const side = LEARN.map((s,i)=>{
+    const g = (i===0||LEARN[i-1].t!==s.t) ? `<div class="grp">${TOPICS[s.t].name} (${TOPICS[s.t].weight}%)</div>` : '';
+    return g+`<button class="${i===learnSec?'active':''}" onclick="learnSec=${i};renderLearn()">${s.title}</button>`;
+  }).join('');
+  const s = LEARN[learnSec];
+  $('#main').innerHTML = `
+  <div class="layout">
+    <div class="sidebar"><div class="card">${side}</div></div>
+    <div>
+      <div class="card">
+        <div>${'<span class="pill '+TOPICS[s.t].cls+'">'+TOPICS[s.t].name+'</span>'}</div>
+        <h1 style="margin-top:8px">${s.title}</h1>
+        <div class="sub">${s.sub||''}</div>
+        ${s.html}
+        <div class="spread" style="margin-top:22px">
+          <button class="btn sec" ${learnSec===0?'disabled':''} onclick="learnSec--;renderLearn()">&larr; Previous</button>
+          <button class="btn" ${learnSec===LEARN.length-1?'disabled':''} onclick="learnSec++;renderLearn()">Next section &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ==================== PRACTICE ==================== */
+function buildPool(){
+  practice.pool = shuffle(QUESTIONS.map((q,i)=>i).filter(i=>{
+    const q=QUESTIONS[i];
+    return (practice.fTopic==='ALL'||q.t===practice.fTopic) && (practice.fSrc==='ALL'||q.src==='exam');
+  }));
+  practice.idx=0; practice.sel=null; practice.checked=false; practice.right=0; practice.done=0;
+}
+function renderPractice(){
+  if(!practice.pool.length) buildPool();
+  if(!practice.pool.length){ $('#main').innerHTML='<div class="card">No questions match this filter.</div>'; return; }
+  const qi = practice.pool[practice.idx], q = QUESTIONS[qi];
+  const opts = q.o.map((o,i)=>{
+    let cls='opt';
+    if(practice.checked){
+      if(i===q.a) cls+=' correct';
+      else if(i===practice.sel) cls+=' wrong';
+      else cls+=' dim';
+    } else if(i===practice.sel) cls+=' sel';
+    return `<button class="${cls}" onclick="pickPractice(${i})"><span class="l">${'ABCDEF'[i]}.</span>${fmtQ(o)}</button>`;
+  }).join('');
+  $('#main').innerHTML = `
+  <div class="spread" style="margin-bottom:14px">
+    <h1>Practice</h1>
+    <div class="row">
+      <select onchange="practice.fTopic=this.value;buildPool();renderPractice()">
+        <option value="ALL" ${practice.fTopic==='ALL'?'selected':''}>All topics</option>
+        <option value="MC" ${practice.fTopic==='MC'?'selected':''}>Model Components</option>
+        <option value="AE" ${practice.fTopic==='AE'?'selected':''}>App Experience</option>
+        <option value="DL" ${practice.fTopic==='DL'?'selected':''}>Development Lifecycle</option>
+      </select>
+      <select onchange="practice.fSrc=this.value;buildPool();renderPractice()">
+        <option value="ALL" ${practice.fSrc==='ALL'?'selected':''}>All sources</option>
+        <option value="exam" ${practice.fSrc==='exam'?'selected':''}>Practice-exam questions only</option>
+      </select>
+    </div>
+  </div>
+  <div class="card">
+    <div class="spread qmeta">
+      <span>${pillFor(q)} &nbsp; Question ${practice.idx+1} of ${practice.pool.length} &middot; ${q.s}</span>
+      <span>Session: ${practice.right}/${practice.done} correct</span>
+    </div>
+    <div style="font-size:15px;margin:10px 0 14px">${fmtQ(q.q)}</div>
+    ${opts}
+    ${practice.checked ? `<div class="expl ${practice.sel===q.a?'ok':'no'}"><b>${practice.sel===q.a?'Correct.':'Not quite &mdash; the answer is '+'ABCDEF'[q.a]+'.'}</b> ${fmtQ(q.e)}</div>`:''}
+    <div class="row" style="margin-top:14px">
+      ${practice.checked
+        ? `<button class="btn" onclick="nextPractice()">Next question &rarr;</button>`
+        : `<button class="btn" ${practice.sel===null?'disabled':''} onclick="checkPractice()">Check answer</button>`}
+      <button class="btn sec sm" onclick="buildPool();renderPractice()">Reshuffle</button>
+    </div>
+  </div>`;
+}
+function pickPractice(i){ if(practice.checked) return; practice.sel=i; renderPractice(); }
+function checkPractice(){ practice.checked=true; practice.done++; if(practice.sel===QUESTIONS[practice.pool[practice.idx]].a) practice.right++; renderPractice(); }
+function nextPractice(){ practice.idx=(practice.idx+1)%practice.pool.length; practice.sel=null; practice.checked=false; renderPractice(); }
+
+/* ==================== EXAM ==================== */
+function weightedSample(n){
+  const want = {MC:Math.round(n*.30), AE:Math.round(n*.60), DL:0};
+  want.DL = n - want.MC - want.AE;
+  const out=[];
+  for(const t of ['MC','AE','DL']){
+    const pool = shuffle(QUESTIONS.map((q,i)=>i).filter(i=>QUESTIONS[i].t===t));
+    out.push(...pool.slice(0, Math.min(want[t], pool.length)));
+  }
+  return shuffle(out);
+}
+function startExam(n, mins){
+  exam = {qs: weightedSample(n), idx:0, answers:{}, flags:{}, secs:mins*60, timerId:null, submitted:false, results:null};
+  exam.timerId = setInterval(()=>{ exam.secs--; const t=$('#tmr'); if(t){ t.textContent=clock(exam.secs); t.classList.toggle('low', exam.secs<600);} if(exam.secs<=0) submitExam(true); }, 1000);
+  renderExam();
+}
+function clock(s){ s=Math.max(0,s); const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60; return (h? h+':':'')+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'); }
+function renderExam(){
+  if(!exam){ // setup screen
+    $('#main').innerHTML = `
+    <h1>Exam Simulator</h1>
+    <div class="sub">Mirrors the real exam: ~50 questions, 120 minutes, weighted 30% Model Components / 60% App Experience / 10% Development Lifecycle.</div>
+    <div class="card">
+      <h2>Full simulation</h2>
+      <p>50 questions &middot; 120-minute countdown &middot; navigator with flagging &middot; topic-weighted sampling.</p>
+      <button class="btn" style="margin-top:10px" onclick="startExam(50,120)">Start full exam</button>
+    </div>
+    <div class="card">
+      <h2>Quick drill</h2>
+      <p>20 questions &middot; 45 minutes. Same weighting, shorter sitting &mdash; matches the Questionmark practice-exam length.</p>
+      <button class="btn sec" style="margin-top:10px" onclick="startExam(20,45)">Start quick drill</button>
+    </div>
+    ${history.length? `<div class="card"><h2>Past attempts</h2>${history.slice().reverse().map(h=>`<div class="spread" style="border-bottom:1px solid var(--border);padding:8px 0"><span>${h.date} &middot; ${h.total} questions</span><b class="${h.pct>=75?'pass':'fail'}">${h.pct}%</b></div>`).join('')}</div>`:''}`;
+    return;
+  }
+  if(exam.submitted){ renderResults(); return; }
+  const q = QUESTIONS[exam.qs[exam.idx]];
+  const opts = q.o.map((o,i)=>`<button class="opt ${exam.answers[exam.idx]===i?'sel':''}" onclick="exam.answers[${exam.idx}]===${i}?delete exam.answers[${exam.idx}]:exam.answers[${exam.idx}]=${i};renderExam()"><span class="l">${'ABCDEF'[i]}.</span>${fmtQ(o)}</button>`).join('');
+  const navg = exam.qs.map((_,i)=>`<button class="${i===exam.idx?'cur':(exam.flags[i]?'flag':(exam.answers[i]!==undefined?'ans':''))}" onclick="exam.idx=${i};renderExam()">${i+1}</button>`).join('');
+  const answered = Object.keys(exam.answers).length;
+  $('#main').innerHTML = `
+  <div class="spread" style="margin-bottom:14px">
+    <h1>Question ${exam.idx+1} of ${exam.qs.length}</h1>
+    <div class="row"><span class="timer ${exam.secs<600?'low':''}" id="tmr">${clock(exam.secs)}</span></div>
+  </div>
+  <div class="layout" style="grid-template-columns:1fr 260px">
+    <div class="card">
+      <div class="qmeta">${'<span class="pill '+TOPICS[q.t].cls+'">'+TOPICS[q.t].name+'</span>'} ${q.s}</div>
+      <div style="font-size:15px;margin:10px 0 14px">${fmtQ(q.q)}</div>
+      ${opts}
+      <div class="spread" style="margin-top:16px">
+        <div class="row">
+          <button class="btn sec sm" ${exam.idx===0?'disabled':''} onclick="exam.idx--;renderExam()">&larr; Previous</button>
+          <button class="btn sm" ${exam.idx===exam.qs.length-1?'disabled':''} onclick="exam.idx++;renderExam()">Next &rarr;</button>
+        </div>
+        <button class="btn sec sm" onclick="exam.flags[exam.idx]=!exam.flags[exam.idx];renderExam()">${exam.flags[exam.idx]?'Unflag':'Flag for review'}</button>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="card">
+        <b style="font-size:13.5px">Navigator</b>
+        <div class="qmeta" style="margin-top:4px">${answered}/${exam.qs.length} answered</div>
+        <div class="pbar"><div style="width:${Math.round(answered/exam.qs.length*100)}%"></div></div>
+        <div class="navgrid">${navg}</div>
+        <button class="btn warn" style="width:100%;margin-top:14px" onclick="submitExam(false)">Submit exam</button>
+      </div>
+    </div>
+  </div>`;
+}
+function submitExam(auto){
+  if(!auto){
+    const un = exam.qs.length - Object.keys(exam.answers).length;
+    if(!confirm(un>0 ? un+' question(s) are unanswered. Submit anyway?' : 'Submit your exam?')) return;
+  }
+  clearInterval(exam.timerId);
+  let right=0; const by={MC:[0,0],AE:[0,0],DL:[0,0]};
+  exam.qs.forEach((qi,i)=>{ const q=QUESTIONS[qi]; by[q.t][1]++; if(exam.answers[i]===q.a){right++; by[q.t][0]++;} });
+  const pct = Math.round(right/exam.qs.length*100);
+  exam.results = {right, pct, by};
+  exam.submitted = true;
+  history.push({date:new Date().toLocaleDateString(), total:exam.qs.length, right, pct,
+    by:{MC:by.MC[0]+'/'+by.MC[1], AE:by.AE[0]+'/'+by.AE[1], DL:by.DL[0]+'/'+by.DL[1]}});
+  store.set('history', history);
+  renderExam();
+}
+function renderResults(){
+  const r = exam.results;
+  const rows = ['MC','AE','DL'].map(t=>{
+    const [c,n]=r.by[t]; const p=n?Math.round(c/n*100):0;
+    return `<tr><td>${TOPICS[t].name}</td><td>${c} / ${n}</td><td style="width:45%"><div class="pbar"><div style="width:${p}%;background:${p>=75?'var(--green)':'var(--amber)'}"></div></div></td><td><b>${p}%</b></td></tr>`;
+  }).join('');
+  const review = exam.qs.map((qi,i)=>{
+    const q=QUESTIONS[qi]; const mine=exam.answers[i]; const ok=mine===q.a;
+    return `<div class="review-q">
+      <div class="qmeta">${pillFor(q)} Question ${i+1} &middot; ${q.s} &middot; <b style="color:${ok?'var(--green)':'var(--red)'}">${ok?'Correct':(mine===undefined?'Unanswered':'Incorrect')}</b></div>
+      <div style="margin:6px 0 8px">${fmtQ(q.q)}</div>
+      ${q.o.map((o,j)=>`<div class="opt dim ${j===q.a?'correct':(j===mine?'wrong':'')}" style="cursor:default"><span class="l">${'ABCDEF'[j]}.</span>${fmtQ(o)}</div>`).join('')}
+      <div class="expl ok">${fmtQ(q.e)}</div>
+    </div>`;
+  }).join('');
+  $('#main').innerHTML = `
+  <h1>Results</h1>
+  <div class="card" style="text-align:center">
+    <div class="score ${r.pct>=75?'pass':'fail'}">${r.pct}%</div>
+    <div class="sub">${r.right} of ${exam.qs.length} correct &middot; ${r.pct>=75?'On track &mdash; at or above a typical passing bar.':'Below a typical passing bar &mdash; review the weak topics below.'}</div>
+    <table class="t" style="text-align:left"><tr><th>Topic</th><th>Score</th><th></th><th>%</th></tr>${rows}</table>
+    <div class="row" style="justify-content:center;margin-top:8px">
+      <button class="btn" onclick="exam=null;renderExam()">New exam</button>
+      <button class="btn sec" onclick="setView('learn')">Back to study notes</button>
+    </div>
+  </div>
+  <div class="card"><h2>Answer review</h2>${review}</div>`;
+}
+
+/* ==================== INIT (called after data loads) ==================== */
+window.addEventListener('DOMContentLoaded', ()=>{ render(); });
+</script>
+
+<!-- ==================== LEARNING CONTENT ==================== -->
+<script id="learn-data">
+/* ---------- LEARNING SECTIONS ---------- */
+(function(){
+const S = (t,title,sub,html)=>LEARN.push({t,title,sub,html});
+
+S('MC','Designing the Data Model','Exam guide: determine necessary model components, define business objects and relationships, select appropriate field types.',`
+<ul class="pts">
+<li>Model components live in your app's <b>model</b> folder: business objects, security domains, business processes, tasks, orchestrations, and attributes. Presentation components (PMD/AMD/SMD) consume them.</li>
+<li>A <b>model component business object (MCBO)</b> defines app-owned data stored in your tenant. Contrast with <b>Workday-delivered business objects</b> (WORKER, ORGANIZATION, etc.): you can reference delivered objects from fields, but you cannot change their definition or store new fields on them.</li>
+<li>Common field types: <code>TEXT</code>, <code>RICH_TEXT</code>, <code>NUMBER</code>, <code>CURRENCY</code>, <code>BOOLEAN</code>, <code>DATE</code>, plus reference types <code>SINGLE_INSTANCE</code> and <code>MULTI_INSTANCE</code> and <code>ATTACHMENT</code> via a model attachment object.</li>
+<li><b>SINGLE_INSTANCE</b> = the field holds one reference to a <code>target</code> business object (delivered or custom). <b>MULTI_INSTANCE</b> = the field holds a collection of references.</li>
+<li><b>One-to-many pattern:</b> put a SINGLE_INSTANCE field on the <i>many</i> side pointing at the <i>one</i> side. An Event with many Attendees = Attendee has a SINGLE_INSTANCE field referencing Event (each attendee belongs to exactly one event).</li>
+<li>Relationships are how reports and WQL traverse your data: a SINGLE_INSTANCE field exposes the target object's fields to reporting from the source data source.</li>
+</ul>
+<pre><code>{
+  "id": 1,
+  "name": "Attendee",
+  "label": "Attendee",
+  "defaultSecurityDomains": ["ManageEvents"],
+  "defaultCollection": { "name": "attendees", "label": "Attendees" },
+  "fields": [
+    { "id": 1, "name": "event", "label": "Event",
+      "type": "SINGLE_INSTANCE", "target": "Event" },
+    { "id": 2, "name": "attendeeWorker", "label": "Worker",
+      "type": "SINGLE_INSTANCE", "target": "WORKER", "secureByTarget": true }
+  ]
+}</code></pre>
+<div class="tip"><b>Exam tip:</b> when a question asks how to make "one X have many Y with a SINGLE_INSTANCE field," the answer is always: add the SINGLE_INSTANCE field to Y (the many side) referencing X &mdash; never to WORKER or to both sides.</div>`);
+
+S('MC','Business Object Attributes &amp; Limitations','Field properties you must recognize on sight: enableIndex, secureByTarget, useForDisplay, isPurgeable, defaultCollection.',`
+<table class="t">
+<tr><th>Attribute</th><th>What it does</th></tr>
+<tr><td><code>defaultCollection</code></td><td>Names the collection (data source) for the object's REST API and reporting, e.g. <code>attendees</code>. This is the collection name you see in API URLs and pick as a report data source.</td></tr>
+<tr><td><code>defaultSecurityDomains</code></td><td>The security domain(s) that secure the object's data by default.</td></tr>
+<tr><td><code>enableIndex</code></td><td>Set <code>true</code> on a field to make it usable as a <b>query parameter</b> (filtering in GET requests / WQL). SINGLE_INSTANCE fields are indexed automatically.</td></tr>
+<tr><td><code>secureByTarget</code></td><td>On a SINGLE_INSTANCE field, makes instance access follow the security of the <code>target</code> (contextual security). Required to use <b>constrained security groups</b> in the domain policy &mdash; e.g. managers see only instances tied to their direct reports.</td></tr>
+<tr><td><code>useForDisplay</code></td><td>Marks the field whose value represents the instance when it's displayed/referenced (the instance's display name).</td></tr>
+<tr><td><code>isPurgeable</code></td><td>Allows the field's data to be purged (e.g. for data-privacy processes).</td></tr>
+<tr><td><code>required</code></td><td>Field must be populated when creating/updating instances.</td></tr>
+</table>
+<ul class="pts">
+<li>Design limitations to remember: field <code>name</code>/<code>id</code> values must stay stable once deployed with data (schema changes with existing production data are constrained); you cannot add fields to Workday-delivered objects; effective dating is not a property you toggle with secureByTarget (distractor!).</li>
+</ul>
+<div class="tip"><b>Exam tip (from the practice exam):</b> "make a TEXT field available as a query parameter" &rarr; <code>enableIndex: true</code>. "Constrained security group option missing in the domain policy" &rarr; add <code>secureByTarget: true</code> to the SINGLE_INSTANCE field.</div>`);
+
+S('MC','Business Object REST API &amp; the bulk Parameter','Exam guide: use the business object API, including the bulk parameter.',`
+<ul class="pts">
+<li>Every MCBO gets a generated REST API on its collection: <code>GET /apps/{appId}/v1/{collection}</code> (list), <code>GET .../{id}</code>, <code>POST</code> (create), <code>PATCH/PUT .../{id}</code> (update), <code>DELETE .../{id}</code>.</li>
+<li><b>Query parameters</b> on GET: <code>limit</code> and <code>offset</code> for paging (limit caps how many items are returned &mdash; it is <i>not</i> a bulk-create mechanism), plus any indexed fields for filtering.</li>
+<li><b>Bulk operations:</b> add <code>?bulk=true</code> to create, update, or delete <i>multiple instances in a single request</i> &mdash; send an array in the body (up to 100 instances per request).</li>
+<li>Instance references in request bodies use the instance's <code>id</code>; in PMDs you generate references for new instances with <code>graph:createId()</code> patterns when building payloads.</li>
+</ul>
+<pre><code>POST /apps/eventTracker_abc123/v1/attendees?bulk=true
+[
+  { "event": { "id": "EVT1" }, "attendeeWorker": { "id": "worker-3aa1" } },
+  { "event": { "id": "EVT1" }, "attendeeWorker": { "id": "worker-77b2" } }
+]</code></pre>
+<div class="tip"><b>Exam tip:</b> "create multiple instances in a single API request" &rarr; <code>?bulk=true</code>. Distractors like <code>?allowMultiple=true</code>, <code>?isCollection=true</code>, or <code>limit=1000</code> are fabricated or unrelated.</div>`);
+
+S('MC','Model Component Business Processes','Exam guide: create and configure a model component business process, including process steps and page routes.',`
+<ul class="pts">
+<li>A <b>model business process (MBP)</b> definition in your app creates a custom business process type in the tenant (e.g. "Event Approval"). After deployment, administrators configure its definition (steps, routing, approvers) in the tenant like any BP.</li>
+<li>Typical steps: <b>initiation</b>, <b>approval</b>, <b>to-do</b>, <b>action/service</b> steps &mdash; including steps that <b>launch an orchestration</b>.</li>
+<li><b>Page routes</b> connect BP steps back to your app's pages &mdash; e.g. which PMD page opens for the initiating step or for an approval's view/edit experience.</li>
+<li><b>Launching:</b> a PMD can launch a business process (e.g. on submit); a BP step can launch an <b>orchestration</b>, passing values by populating the orchestration's <b>launch parameters</b> in the BP definition.</li>
+<li>A business process does <b>not</b> automatically write values back into your business object. To update a field after approval (e.g. set approval status), run an <b>orchestration</b> (or integration) as a step after the approval that calls the object's API.</li>
+</ul>
+<div class="tip"><b>Exam tip (practice exam):</b> pass values BP &rarr; orchestration by creating a <b>parameter on the orchestration</b> and setting its value in the BP definition. Update a field post-approval with an <b>orchestration after the approval step</b> &mdash; there is no 'updateField' property.</div>`);
+
+S('MC','App Security: Domains &amp; Policies','Exam guide: configure app security with Workday-delivered and model component security domains.',`
+<ul class="pts">
+<li>Two kinds of domains secure an Extend app: <b>Workday-delivered security domains</b> (secure delivered data your app touches) and <b>model component security domains</b> you define in the app (secure your MCBO data sources, tasks, and pages).</li>
+<li>Define the domain in App Builder (model component), attach it to business objects via <code>defaultSecurityDomains</code> (or per-field <code>securityDomains</code>), reference it in PMD <code>securityDomains</code> for page-level security, then deploy.</li>
+<li><b>After deployment</b>, grant access in the Workday tenant: from <b>Workday Extend App Manager</b>, open the app's security domain and edit its <b>domain security policy</b> &mdash; add security groups with View/Modify (GET/PUT etc.) permissions &mdash; then run <b>Activate Pending Security Policy Changes</b>.</li>
+<li><b>Constrained security groups</b> (e.g. "Manager" constrained to their org) only become selectable on a policy when the data supports contextual security &mdash; for MCBOs that means a SINGLE_INSTANCE field with <code>secureByTarget: true</code>.</li>
+<li>The <b>Developer Site Console</b> is for app-level administration (attributes, promotion, logs) &mdash; not for editing domain security policies. <b>App Builder</b> only defines domains in source.</li>
+<li>Multi-level access model: separate domains per audience (e.g. "View: My Feedback" self-service vs "Manage: All Feedback" admin) and secure pages, tasks, and data sources with the matching domain.</li>
+</ul>
+<div class="tip"><b>Exam tip (practice exam):</b> "where do you configure the new domain after deployment?" &rarr; in the tenant via <b>Workday Extend App Manager</b> (domain security policy), not the Developer Site Console.</div>`);
+
+S('MC','Attachments &amp; Multi-Instance Data','From the Model Components course: model attachment objects, uploading and displaying attachments; advanced multi-instance usage.',`
+<ul class="pts">
+<li>To store files, define a <b>model attachment object</b> and reference it from a business object with an <code>ATTACHMENT</code>-type field; upload via the attachment API/endpoints from the PMD (e.g. a <code>fileUploader</code> widget) and render stored files back in the page.</li>
+<li><b>MULTI_INSTANCE fields</b> hold collections of references &mdash; use them when an instance genuinely owns a set of references (e.g. tags), and remember reporting/WQL traversal differs from SINGLE_INSTANCE.</li>
+<li>Advanced grid features from the course: <b>filtering</b>, <b>export to Excel</b>, and <b>pagination</b> are enabled through grid widget attributes backed by indexed fields and endpoint paging (<code>limit</code>/<code>offset</code>).</li>
+</ul>`);
+
+S('AE','Data Access: REST APIs, WQL &amp; Data Sources','Exam guide: use REST and WQL APIs; explain the appropriate use for each data source type.',`
+<table class="t">
+<tr><th>Data access option</th><th>Use it for</th></tr>
+<tr><td><b>App business object API</b> (collection REST API)</td><td>CRUD on your own MCBO data from pages and orchestrations.</td></tr>
+<tr><td><b>Workday REST APIs</b> (e.g. <code>/common/v1/workers</code>, staffing, etc.)</td><td>Reading/acting on delivered Workday data with JSON over REST.</td></tr>
+<tr><td><b>WQL</b> (<code>/wql/v1/data?query=SELECT ... FROM ...</code>)</td><td>Report-style, read-only queries across data sources &mdash; select specific fields, filter, join through relationships; great for grids and analytics-style reads.</td></tr>
+<tr><td><b>RaaS / custom reports</b></td><td>Reusing tenant report logic (calc fields, delivered data sources) as a service.</td></tr>
+<tr><td><b>SOAP APIs</b></td><td>Operations only exposed via Workday Web Services (e.g. <code>Import_Change_Home_Contact_Information</code>) &mdash; call them from an <b>orchestration</b>, never directly from a PMD endpoint.</td></tr>
+</table>
+<pre><code>SELECT event, attendeeWorker, registrationDate
+FROM attendees
+WHERE registrationDate &gt;= '2026-01-01'</code></pre>
+<ul class="pts">
+<li>Custom reports on an app data source can traverse SINGLE_INSTANCE relationships &mdash; fields on both the base object and the referenced object are available (indexing is a performance aid, not a prerequisite).</li>
+<li>Data source security: an app data source is secured by its business object's security domain(s); delivered data sources by their delivered domains &mdash; users need access on <i>both</i> sides of any traversal.</li>
+</ul>
+<div class="tip"><b>Exam tip (practice exam):</b> SOAP = orchestration. Reporting on an app data source exposes related SINGLE_INSTANCE fields with no extra setup.</div>`);
+
+S('AE','Endpoints: Inbound, Outbound &amp; Deferred','Exam guide: configure inbound, outbound, and deferred endpoints.',`
+<ul class="pts">
+<li><b>Inbound endpoints</b> (<code>endPoints</code> array) fetch data when the page loads. Reference the response in expressions by endpoint name: <code>&lt;% getEmployees.data %&gt;</code>.</li>
+<li><b>Deferred endpoints</b> are inbound endpoints with <code>"deferred": true</code> &mdash; they do <i>not</i> run at page load; you invoke them from script (e.g. after a user picks filters, or for instanceList search endpoints).</li>
+<li><b>Outbound endpoints</b> (under <code>outboundData.outboundEndPoints</code>) send data &mdash; typically fired on submit or from a button. Build the request body in the endpoint's <code>onSend</code> script (return the value to send).</li>
+<li><b>Error handling attributes</b> (per endpoint, in the PMD &mdash; not the AMD): <code>failOnStatusCodes</code> (raise an error for specific HTTP codes, e.g. 400 for bad request), <code>onFail</code> (script to run on failure), <code>bestEffort</code> (don't block on failure).</li>
+<li>Auth: endpoints commonly use <code>"authType": "sso"</code> against Workday APIs; <code>baseUrlType</code> points at the API category (e.g. app, workday, or a configured external site).</li>
+</ul>
+<pre><code>"outboundData": {
+  "outboundEndPoints": [{
+    "name": "createAttendee",
+    "url": "&lt;% site.applicationId + '/v1/attendees' %&gt;",
+    "authType": "sso",
+    "httpMethod": "POST",
+    "failOnStatusCodes": [ { "code": 400 } ],
+    "onSend": "&lt;% { 'event': {'id': queryParams.eventId},
+                    'attendeeWorker': {'id': self.data.workerId} } %&gt;"
+  }]
+}</code></pre>
+<div class="tip"><b>Exam tip (practice exam):</b> configure the request body &rarr; <code>onSend</code>. Raise an error on a failed bad request &rarr; <code>failOnStatusCodes</code> with <b>400</b> on the <b>outbound endpoint</b> (not in the AMD, not 404). <code>deferred</code> is only about when inbound endpoints fetch.</div>`);
+
+S('AE','Widgets (PMD Tags)','Exam guide: define PMD widgets — buttons, grids, instance lists, and more; configure attributes such as visibility.',`
+<ul class="pts">
+<li>Everyday widgets: <code>text</code>, <code>richText</code>, <code>title</code>, <code>image</code>, <code>banner</code>, <code>section</code>/<code>fieldSet</code>, <code>button</code>, <code>checkBox</code>, <code>radioButtonGroup</code>, <code>dropDownButton</code>/select lists, <code>date</code>, <code>number</code>, <code>currency</code>, <code>grid</code>, <code>instanceList</code>, <code>pod</code>.</li>
+<li><b>grid</b>: bind <code>rows</code> to a collection (e.g. <code>&lt;% getEmployees.data %&gt;</code>), name each row with <code>rowVariableName</code>, then reference it inside column <code>cellTemplate</code> values (<code>&lt;% employee.name %&gt;</code>).</li>
+<li><b>instanceList</b>: pick instances of a business object; uses an <code>idKey</code> and can be backed by a <b>search endpoint</b> (deferred) for type-ahead.</li>
+<li><b>pods</b>: reusable presentation fragments (own .pod files) for common widget groups/logic, included into pages.</li>
+<li>Common attributes: <code>visible</code> (expression-driven show/hide), <code>enabled</code>, <code>required</code>, <code>label</code>, <code>value</code>, widget-level validation attributes; widgets are referenced in script by their <code>id</code> (e.g. <code>txtUserEntry.value</code>).</li>
+</ul>
+<pre><code>{
+  "type": "grid", "id": "employeeGrid", "label": "Employees",
+  "rows": "&lt;% getEmployees.data %&gt;",
+  "rowVariableName": "employee",
+  "columns": [{
+    "type": "column", "columnId": "nameCol", "label": "Employee Name",
+    "cellTemplate": { "type": "text", "value": "&lt;% employee.name %&gt;" }
+  }]
+}</code></pre>
+<div class="tip"><b>Exam tip (practice exam):</b> grid <code>rows</code> binds to <code>endpointName.data</code> (the response data), not <code>endPoints.endpointName</code> (the endpoint object).</div>`);
+
+S('AE','PMD Structure','Exam guide: explain the structure of a PMD, including the main subschemas.',`
+<table class="t">
+<tr><th>PMD subschema</th><th>Contents</th></tr>
+<tr><td><code>id</code></td><td>Page identifier (matches the file name).</td></tr>
+<tr><td><code>securityDomains</code></td><td>Domain(s) a user needs to open the page (page-level security).</td></tr>
+<tr><td><code>include</code></td><td>Other files pulled in &mdash; <code>.script</code> files (shared functions, static picklists), pods.</td></tr>
+<tr><td><code>script</code></td><td>Page-level script: functions and logic available to expressions on the page.</td></tr>
+<tr><td><code>endPoints</code></td><td>Inbound (and deferred) endpoints fetched for the page.</td></tr>
+<tr><td><code>outboundData</code></td><td><code>outboundEndPoints</code> that send data on submit/action.</td></tr>
+<tr><td><code>onLoad</code> / <code>onSubmit</code></td><td>Page lifecycle hooks for script.</td></tr>
+<tr><td><code>presentation</code></td><td>The UI: page <code>title</code>, <code>body</code> (widget tree/layout), <code>footer</code> (buttons), tabs, micro-page conclusions.</td></tr>
+</table>
+<div class="tip"><b>Exam tip:</b> layout lives in <code>presentation</code> (inside the PMD). The AMD does <i>not</i> control page layout &mdash; a favorite distractor.</div>`);
+
+S('AE','PMD Scripting &amp; Functions','Exam guide: variables, invoking deferred endpoints, validations, script events, query/route parameters, flow variables.',`
+<ul class="pts">
+<li>Expressions live in <code>&lt;% ... %&gt;</code>. Script supports <code>const</code>/<code>let</code>-style declarations, functions, and a standard library of namespaced functions: <code>string:</code>, <code>date:</code>, <code>list:</code>/collection helpers like <code>.contains()</code>, <code>.filter()</code>, <code>.map()</code>, <code>.add()</code>, <code>.size()</code>, plus <code>graph:createId()</code> for new instance references.</li>
+<li><b>Parameter scopes:</b> <code>queryParams.x</code> (URL query string), route parameters (path segments defined in the AMD routes), <code>flowVariables.x</code> (shared across steps of a flow), <code>pageVariables</code> (page scope), <code>site</code> values like <code>site.applicationId</code>.</li>
+<li><b>Events:</b> page <code>onLoad</code>/<code>onSubmit</code>; widget events like <code>onChange</code>/<code>onSelect</code>; endpoint <code>onSend</code>/<code>onFail</code>. Deferred endpoints are invoked from script when needed.</li>
+<li><b>Validations:</b> widget-level (attributes on the widget) and page-level (e.g. onSubmit checks that block submission with an error message).</li>
+<li>Booleans behave like booleans: <code>['Beth','Logan','George'].contains('Logan')</code> returns <code>true</code> &mdash; watch for questions passing a widget's <code>.value</code> into a function.</li>
+</ul>
+<pre><code>"script": "&lt;%
+  const isValidInput = function(input){
+    const validValues = ['Beth','Logan','George'];
+    return validValues.contains(input);   // boolean
+  }
+%&gt;"</code></pre>`);
+
+S('AE','Flows, Error Handling &amp; UI Experience','Exam guide: flow definitions (steps, transitions, flow variables), error handling, micro pages, page design.',`
+<ul class="pts">
+<li><b>flowDefinitions</b> live in the <b>AMD</b> and define multi-step, wizard-style navigation between otherwise independent tasks: each <code>flowStep</code> has an <code>id</code>, a <code>taskId</code>, optional <code>startsFlow: true</code>, and <code>transitions</code>.</li>
+<li><b>Transitions evaluate in order</b> (<code>"order": "a"</code>, <code>"b"</code>, <code>"c"</code>...). The first transition whose <code>condition</code> is true wins &mdash; so a final transition with condition <code>&lt;% true %&gt;</code> is the standard catch-all/default route.</li>
+<li><b>flowVariables</b> carry values between steps (<code>&lt;% flowVariables.transportationType %&gt;</code>).</li>
+<li><b>Error handling UX:</b> endpoint <code>failOnStatusCodes</code>/<code>onFail</code> + banners/messages to surface failures; page-level validation errors block submit with feedback.</li>
+<li><b>Micro pages</b> give lightweight single-purpose experiences (e.g. quick actions) with a conclusion step; consider them plus overall page design (sections, progressive disclosure) when building the UX.</li>
+</ul>
+<pre><code>"transitions": [
+  { "order": "a", "value": "passengerVehicleStep",
+    "condition": "&lt;% flowVariables.transportationType == 'passengerVehicle' %&gt;" },
+  { "order": "b", "value": "publicTransitStep",
+    "condition": "&lt;% flowVariables.transportationType == 'publicTransit' %&gt;" },
+  { "order": "c", "value": "workFromHomeStep", "condition": "&lt;% true %&gt;" }
+]</code></pre>
+<div class="tip"><b>Exam tip (practice exam):</b> the catch-all transition uses <code>true</code> &mdash; ordered evaluation means it only fires when earlier conditions fail. <code>false</code> would never fire.</div>`);
+
+S('AE','Tasks &amp; App Access','Exam guide: create model component tasks to access different parts of an app.',`
+<ul class="pts">
+<li>A <b>task</b> is a model component that maps a task name to a page (and route) in your app. Tasks are what make pages reachable: Workday search, related actions, the app's landing experience, deep links, and flow steps (<code>taskId</code>) all navigate via tasks.</li>
+<li>Secure tasks with security domains so only the right groups can reach each part of the app.</li>
+<li>Buttons, business objects, and orchestrations are <i>not</i> navigation mechanisms &mdash; a button can act within a page, but the model component for navigating users to a page is the <b>task</b>.</li>
+</ul>
+<div class="tip"><b>Exam tip (practice exam):</b> "Which model component navigates users directly to a page?" &rarr; <b>Task</b>.</div>`);
+
+S('AE','Orchestrations: Sync vs Async','Exam guide: differentiate between synchronous and asynchronous orchestration templates.',`
+<ul class="pts">
+<li>Orchestrations are built in <b>Orchestration Builder</b> and integrate data and process flows: call Workday REST/SOAP APIs, your app's APIs, transform data, loop, branch.</li>
+<li><b>Synchronous (API) orchestrations</b>: called like an API (e.g. from a PMD endpoint), run immediately, and return a response to the caller. Use for request/response work the page waits on &mdash; keep them fast.</li>
+<li><b>Asynchronous orchestrations</b> (including business-process-launched and scheduled): run in the background, no caller waiting. Use for long-running, bulk, or event-driven work &mdash; e.g. a BP step that launches an orchestration after approval, or scheduled batch processing.</li>
+<li><b>Launch parameters</b> pass values in (from a BP step configuration or the calling request). Looping patterns: process a collection with batch-style loops vs joining parallel work &mdash; know that big batch work belongs in async orchestrations.</li>
+<li>SOAP-only operations (e.g. <code>Import_Change_Home_Contact_Information</code>) are executed from orchestrations, not from PMD endpoints.</li>
+</ul>
+<div class="tip"><b>Exam tip:</b> page needs an immediate answer &rarr; synchronous. Launched by a business process / long-running / no one waiting &rarr; asynchronous.</div>`);
+
+S('DL','The Extend App Lifecycle','Exam guide: promotion levels, promotion deadlines, and maintenance windows.',`
+<ul class="pts">
+<li>Develop in <b>App Builder</b> (cloud IDE) &rarr; deploy to a development environment/tenant to test &rarr; <b>promote</b> the app through environments (development &rarr; sandbox/test &rarr; production) via the Developer Site / console tooling.</li>
+<li><b>Promotion levels</b> gate where an app can run; production promotion is a controlled step with review of the app's APIs/scopes.</li>
+<li><b>Promotion deadlines and maintenance windows</b> follow the Workday release calendar &mdash; promotions are restricted around weekly service updates and the twice-yearly feature releases, so plan promotions outside blackout/maintenance windows.</li>
+<li>The <b>Developer Site Console</b> manages app-level administration: attributes/configuration values per tenant, promotion, monitoring. The <b>Extend App Manager</b> (in the tenant) manages installed apps, their tasks and security domains.</li>
+<li><b>Attributes</b> are application-level, tenant-specific variables (set per environment in the console) that your app reads at runtime &mdash; use them for environment-specific configuration, not for BP-to-orchestration value passing.</li>
+</ul>`);
+
+S('DL','Choosing Data Sources &amp; Securing Access','Exam guide: select the appropriate data source for a use case and explain how that data is secured.',`
+<ul class="pts">
+<li>Match the tool to the job: app BO API for your data; Workday REST for delivered data; WQL for cross-source, field-selective reads; RaaS for existing report logic; SOAP via orchestration for WWS-only operations.</li>
+<li>Every read is security-checked in the requesting user's context: app data sources enforce the MCBO's security domain policy; delivered data sources enforce their delivered domain policies; traversals require access on both.</li>
+<li>Custom reports over app data sources expose SINGLE_INSTANCE-related fields; secure the report like any report, and remember web-service-enablement is only needed to call the report as RaaS &mdash; not to see related fields.</li>
+</ul>`);
+
+S('DL','Logs &amp; Troubleshooting','Exam guide: use logging for testing and troubleshooting; view and filter logs.',`
+<ul class="pts">
+<li>App logs are viewed from the developer tooling (console log viewer) &mdash; filter by app, environment, time range, severity, and log fields.</li>
+<li><b><code>wd_common_request_id</code></b> is the correlation id that ties together every log line for one transaction. Page errors show an id (e.g. <code>Internal Server Error (id: VPS|5a43a81...)</code>) &mdash; filter logs on <code>wd_common_request_id</code> with that value to see everything related to the failure.</li>
+<li>Other fields you may see: <code>wd_api_client_id</code> (which client called), <code>wd_response_time</code> (latency), <code>wd_request_bytes</code> (payload size) &mdash; useful for performance triage, not for tracing a specific error.</li>
+<li>Add your own diagnostics: script logging/console output during development, plus endpoint <code>onFail</code> handlers to capture failures with context.</li>
+</ul>
+<div class="tip"><b>Exam tip (practice exam):</b> "see all logs for this error id" &rarr; filter on <code>wd_common_request_id</code>.</div>`);
+})();
+
+</script>
+
+<!-- ==================== QUESTION BANK ==================== -->
+<script id="q-data">
+/* ---------- QUESTION BANK: MODEL COMPONENTS ---------- */
+(function(){
+const Q=(t,s,q,o,a,e,src)=>QUESTIONS.push({t,s,q,o,a,e,src});
+
+/* --- Real practice-exam questions --- */
+Q('MC','Data Model',
+"Your company is creating an Extend app to track Employee Events. There are two business objects: Event and Attendee. How can you use a SINGLE_INSTANCE field so an event can have many attendees?",
+["Add both Employee Events and Attendee business objects to the same security domain.",
+ "Add a SINGLE_INSTANCE field to both the Attendee and Event business objects, then join them together.",
+ "Add a SINGLE_INSTANCE field to the Attendee business object that references Event.",
+ "Add a SINGLE_INSTANCE field to the WORKER business object that references Event."],
+2,"Each Attendee points to exactly one Event, so many Attendees can reference the same Event — the classic one-to-many pattern. The SINGLE_INSTANCE field always goes on the many side.","exam");
+
+Q('MC','Security',
+"Your new application includes a Model Component Business Object called Donation. To secure the donations data source, you create a Model Component Security Domain called Manage: Employee Donations. After the domain is added to your app and deployed, where do you configure the new domain?",
+["App Builder","Workday Extend App Manager","Workday Developer Site Console","Tenant Settings"],
+1,"After deployment you grant access in the tenant: from Workday Extend App Manager, open the app's security domain and edit its domain security policy, then activate pending changes. The Developer Site Console handles app attributes and promotion, not domain policies.","exam");
+
+Q('MC','Business Processes',
+"A business process is launching an orchestration. How do you pass values from the business process to the orchestration?",
+["Configure the payload to the orchestration from the business process configuration.",
+ "Create a parameter on the orchestration and configure the value in the business process definition.",
+ "Create an Attribute in the Extend application and use the business process to set its value.",
+ "Use an orchestration expression to retrieve values from the business process."],
+1,"Orchestrations expose launch parameters; the BP definition maps values into them at launch. Attributes are tenant-level app config, not a BP-to-orchestration channel.","exam");
+
+Q('MC','Security',
+"A business object has a SINGLE_INSTANCE field with `\"target\": \"WORKER\"` and `\"secureByTarget\": true`. What does the secureByTarget attribute on this field do?",
+["It overrides the default security of the business object this belongs to.",
+ "It enables the ability to effective date the business object.",
+ "It masks the value of this field, making it so that the worker will only have access to see its value.",
+ "It allows the ability to control who has access to the instance based on the configuration of a constrained security group."],
+3,"secureByTarget makes instance access follow the security context of the field's target (WORKER here), which is what enables constrained security groups — e.g. managers seeing only instances tied to their direct reports.","exam");
+
+Q('MC','Business Object Attributes',
+"You would like to have a TEXT field in a model component business object available for use as a query parameter. What field property would you need to set to enable this?",
+["sortConfigs","routePath","enableIndex","defaultCollection"],
+2,"Set enableIndex to true to use a field as a query parameter. SINGLE_INSTANCE fields are indexed automatically.","exam");
+
+Q('MC','Business Processes',
+"You build a business process that routes new instances of a business object to HR for approval. After an instance is approved, you need to update a field in that instance with the approval status. How will you accomplish this?",
+["Add the 'updateField' property set to the ID of the field you need to update to the business process model component.",
+ "Configure an integration or orchestration to run after the approval step and update the desired business object field.",
+ "Add the 'isReferenceId' property set to true on the appropriate field in the model component business object's definition.",
+ "Update the business process definition to have the 'approved' field of the target business object automatically set to true on completion."],
+1,"There is no automatic field-update property on a model BP; you run an orchestration (or integration) as a step after approval that updates the instance via the object's API.","exam");
+
+Q('MC','Business Object API',
+"Your app has a model business object called EmployeeEvent. You are building a PMD page that allows users to create multiple EmployeeEvent instances at a time. What URL parameter must you set to create these instances in a single API request?",
+["?isCollection=true","?limit=1000","?allowMultiple=true","?bulk=true"],
+3,"The Extend REST API supports bulk create/update/delete with ?bulk=true and an array in the request body. limit only caps how many items a GET returns.","exam");
+
+Q('MC','Security',
+"You want to secure the WorkerFeedback business object so managers see instances assigned to their direct reports, but the domain security policy shows no option to choose a constrained security group. The app builds and deploys successfully. What could you add to WorkerFeedback to enable using constrained security groups?",
+["target","securityDomains","secureByTarget","useForDisplay"],
+2,"Setting secureByTarget: true on the SINGLE_INSTANCE field makes access follow constrained security based on the field's target, which unlocks constrained security groups in the domain policy.","exam");
+
+/* --- Original: data model & field types --- */
+Q('MC','Data Model',
+"Which field type stores a reference to exactly one instance of another business object?",
+["MULTI_INSTANCE","SINGLE_INSTANCE","TEXT","ATTACHMENT"],
+1,"SINGLE_INSTANCE holds one reference to the target business object; MULTI_INSTANCE holds a collection of references.");
+
+Q('MC','Data Model',
+"Your app tracks Projects and Milestones. Each project has many milestones and each milestone belongs to exactly one project. How do you model the relationship?",
+["Add a SINGLE_INSTANCE field on Milestone with target Project",
+ "Add a SINGLE_INSTANCE field on Project with target Milestone",
+ "Add a MULTI_INSTANCE field on Milestone with target Project",
+ "Add TEXT fields holding project names on Milestone"],
+0,"The many side (Milestone) carries the SINGLE_INSTANCE reference to the one side (Project) — many milestones can then point at the same project.");
+
+Q('MC','Data Model',
+"Which field type is most appropriate for a yes/no flag such as 'Is Active'?",
+["TEXT","NUMBER","BOOLEAN","RICH_TEXT"],
+2,"BOOLEAN stores true/false values and renders naturally as a checkbox.");
+
+Q('MC','Data Model',
+"Which field type should store a monetary amount together with its currency?",
+["NUMBER","TEXT","CURRENCY","RICH_TEXT"],
+2,"CURRENCY stores an amount with currency context; NUMBER is a plain numeric value.");
+
+Q('MC','Data Model',
+"Can an Extend app add new custom fields directly to the Workday-delivered WORKER business object?",
+["Yes, by editing the WORKER definition in App Builder",
+ "Yes, but only TEXT fields",
+ "No — create a model component business object with a SINGLE_INSTANCE field targeting WORKER instead",
+ "No — delivered objects can only be referenced with MULTI_INSTANCE fields"],
+2,"You can't change delivered object definitions. The pattern is to create your own object that references WORKER (or another delivered object) and store your data there.");
+
+Q('MC','Data Model',
+"What is the purpose of a MULTI_INSTANCE field?",
+["To store a collection of references to instances of a target business object",
+ "To allow multiple apps to share one business object",
+ "To create multiple copies of an instance",
+ "To enable bulk API operations on the object"],
+0,"MULTI_INSTANCE holds a set of references (e.g. multiple tags or multiple workers) on a single instance.");
+
+Q('MC','Data Model',
+"On a SINGLE_INSTANCE field definition, what does the `target` attribute specify?",
+["The security domain that secures the field",
+ "The business object the field references",
+ "The page the field navigates to",
+ "The default value of the field"],
+1,"target names the referenced business object — either a delivered object like WORKER or another model component business object.");
+
+Q('MC','Data Model',
+"Which of the following is a model component (not a presentation component)?",
+["PMD page","AMD file","Business object","Pod file"],
+2,"Business objects, security domains, business processes, tasks, orchestrations, and attributes are model components; PMD/AMD/SMD and pods are presentation components.");
+
+Q('MC','Data Model',
+"Students can enroll in many Classes, and Classes have many Students. What is the standard way to model this many-to-many relationship?",
+["A MULTI_INSTANCE field on both objects pointing at each other",
+ "A junction business object (e.g. Enrollment) with SINGLE_INSTANCE fields to Student and Class",
+ "A TEXT field storing a comma-separated list of ids",
+ "Two separate apps sharing one collection"],
+1,"A junction object with two SINGLE_INSTANCE references models many-to-many cleanly and gives you a place for relationship data (e.g. enrollment date).");
+
+Q('MC','Data Model',
+"Which field type would you use for formatted, styled text such as instructions with bold and lists?",
+["TEXT","RICH_TEXT","ATTACHMENT","CURRENCY"],
+1,"RICH_TEXT stores formatted content; TEXT is plain.");
+
+Q('MC','Data Model',
+"How do you enable users to upload and store files against a business object?",
+["Store base64 strings in a TEXT field",
+ "Define a model attachment object and reference it with an ATTACHMENT-type field",
+ "Enable isPurgeable on any field",
+ "Use a MULTI_INSTANCE field targeting DOCUMENT"],
+1,"File storage uses a model attachment object referenced from an ATTACHMENT field; the PMD then uploads and displays files through the attachment endpoints/widgets.");
+
+Q('MC','Data Model',
+"Why do relationships (SINGLE_INSTANCE fields) matter for reporting on your app data?",
+["They are required before any report can be created",
+ "They let reports and WQL traverse from your data source into the related object's fields",
+ "They automatically web-service-enable reports",
+ "They index every field on both objects"],
+1,"A SINGLE_INSTANCE reference exposes the related object's fields when reporting or querying from the source data source.");
+
+/* --- Original: business object attributes --- */
+Q('MC','Business Object Attributes',
+"What does the `defaultCollection` attribute on a business object define?",
+["The default sort order of instances",
+ "The name of the collection used by the object's REST API and as its data source name",
+ "The default security group with access",
+ "The set of fields returned by GET requests"],
+1,"defaultCollection names the collection — it's what appears in API URLs (e.g. /v1/attendees) and what you select as the report/WQL data source.");
+
+Q('MC','Business Object Attributes',
+"What does the `useForDisplay` attribute on a field do?",
+["Marks the field whose value represents the instance when it is displayed or referenced",
+ "Makes the field visible on every page automatically",
+ "Adds the field to all grids by default",
+ "Formats the field as rich text"],
+0,"useForDisplay designates the instance's display value — what users see when the instance is referenced (e.g. in an instanceList).");
+
+Q('MC','Business Object Attributes',
+"What does setting `isPurgeable: true` on a field allow?",
+["The field to be removed from the schema at any time",
+ "The field's data to be purged, supporting data-privacy processes",
+ "The field to be excluded from the API",
+ "The field to bypass security checks"],
+1,"isPurgeable flags the field's data as eligible for purging — relevant to data-privacy/retention handling, not schema changes.");
+
+Q('MC','Business Object Attributes',
+"Which field type is automatically indexed and therefore usable as a query parameter without setting enableIndex?",
+["TEXT","NUMBER","SINGLE_INSTANCE","RICH_TEXT"],
+2,"SINGLE_INSTANCE fields are indexed automatically; other types need enableIndex: true to be used as query parameters.");
+
+Q('MC','Business Object Attributes',
+"Which business object attribute assigns the security domain(s) that secure its data by default?",
+["defaultCollection","defaultSecurityDomains","secureByTarget","securityPolicy"],
+1,"defaultSecurityDomains attaches the domain(s) whose security policies govern access to the object's data.");
+
+Q('MC','Business Object Attributes',
+"You want a NUMBER field usable for filtering in GET requests to the object's API. What do you set?",
+["required: true","enableIndex: true","useForDisplay: true","isPurgeable: true"],
+1,"Indexed fields become query parameters; enableIndex: true enables filtering on the field.");
+
+Q('MC','Business Object Attributes',
+"What does the `required` attribute on a field enforce?",
+["The field appears on every page",
+ "The field must be populated when instances are created or updated",
+ "The field cannot be purged",
+ "The field is indexed"],
+1,"required makes the field mandatory at the data level for create/update operations.");
+
+Q('MC','Business Object Attributes',
+"When an instance of a business object appears in an instanceList widget, which field's value is shown to the user?",
+["The first field defined","The field with useForDisplay: true","The id field","All indexed fields"],
+1,"The useForDisplay field provides the instance's display value wherever the instance is referenced.");
+
+Q('MC','Business Object Attributes',
+"Which statement about secureByTarget is TRUE?",
+["It can only be used when the target is WORKER",
+ "It applies contextual security based on the field's target, enabling constrained security groups",
+ "It encrypts the field's value at rest",
+ "It enables effective dating on the business object"],
+1,"secureByTarget ties instance access to the target's security context — the mechanism behind constrained-group access like manager-of-direct-reports. Effective dating and encryption are distractors.");
+
+/* --- Original: business object API & bulk --- */
+Q('MC','Business Object API',
+"What is the maximum number of instances you can send in a single bulk request (?bulk=true)?",
+["10","100","1,000","Unlimited"],
+1,"Bulk operations accept up to 100 instances per request; larger volumes are batched across requests (or handled in an orchestration).");
+
+Q('MC','Business Object API',
+"Which HTTP method creates a new instance of a model component business object via its collection API?",
+["GET","POST","PATCH","DELETE"],
+1,"POST to the collection (e.g. POST /v1/attendees) creates an instance; PATCH/PUT update, DELETE removes.");
+
+Q('MC','Business Object API',
+"Which query parameters page through a large GET response from a collection API?",
+["bulk and batch","limit and offset","page and size","top and skip"],
+1,"limit caps how many items return and offset skips ahead — the standard paging pair for Extend collection APIs.");
+
+Q('MC','Business Object API',
+"How would you delete many instances of a business object in one API request?",
+["Send DELETE with ?bulk=true and an array identifying the instances",
+ "Send one DELETE per instance — bulk delete is not supported",
+ "Send GET with ?delete=true",
+ "Set isPurgeable on the object first"],
+0,"bulk=true applies to create, update, and delete — the body carries the array of instances/ids.");
+
+Q('MC','Business Object API',
+"A GET request filtering on a TEXT field returns an error that the parameter is not supported. What is the most likely cause?",
+["The field is not indexed (enableIndex is not set)",
+ "TEXT fields can never be filtered",
+ "The request must use POST for filters",
+ "The field is missing useForDisplay"],
+0,"Only indexed fields work as query parameters; set enableIndex: true on the field and redeploy.");
+
+Q('MC','Business Object API',
+"The URL /apps/{appId}/v1/expenseItems maps to which part of the business object definition?",
+["The object's name attribute","The defaultCollection name","The label attribute","The first field's name"],
+1,"The collection segment of the API URL comes from defaultCollection.name.");
+
+Q('MC','Business Object API',
+"In a POST body, how do you set a SINGLE_INSTANCE field's value?",
+["Pass the target instance's display name as a string",
+ "Pass an object containing the target instance's id",
+ "Pass the target's collection name",
+ "SINGLE_INSTANCE fields cannot be set via the API"],
+1,"Reference fields are set with the instance reference — an object carrying the target id (e.g. { \"event\": { \"id\": \"EVT1\" } }).");
+
+/* --- Original: business processes --- */
+Q('MC','Business Processes',
+"What does deploying a model component business process definition create in the Workday tenant?",
+["A completed business process event",
+ "A custom business process type that administrators can configure like any other BP",
+ "A new security group",
+ "A scheduled orchestration"],
+1,"The model BP becomes a custom business process type; admins then maintain its definition (steps, routing) in the tenant.");
+
+Q('MC','Business Processes',
+"What is the purpose of page routes on a model component business process?",
+["They define which PMD pages open for the business process steps (e.g. initiation, view, edit)",
+ "They control network routing for API calls",
+ "They set the order of approval steps",
+ "They map the BP to a security domain"],
+0,"Page routes connect BP steps to your app's pages so the right UI opens at each point in the process.");
+
+Q('MC','Business Processes',
+"Which business process step type requires a person to review and approve before the process continues?",
+["Initiation step","Approval step","Service step","Integration step"],
+1,"Approval steps route to a role/group and gate the process on their decision.");
+
+Q('MC','Business Processes',
+"From where in your Extend app do you typically launch a model business process?",
+["From the SMD file","From a PMD file (e.g. on submit or a button action)","From the AMD flowDefinitions","From a security domain"],
+1,"Pages launch business processes — for example submitting a request kicks off the approval BP.");
+
+Q('MC','Business Processes',
+"After your app (containing a model BP) is deployed, who typically maintains the BP definition's steps and routing rules?",
+["The App Builder developer only, in source code",
+ "A tenant administrator, using standard business process configuration",
+ "Workday support",
+ "The Developer Site Console"],
+1,"Once deployed, the custom BP type is configured in the tenant like any delivered BP — steps, conditions, and routing are admin-configurable.");
+
+Q('MC','Business Processes',
+"A step in your model business process should run automated logic (no human action) that processes data and updates instances. What do you use?",
+["A to-do step","An approval step","A step that launches an orchestration","A page route"],
+2,"Automated processing in a BP is done by launching an orchestration from a step; approvals and to-dos require people.");
+
+/* --- Original: security --- */
+Q('MC','Security',
+"Which two kinds of security domains are involved in securing an Extend application?",
+["Public and private domains",
+ "Workday-delivered security domains and model component security domains",
+ "Page domains and API domains",
+ "Constrained and unconstrained domains"],
+1,"Delivered domains secure delivered data your app touches; model component domains secure your own objects, tasks, and pages. (Constrained/unconstrained describes security groups, not domains.)");
+
+Q('MC','Security',
+"How do you require a specific security domain to open a page in your app?",
+["Add the domain to the PMD's securityDomains attribute",
+ "Add the domain to the AMD flowDefinitions",
+ "Set secureByTarget on the page",
+ "Pages cannot be secured individually"],
+0,"Page-level security is set with the securityDomains array in the PMD; the user needs access to that domain to open the page.");
+
+Q('MC','Security',
+"After adding a security group to your app domain's security policy in the tenant, what must you do for the change to take effect?",
+["Redeploy the application",
+ "Run Activate Pending Security Policy Changes",
+ "Restart the Developer Site Console",
+ "Re-index the business object"],
+1,"Domain security policy edits are pending until you run Activate Pending Security Policy Changes — same as any Workday security change.");
+
+Q('MC','Security',
+"You want only HR Partners to access an administrative task in your app. What is the right approach?",
+["Hide the task's button with a visible expression",
+ "Secure the task with a model component security domain whose policy grants only HR Partners",
+ "Add HR Partners to every delivered domain",
+ "Set required: true on the task"],
+1,"Tasks are secured by domains; the domain security policy is where you grant the HR Partner group. Hiding UI is not security.");
+
+Q('MC','Security',
+"Your app page displays delivered worker data through a Workday REST API. What governs whether a user can see that data?",
+["Only the app's model component domains",
+ "The delivered security domain policies securing that worker data, evaluated in the requesting user's context",
+ "The PMD script section",
+ "Nothing — apps bypass delivered security"],
+1,"API calls run as the user; delivered data stays protected by its delivered domain policies. Apps never bypass tenant security.");
+
+Q('MC','Security',
+"A multi-level access design gives employees self-service access to their own records and admins access to all records. What is the standard approach?",
+["One domain with everyone granted Modify",
+ "Separate security domains (e.g. self-service vs manage) securing the appropriate data sources, tasks, and pages, with different groups on each policy",
+ "Two copies of the business object",
+ "Constrained groups on the delivered Self-Service domain"],
+1,"You design multiple model component domains for the different audiences and secure each task/page/data source with the right one.");
+})();
+
+/* ---------- QUESTION BANK: APP EXPERIENCE ---------- */
+(function(){
+const Q=(t,s,q,o,a,e,src)=>QUESTIONS.push({t,s,q,o,a,e,src});
+
+/* --- Real practice-exam questions --- */
+Q('AE','Widgets',
+"Your PMD has an inbound endpoint named getEmployees whose response is @@{\n  'data': [\n    { 'id': '12345', 'name': 'Logan McNeil', 'title': 'HR Administrator' }\n  ]\n}@@ A grid widget uses `\"rowVariableName\": \"employee\"`. What PMD expression populates the grid's 'rows' attribute?",
+["getEmployees.data","endPoints.getEmployees","getEmployees","endPoints.getEmployees.data"],
+0,"Inbound endpoint responses are referenced by endpoint name, so the row collection is getEmployees.data. endPoints.getEmployees would reference the endpoint object itself, not its response data.","exam");
+
+Q('AE','PMD Scripting',
+"A text widget txtUserEntry has the value \"Logan\". A page script defines: @@const isValidInput = function(input){\n  const validValues = ['Beth', 'Logan', 'George'];\n  const isValid = validValues.contains(input)\n  return isValid;\n}@@ When executing the function with txtUserEntry.value as input, what is the return value?",
+["Logan","FALSE","empty","TRUE"],
+3,"contains() returns a boolean and 'Logan' is in the list, so the function returns TRUE.","exam");
+
+Q('AE','Endpoints',
+"You are building a PMD page with an outbound endpoint. The endpoint needs to send a data object in the body of the request. What endpoint attribute would you use to configure the data object before sending the request?",
+["onSend","invoke","deferred","onChange"],
+0,"onSend runs just before the request fires and returns the request body. deferred only controls when inbound endpoints fetch data.","exam");
+
+Q('AE','Flows & UI',
+"What can you do with the flowDefinitions attribute in an AMD file?",
+["Control which PMD page users are redirected to after submitting an edit page.",
+ "Define global variables that can be used on any page.",
+ "Control the layout of a PMD page and its widgets.",
+ "Create a wizard widget that guides the user between independent tasks."],
+3,"flowDefinitions define multi-step flows (wizards) that guide users through a sequence of independent tasks. Page layout lives in the PMD's presentation section.","exam");
+
+Q('AE','Flows & UI',
+"A survey flow's start step has transitions: order 'a' routes to passengerVehicleStep when transportationType == 'passengerVehicle', order 'b' routes to publicTransitStep when transportationType == 'publicTransit'. You add a transition with order 'c' to workFromHomeStep for employees who choose \"Work From Home\". What transition condition can you use?",
+["flowVariables.transportationType != 'publicTransit'","FALSE","TRUE","flowVariables.transportationType != 'passengerVehicle' && flowVariables.transportationType != 'publicTransit'"],
+2,"Transitions evaluate in order; if 'a' and 'b' don't match, the order-'c' transition with TRUE acts as the catch-all. FALSE would never fire, and option A alone would wrongly capture passenger-vehicle users if evaluated on its own.","exam");
+
+Q('AE','Endpoints',
+"An outbound endPoint on your page fails due to a bad request, but no error is raised. You want to raise an error when the request fails. How will you do so?",
+["In the outbound endPoint, add the failOnStatusCodes attribute with a code of 400.",
+ "In the AMD, add the failOnStatusCodes attribute with a code of 400.",
+ "In the AMD, add the failOnStatusCodes attribute with a code of 404.",
+ "In the outbound endPoint, add the failOnStatusCodes attribute with a code of 404."],
+0,"failOnStatusCodes is configured per endpoint in the PMD (not globally in the AMD), and a bad request is HTTP 400, not 404.","exam");
+
+Q('AE','Tasks',
+"What model component can you use to navigate users directly to the page of an Extend application?",
+["Button","Task","Business Object","Orchestration"],
+1,"Tasks map to pages and are Workday's navigation mechanism (search, related actions, deep links). Business objects model data; buttons act within a page.","exam");
+
+Q('AE','Orchestrations',
+"Your company's Extend application will bulk update employees' contact information using the Import_Change_Home_Contact_Information request from Workday's SOAP API. How can they execute the SOAP API from the application?",
+["Have the application launch an orchestration which then calls the Import_Change_Home_Contact_Information API.",
+ "Use a deferred endpoint to call the Import_Change_Home_Contact_Information API.",
+ "Use an outbound endpoint to launch the Import_Change_Home_Contact_Information API and store the response in a flow variable.",
+ "Configure a siteAuth in the SMD file that can be used to execute SOAP API requests in PMDs."],
+0,"SOAP interaction in Extend happens through orchestrations; PMD endpoints and siteAuth cannot call SOAP web services directly.","exam");
+
+/* --- Original: endpoints --- */
+Q('AE','Endpoints',
+"Which attribute makes an inbound endpoint wait instead of fetching data when the page loads?",
+["bestEffort: true","deferred: true","onLoad: false","async: true"],
+1,"deferred: true stops the endpoint from running at page load; you invoke it later from script (e.g. after the user sets filters).");
+
+Q('AE','Endpoints',
+"Where are outbound endpoints defined in a PMD?",
+["In the endPoints array alongside inbound endpoints",
+ "Under outboundData.outboundEndPoints",
+ "In the AMD routes",
+ "In the SMD siteAuth section"],
+1,"Outbound endpoints live under outboundData.outboundEndPoints; the top-level endPoints array holds inbound (and deferred) endpoints.");
+
+Q('AE','Endpoints',
+"What is the purpose of an endpoint's onFail attribute?",
+["It retries the request automatically",
+ "It runs script when the endpoint's request fails, so you can handle the error",
+ "It prevents the endpoint from ever failing",
+ "It logs the user out on failure"],
+1,"onFail is the failure hook — use it to set error state, show a message, or capture diagnostics.");
+
+Q('AE','Endpoints',
+"What does bestEffort: true on an endpoint do?",
+["Guarantees the request eventually succeeds",
+ "Lets the page continue even if the endpoint fails, instead of blocking on the failure",
+ "Sends the request twice",
+ "Escalates the request's priority"],
+1,"bestEffort makes the endpoint non-blocking on failure — useful for optional data that shouldn't take down the page.");
+
+Q('AE','Endpoints',
+"Which authType do PMD endpoints commonly use to call Workday APIs as the signed-in user?",
+["basic","sso","apiKey","none"],
+1,"authType: \"sso\" calls the API in the session user's context, so tenant security applies to them.");
+
+Q('AE','Endpoints',
+"An instanceList widget needs type-ahead searching against a large collection. What backs this pattern?",
+["A search (deferred) endpoint invoked as the user types",
+ "Loading the entire collection at page load",
+ "An outbound endpoint with onSend",
+ "A flowVariable holding all instances"],
+0,"Search endpoints are deferred endpoints the instanceList invokes with the user's search text — the course's pattern for large datasets.");
+
+Q('AE','Endpoints',
+"Your outbound endpoint should raise an error when the server returns 500. Where and what do you configure?",
+["failOnStatusCodes with code 500 on that endpoint in the PMD",
+ "failOnStatusCodes with code 500 in the AMD",
+ "onSend returning 500",
+ "deferred: true on the endpoint"],
+0,"failOnStatusCodes is per-endpoint in the PMD and takes the HTTP status codes that should surface as errors.");
+
+Q('AE','Endpoints',
+"How is a deferred endpoint typically executed?",
+["Automatically at page load","From PMD script when the data is actually needed","By the AMD on route change","By the SMD at deployment"],
+1,"Deferred endpoints are invoked from script — e.g. after a button click or when filter values are ready.");
+
+Q('AE','Endpoints',
+"In an endpoint URL expression like `<% site.applicationId + '/v1/expenseItems' %>`, what does site.applicationId provide?",
+["The user's session id","The deployed application's id used to address its APIs","The tenant name","The endpoint's name"],
+1,"site values expose app/site context; applicationId lets you build URLs to your own app's collection APIs without hardcoding.");
+
+Q('AE','Endpoints',
+"Which endpoint attribute determines the HTTP verb used by an outbound endpoint?",
+["method is fixed to POST","httpMethod","verbType","sendAs"],
+1,"httpMethod sets the verb (POST, PATCH, PUT, DELETE) for outbound endpoints.");
+
+/* --- Original: widgets --- */
+Q('AE','Widgets',
+"In a grid widget, what does rowVariableName do?",
+["Names the variable that represents the current row inside column cellTemplates",
+ "Sets the grid's HTML id",
+ "Defines the endpoint that loads the rows",
+ "Renames the row header column"],
+0,"rowVariableName (e.g. \"employee\") is how cellTemplates reference the current row: <% employee.name %>.");
+
+Q('AE','Widgets',
+"What is a cellTemplate in a grid column?",
+["The widget rendered in that column for each row (e.g. a text widget bound to a row value)",
+ "The column's CSS style",
+ "A reusable pod file",
+ "The grid's footer definition"],
+0,"Each column's cellTemplate is a widget definition evaluated per row.");
+
+Q('AE','Widgets',
+"How do you show a widget only when a checkbox chkAdvanced is checked?",
+["Set visible to the expression <% chkAdvanced.value %> on the widget",
+ "Wrap the widget in a flowDefinition",
+ "Set required: false",
+ "Delete the widget in script"],
+0,"visible takes an expression; bind it to the controlling widget's value for conditional display.");
+
+Q('AE','Widgets',
+"What is a pod in Workday Extend?",
+["A deployment container for the app",
+ "A reusable presentation fragment (own file) of common widgets/logic included into pages",
+ "A background job",
+ "A security grouping of pages"],
+1,"Pods extract common widget groups or logic into a single reusable file included by multiple PMDs.");
+
+Q('AE','Widgets',
+"Which widget lets a user select an instance of a business object (e.g. pick a Worker)?",
+["grid","instanceList","banner","fieldSet"],
+1,"instanceList presents selectable instances of a business object, optionally backed by a search endpoint, and uses an idKey.");
+
+Q('AE','Widgets',
+"Which widget is designed to show a prominent message such as a success or error notification on the page?",
+["banner","pod","richText","column"],
+0,"banner renders status/notification messaging — a common piece of error-handling UX.");
+
+Q('AE','Widgets',
+"Where do a page's primary action buttons (e.g. Submit) conventionally belong in the PMD presentation?",
+["In the footer","In the title","Inside every grid","In the SMD"],
+0,"presentation.footer holds the page-level action buttons; body holds the content widgets.");
+
+Q('AE','Widgets',
+"How does PMD script reference a specific widget, such as reading a text input's current value?",
+["By the widget's id (e.g. txtUserEntry.value)","By its label text","By its position index","Widgets cannot be read from script"],
+0,"Widgets are addressed by id in script and expressions — txtUserEntry.value reads the input's value.");
+
+Q('AE','Widgets',
+"Which widgets group related fields together visually on a page?",
+["section / fieldSet","banner and image","grid columns","endPoints"],
+0,"section and fieldSet are the grouping/layout widgets for organizing related inputs.");
+
+Q('AE','Widgets',
+"A dropdown should offer a fixed set of options that rarely change. Per common Extend practice, where can these static picklist values live?",
+["In a .script file included by the PMD",
+ "In a new business object per option",
+ "In the AMD flowDefinitions",
+ "In the domain security policy"],
+0,"Static lists are commonly defined in included .script files, keeping the PMD clean and the values reusable across pages.");
+
+/* --- Original: PMD scripting --- */
+Q('AE','PMD Scripting',
+"Which delimiters wrap a PMD expression?",
+["{{ ... }}","<% ... %>","(( ... ))","[script] ... [/script] tags"],
+1,"PMD expressions are wrapped in <% ... %> wherever attributes accept dynamic values.");
+
+Q('AE','PMD Scripting',
+"The page is opened with the URL parameter ?eventId=EVT1. How does script read this value?",
+["flowVariables.eventId","queryParams.eventId","site.eventId","routes.eventId"],
+1,"URL query-string values are exposed through queryParams.");
+
+Q('AE','PMD Scripting',
+"Which variable scope shares values between the steps of a flow?",
+["pageVariables","queryParams","flowVariables","site"],
+2,"flowVariables persist across flow steps — how a wizard carries the user's earlier answers forward.");
+
+Q('AE','PMD Scripting',
+"What is graph:createId() used for in PMD scripting?",
+["Generating an id for a new instance reference when building create payloads",
+ "Creating a chart widget",
+ "Hashing a password",
+ "Looking up the current user's id"],
+0,"graph:createId() generates instance ids so new instances (and references between them) can be composed in a request payload.");
+
+Q('AE','PMD Scripting',
+"Which event would you use to run script immediately when a user changes a dropdown's selection?",
+["onLoad on the page","onChange on the widget","onSend on an endpoint","onFail on an endpoint"],
+1,"Widget-level onChange fires when the value changes — e.g. to invoke a deferred endpoint with the new selection.");
+
+Q('AE','PMD Scripting',
+"Where would you put validation that must block page submission when business rules fail?",
+["In onSubmit page-level script (raising an error)","In the SMD","In the AMD routes","In defaultCollection"],
+0,"Page-level validation runs at submit time and blocks the submission with an error; widget-level validation handles field checks.");
+
+Q('AE','PMD Scripting',
+"What does ['a','b','c'].size() evaluate to?",
+["'abc'","3","true","An error — lists have no size function"],
+1,"List helpers like size(), contains(), add(), filter(), and map() operate on collections in PMD script; size() returns the element count.");
+
+Q('AE','PMD Scripting',
+"You need the page title to read \"Expenses for \" plus the value of widget txtName. Which expression works?",
+["<% 'Expenses for ' + txtName.value %>","<% concat txtName %>","{{txtName}}","<% txtName.label %>"],
+0,"String concatenation with + inside the expression, referencing the widget by id and .value.");
+
+Q('AE','PMD Scripting',
+"Which page lifecycle hook runs script once when the page opens (e.g. to initialize variables)?",
+["onSubmit","onLoad","onSend","onChange"],
+1,"onLoad is the page-open hook; onSubmit runs at submission.");
+
+Q('AE','PMD Scripting',
+"What kind of value does an expression like <% amount.value > 100 %> produce for a visible attribute?",
+["A string 'true'/'false'","A boolean","A number","An endpoint"],
+1,"Comparisons yield booleans, which is what attributes like visible, enabled, and required expect.");
+
+Q('AE','PMD Scripting',
+"A route defined in the AMD includes a path segment for the record id (e.g. /details/{recordId}). What is this mechanism called?",
+["Query parameter","Route parameter","Flow variable","Site attribute"],
+1,"Path-segment values are route parameters, defined with the route in the AMD and readable on the target page.");
+
+Q('AE','PMD Scripting',
+"Which namespaces of built-in PMD functions exist for common operations?",
+["string:, date:, and list/collection helpers","sql:, xml:, html:","css:, dom:, ajax:","There are no built-in functions"],
+0,"PMD scripting ships namespaced helpers — string: and date: functions plus collection methods like contains/filter/map.");
+
+/* --- Original: PMD structure --- */
+Q('AE','PMD Structure',
+"Which PMD section pulls shared .script files or pods into the page?",
+["include","presentation","outboundData","securityDomains"],
+0,"include lists other files (scripts, pods) whose contents the page uses.");
+
+Q('AE','PMD Structure',
+"Where in a PMD is the page's widget layout defined?",
+["script","endPoints","presentation (title, body, footer)","include"],
+2,"presentation holds the UI tree — the title, the body widgets, and the footer actions.");
+
+Q('AE','PMD Structure',
+"What does the securityDomains array at the top of a PMD control?",
+["Which endpoints the page can call",
+ "Which security domain(s) a user needs to open the page",
+ "The domains of every business object on the page",
+ "Nothing — it is documentation only"],
+1,"It is page-level security: without access to a listed domain, the user cannot open the page.");
+
+Q('AE','PMD Structure',
+"Which PMD section contains reusable functions and logic available to the page's expressions?",
+["script","presentation","footer","outboundData"],
+0,"The script section defines page-level functions and constants used across the page's expressions.");
+
+Q('AE','PMD Structure',
+"How does a PMD's id relate to its file?",
+["It must match the file name","It is randomly generated","It must match the AMD id","It is optional"],
+0,"The page id matches the PMD file name and is what tasks and routes reference.");
+
+Q('AE','PMD Structure',
+"Which subschema list correctly names major parts of a PMD?",
+["id, securityDomains, include, script, endPoints, outboundData, presentation",
+ "flows, transitions, steps, tasks",
+ "model, view, controller",
+ "siteAuth, applicationId, attributes"],
+0,"Those are the main PMD subschemas; flows live in the AMD and siteAuth in the SMD.");
+
+/* --- Original: flows & UI --- */
+Q('AE','Flows & UI',
+"Where are flowDefinitions declared?",
+["In each PMD","In the AMD","In the SMD","In a business object"],
+1,"flowDefinitions are an AMD construct; PMDs are the pages the flow's tasks open.");
+
+Q('AE','Flows & UI',
+"Which attribute marks the first step of a flow?",
+["first: true","startsFlow: true","order: 'a'","initial: true"],
+1,"startsFlow: true identifies the entry step of the flow definition.");
+
+Q('AE','Flows & UI',
+"In a flowStep, what does taskId reference?",
+["The security domain of the step","The model component task (and therefore page) the step opens","The endpoint to call","The next step"],
+1,"Each step points at a task, which maps to the page shown for that step.");
+
+Q('AE','Flows & UI',
+"Two transitions from a step both have true conditions. Which one is taken?",
+["Both, in parallel","The one with the earlier order value","A random one","Neither — it is an error"],
+1,"Transitions evaluate in order; the first true condition wins, which is why a true catch-all goes last.");
+
+Q('AE','Flows & UI',
+"How does step 3 of a wizard read a value the user entered in step 1?",
+["From queryParams","From flowVariables","From the SMD","It cannot — steps are isolated"],
+1,"flowVariables are the shared state across a flow's steps.");
+
+Q('AE','Flows & UI',
+"Which is the best use case for a flow definition?",
+["A single read-only dashboard page",
+ "A multi-step guided process where the next page depends on earlier answers",
+ "Nightly batch processing",
+ "Securing a task"],
+1,"Flows shine for wizard-style guided processes with conditional branching between steps.");
+
+Q('AE','Flows & UI',
+"What are micro pages best suited for?",
+["Full administrative consoles",
+ "Lightweight, single-purpose experiences (e.g. a quick action) with a conclusion step",
+ "Replacing orchestrations",
+ "Defining security policies"],
+1,"Micro pages deliver small focused experiences, ending with a conclusion/confirmation step.");
+
+Q('AE','Flows & UI',
+"Which combination delivers user-facing error handling when a save fails?",
+["failOnStatusCodes + onFail + a banner/message in the UI",
+ "deferred + limit + offset",
+ "flowVariables + startsFlow",
+ "enableIndex + secureByTarget"],
+0,"Detect the failure (failOnStatusCodes), handle it (onFail), and tell the user (banner/error message) — the course's error-handling pattern.");
+
+/* --- Original: tasks --- */
+Q('AE','Tasks',
+"What does a model component task fundamentally map together?",
+["A task name to a page (and route) in the app","A user to a security group","A field to a widget","An endpoint to a domain"],
+0,"Tasks bind a navigable task to a page — the unit Workday search, links, and flows use to reach app UI.");
+
+Q('AE','Tasks',
+"How do you prevent most users from reaching an app page while allowing admins?",
+["Secure the task/page with a domain whose policy grants only the admin group",
+ "Remove the page from the AMD",
+ "Mark the page deferred",
+ "Rely on users not knowing the URL"],
+0,"Security domains on tasks and pages are the access control; obscurity is not security.");
+
+Q('AE','Tasks',
+"A user wants to open your app's request page straight from Workday search. What makes that possible?",
+["A model component task for the page","An outbound endpoint","A grid widget","An attribute"],
+0,"Tasks surface app pages in Workday navigation, including search and related actions.");
+
+/* --- Original: orchestrations --- */
+Q('AE','Orchestrations',
+"Which orchestration type returns a response directly to the caller that invoked it?",
+["Asynchronous orchestration","Synchronous (API) orchestration","Scheduled orchestration","Business process orchestration"],
+1,"Synchronous orchestrations behave like an API: the caller (e.g. a PMD endpoint) waits for and receives the response.");
+
+Q('AE','Orchestrations',
+"A nightly job must process thousands of records with no user waiting. Which orchestration approach fits?",
+["Synchronous orchestration called from a page",
+ "Asynchronous orchestration (scheduled)",
+ "A deferred PMD endpoint",
+ "A flow definition"],
+1,"Long-running, high-volume, unattended work belongs in asynchronous orchestrations — scheduled or event/BP launched.");
+
+Q('AE','Orchestrations',
+"What are orchestration launch parameters for?",
+["Passing input values into the orchestration at launch (from a BP step or calling request)",
+ "Setting the orchestration's schedule",
+ "Defining its security domain",
+ "Naming its output file"],
+0,"Launch parameters are the orchestration's inputs, populated by the launcher — a BP step configuration or the API call.");
+
+Q('AE','Orchestrations',
+"Which tool do you use to build orchestrations?",
+["App Builder page designer","Orchestration Builder","Workday Studio","EIB"],
+1,"Orchestration Builder is the Extend tool for building orchestrations; Studio and EIB are the classic integration tools, not Extend.");
+
+Q('AE','Orchestrations',
+"A page needs a computed result immediately after the user clicks Calculate, with server-side logic across several APIs. What is the right pattern?",
+["Launch an async orchestration and tell the user to check back",
+ "Call a synchronous orchestration from a PMD endpoint and render its response",
+ "Run the logic in a business process approval step",
+ "Put the logic in the AMD"],
+1,"Interactive request/response work uses a synchronous orchestration invoked like an API from the page.");
+
+Q('AE','Orchestrations',
+"Why should a synchronous orchestration be kept fast and focused?",
+["It cannot call more than one API",
+ "The caller (user/page) is waiting on its response",
+ "It runs only at night",
+ "It cannot use launch parameters"],
+1,"Sync orchestrations block the caller — long work times out or degrades UX; move heavy work to async.");
+
+Q('AE','Orchestrations',
+"Which scenario should be an asynchronous orchestration launched from a business process step?",
+["Rendering a grid",
+ "Updating the approved instance and notifying systems after an approval completes",
+ "Reading queryParams",
+ "Styling a banner"],
+1,"Post-approval processing is the canonical BP-launched async orchestration — it runs after the step with no one waiting on a response in the page.");
+
+Q('AE','Orchestrations',
+"An orchestration must call a Workday operation only available as a SOAP web service. Which is TRUE?",
+["Orchestrations cannot call SOAP",
+ "The orchestration can call the SOAP operation — this is the supported path for SOAP in Extend",
+ "The PMD must call SOAP directly instead",
+ "SOAP requires an EIB inside the app"],
+1,"Orchestrations are the supported way to execute SOAP (WWS) operations in Extend solutions.");
+
+/* --- Original: REST/WQL/data --- */
+Q('AE','REST & WQL',
+"Which API executes a WQL query?",
+["POST /orchestrations/v1/run","GET /wql/v1/data?query=...","GET /raas/v1/report","POST /soap/v1"],
+1,"WQL queries run through the WQL API's data endpoint with the query passed to it.");
+
+Q('AE','REST & WQL',
+"Which statement about WQL is TRUE?",
+["WQL can insert and update data","WQL is read-only — it selects data from data sources","WQL replaces security checks","WQL only works on delivered data"],
+1,"WQL is a read-only query language over data sources (delivered and app); writes go through REST APIs or orchestrations.");
+
+Q('AE','REST & WQL',
+"What is the basic shape of a WQL query?",
+["SELECT fields FROM dataSource [WHERE conditions]","GET fields WHERE source","QUERY dataSource RETURN fields","FIND ALL IN source"],
+0,"WQL reads like SQL's select: choose fields, name the data source, optionally filter with WHERE.");
+
+Q('AE','REST & WQL',
+"When is WQL a better choice than a delivered REST API for populating a read-only grid?",
+["When you must update the records afterwards",
+ "When you want to select specific fields (including across relationships) and filter server-side",
+ "When you need SOAP",
+ "Never — REST is always preferred"],
+1,"WQL lets you shape exactly the fields you need and filter/traverse relationships — ideal for report-style reads.");
+
+Q('AE','REST & WQL',
+"What does calling a custom report as RaaS give an Extend app?",
+["A way to bypass report security",
+ "Reuse of existing tenant report logic (calculated fields, delivered data sources) as a service",
+ "Write access to the report's data source",
+ "Automatic indexing"],
+1,"RaaS exposes an existing web-service-enabled report so the app reuses its logic and data instead of rebuilding it.");
+
+Q('AE','REST & WQL',
+"Your page must display delivered worker information (names, titles) as JSON. Which is the most direct option?",
+["A Workday REST API such as /common/v1/workers","A SOAP call from the PMD","Screen-scraping the worker profile","An attachment object"],
+0,"Delivered REST APIs serve delivered data as JSON — the natural fit for pages.");
+
+Q('AE','REST & WQL',
+"A WQL query in your app returns fewer rows for one user than another. Why?",
+["WQL results are random",
+ "Data-source security is evaluated in the requesting user's context, filtering what each user can see",
+ "The second user's browser cache",
+ "WQL ignores WHERE clauses for some users"],
+1,"All Extend data access is security-trimmed per user — different domain access means different visible rows.");
+
+Q('AE','REST & WQL',
+"Which is TRUE about custom reports built on your app's data source?",
+["They require web-service-enablement before related fields appear",
+ "Fields from SINGLE_INSTANCE-related objects are available to the report",
+ "They bypass the object's security domain",
+ "They can only show indexed fields"],
+1,"Reports traverse SINGLE_INSTANCE relationships out of the box; enablement is only needed to call the report as RaaS, and security always applies.");
+
+Q('AE','REST & WQL',
+"Which data-access choice is correct for each need — (1) CRUD on app data, (2) field-selective read-only queries, (3) SOAP-only operation?",
+["(1) WQL, (2) SOAP, (3) REST",
+ "(1) app collection REST API, (2) WQL, (3) orchestration calling the SOAP API",
+ "(1) RaaS, (2) attachment API, (3) WQL",
+ "(1) SOAP, (2) REST, (3) WQL"],
+1,"App BO API for CRUD, WQL for report-style reads, and orchestrations for SOAP — the decision framework the exam guide calls 'appropriate application use for each data source type.'");
+})();
+
+/* ---------- QUESTION BANK: DEVELOPMENT LIFECYCLE ---------- */
+(function(){
+const Q=(t,s,q,o,a,e,src)=>QUESTIONS.push({t,s,q,o,a,e,src});
+
+/* --- Real practice-exam questions --- */
+Q('DL','Data Sources',
+"Your Extend app's EmployeeEvent business object has a SINGLE_INSTANCE field named attendee referencing the Attendee business object. The data source for EmployeeEvent is called employeeEvents. When creating an advanced custom report via the Create Custom Report task, what is true if employeeEvents is the selected data source?",
+["You will not be able to access the fields from the related Attendee instances.",
+ "You will only have access to the Attendee fields if those fields have been indexed.",
+ "You can only access the Attendee fields if you web service-enable the report.",
+ "You can access all fields on EmployeeEvent and Attendee."],
+3,"SINGLE_INSTANCE relationships expose the related object's fields to reporting from the source data source. Indexing helps performance but is not a prerequisite, and web-service-enablement is only for calling the report as RaaS.","exam");
+
+Q('DL','Logs',
+"A user reports this page error in your Workday app: Internal Server Error. (id: VPS|5a43a8101-0f47-4cfa-a3a5-a84c13c2342b). To see all logs related to this issue, which log field would you use to filter the logs?",
+["wd_api_client_id","wd_common_request_id","wd_response_time","wd_request_bytes"],
+1,"wd_common_request_id is the correlation id tying together every log line for a single transaction — filter on it with the error's id to see everything related to the failure.","exam");
+
+/* --- Original --- */
+Q('DL','App Lifecycle',
+"Where do you develop, build, and initially deploy an Extend application?",
+["Workday Studio","App Builder","Extend App Manager","Microsoft Visual Studio"],
+1,"App Builder is the cloud development environment for Extend — source editing, build, and deployment to a development environment.");
+
+Q('DL','App Lifecycle',
+"What is the typical promotion path for an Extend app?",
+["Production, then sandbox for testing",
+ "Development, then sandbox/test, then production",
+ "Straight to production only",
+ "Sandbox to development"],
+1,"Apps are developed and tested in lower environments and promoted upward, with production promotion as the controlled final step.");
+
+Q('DL','App Lifecycle',
+"Why must you plan app promotions around promotion deadlines and maintenance windows?",
+["Promotions are free only on weekends",
+ "Promotions are restricted around Workday's weekly service updates and twice-yearly feature releases",
+ "The App Builder closes at night",
+ "Security policies expire otherwise"],
+1,"The Extend lifecycle follows the Workday release calendar — promotions are blocked during maintenance/blackout windows, so schedule around them.");
+
+Q('DL','App Lifecycle',
+"What are Extend application attributes?",
+["Fields on a business object",
+ "Application-level, tenant-specific configuration values the app reads at runtime",
+ "CSS styling properties",
+ "Log fields"],
+1,"Attributes hold per-environment configuration (e.g. an external URL or toggle) set in the console — the right home for environment-specific values.");
+
+Q('DL','App Lifecycle',
+"Which tool in the Workday tenant lets administrators view installed Extend apps and their components (tasks, security domains)?",
+["Workday Extend App Manager","App Builder","Orchestration Builder","The PMD editor"],
+0,"Extend App Manager is the tenant-side view of installed apps and the jumping-off point for tasks like editing an app domain's security policy.");
+
+Q('DL','App Lifecycle',
+"Which responsibilities belong to the Developer Site Console (rather than the tenant)?",
+["Editing domain security policies",
+ "App-level administration such as configuring attributes, promoting the app, and monitoring",
+ "Approving business processes",
+ "Editing PMD widgets"],
+1,"The console manages the app across environments — attributes, promotion, monitoring/logs — while security policies and BP configuration live in the tenant.");
+
+Q('DL','Data Sources',
+"You need existing tenant report logic (calc fields on a delivered data source) inside your app. The report is already built. What is the fastest appropriate approach?",
+["Rebuild the logic in WQL","Web-service-enable the report and call it as RaaS","Export the report to CSV manually","Copy the data into a business object nightly"],
+1,"RaaS reuses proven report logic as a service — no rebuild, and report security still applies.");
+
+Q('DL','Data Sources',
+"Which statement about how app data sources are secured is TRUE?",
+["App data sources are public within the tenant",
+ "Access is governed by the business object's security domain policy, evaluated for the requesting user",
+ "Only the app developer can query them",
+ "Security applies to pages but not to APIs"],
+1,"The MCBO's domain policy controls data-source access, enforced per requesting user on every read — API, report, or WQL.");
+
+Q('DL','Data Sources',
+"A report traverses from your app data source into delivered WORKER data. What access does a user need to see full results?",
+["Only the app domain",
+ "Only the delivered domain",
+ "Access on both the app domain and the delivered domain(s) involved",
+ "No access — reports bypass security"],
+2,"Traversals are security-checked on each side; missing access on either trims what the user sees.");
+
+Q('DL','Logs',
+"Beyond a correlation id, which filters are typically available when viewing app logs?",
+["App, environment, time range, and severity",
+ "Only the log's line number",
+ "Browser type only",
+ "Logs cannot be filtered"],
+0,"The log viewer filters by app/environment/time/severity plus log fields — how you narrow from noise to the relevant transaction.");
+
+Q('DL','Logs',
+"Which log field would help you investigate slow page loads rather than a specific error?",
+["wd_common_request_id","wd_response_time","wd_request_bytes only","wd_api_client_id"],
+1,"wd_response_time captures latency — the field to scan when triaging performance rather than tracing one failed transaction.");
+
+Q('DL','Logs',
+"During development, an outbound save intermittently fails and you need more context in the logs. What is a good practice?",
+["Remove failOnStatusCodes so failures disappear",
+ "Add an onFail handler that captures/logs the failure context",
+ "Retry until it works",
+ "Disable security on the endpoint"],
+1,"onFail is your hook to record what failed and why — combine it with the log viewer's correlation id to reconstruct the transaction.");
+})();
+
+/* ---------- QUESTION BANK: EXPANSION PACK (scenario style) ---------- */
+(function(){
+const Q=(t,s,q,o,a,e,src)=>QUESTIONS.push({t,s,q,o,a,e,src});
+
+/* ===== MODEL COMPONENTS (+15) ===== */
+Q('MC','Data Model',
+"Your Donation business object must capture the amount an employee donates, in the employee's local currency. Which field type should the amount use?",
+["NUMBER","TEXT","CURRENCY","RICH_TEXT"],
+2,"CURRENCY carries the amount with currency context; NUMBER would lose which currency the donation was made in.");
+
+Q('MC','Data Model',
+"A Mentorship app pairs Mentors with Mentees over time; a worker can be in many pairings. What models a pairing best?",
+["A MULTI_INSTANCE field on WORKER",
+ "A Pairing business object with SINGLE_INSTANCE fields for mentor and mentee (both targeting WORKER) plus pairing dates",
+ "Two TEXT fields storing names",
+ "A flow definition"],
+1,"A dedicated object with two WORKER references models the relationship and gives a home for pairing-specific data like start/end dates.");
+
+Q('MC','Data Model',
+"You need to record only the calendar day a request was made (no time component). Which field type fits?",
+["DATE","TEXT","NUMBER","BOOLEAN"],
+0,"DATE stores day-level values; storing dates as TEXT breaks sorting, filtering, and date functions.");
+
+Q('MC','Data Model',
+"Your app is live in production with data. Which schema change requires the most caution?",
+["Adding a brand-new optional field",
+ "Renaming or removing an existing field that holds production data",
+ "Adding a new page",
+ "Adding an exam tip to documentation"],
+1,"Changing or removing fields with existing data is constrained and risky once deployed with production data; additive changes are the safe path.");
+
+Q('MC','Business Object Attributes',
+"Given this fragment: @@'defaultCollection': {\n  'name': 'donations',\n  'label': 'Donations'\n}@@ What does the name value determine?",
+["The page title","The collection segment in the object's API URL and its data source name","The security domain","The display field"],
+1,"defaultCollection.name is what appears in /v1/donations and what you select as the report/WQL data source; label is the human-readable name.");
+
+Q('MC','Business Object Attributes',
+"A field definition shows `\"secureByTarget\": false` on a SINGLE_INSTANCE field targeting WORKER. What is the consequence for the domain security policy?",
+["Nothing changes",
+ "Constrained security groups will not be selectable for contextual access to instances",
+ "The field becomes unreadable",
+ "The object loses its default domain"],
+1,"Without secureByTarget, access does not follow the target's context, so constrained groups (e.g. manager-of-direct-reports) are unavailable on the policy.");
+
+Q('MC','Business Object Attributes',
+"Users report they can filter the API on eventDate but not on eventName (a TEXT field). Both fields exist. Why?",
+["TEXT fields can never be query parameters",
+ "eventName lacks enableIndex: true while eventDate has it (or is otherwise indexed)",
+ "eventName is missing useForDisplay",
+ "The collection is not deployed"],
+1,"Only indexed fields work as query parameters; add enableIndex: true to eventName and redeploy.");
+
+Q('MC','Business Object API',
+"Which request retrieves one specific instance of the donations collection?",
+["GET /v1/donations?limit=1","GET /v1/donations/{id}","POST /v1/donations/{id}","GET /v1/donations?bulk=true"],
+1,"GET on the collection plus the instance id returns that single instance; limit=1 just returns the first of a list.");
+
+Q('MC','Business Object API',
+"You must update the status field on 60 existing instances in one call. Which request shape is correct?",
+["PATCH .../donations?bulk=true with an array of objects each carrying its id and the new status",
+ "60 separate PATCH calls are the only option",
+ "GET .../donations?update=true",
+ "POST .../donations with limit=60"],
+0,"bulk=true works for updates too — send the array (up to 100) with each instance's id and changed fields.");
+
+Q('MC','Business Processes',
+"In a model business process, what does the initiation step represent?",
+["The final approval",
+ "The event that starts the process — typically the user's submission from your app",
+ "A nightly schedule",
+ "The security policy activation"],
+1,"Initiation is the entry point: the submitted instance/event that the rest of the steps then route and act on.");
+
+Q('MC','Business Processes',
+"Your Event Approval BP should open a read-only summary page when approvers view the event. Where is that connection made?",
+["In the PMD script section","Through the business process's page routes to your app's page","In the SMD","In enableIndex"],
+1,"Page routes bind BP steps (view/edit/initiate) to specific app pages — that is how the approver lands on your summary page.");
+
+Q('MC','Business Processes',
+"After deployment, the customer wants approvals to route to Finance only when donation amount exceeds 1,000. Where is this configured?",
+["In App Builder source code",
+ "In the tenant's business process definition using step conditions",
+ "In the PMD presentation",
+ "In the Developer Site Console"],
+1,"Routing rules and step conditions are tenant BP configuration — admins maintain them on the custom BP type without an app change.");
+
+Q('MC','Security',
+"A user can open your page (page security passes) but the grid on it is empty while other users see rows. Most likely cause?",
+["The grid widget is invisible",
+ "The user lacks access on the security domain securing the data source the grid reads",
+ "The endpoint uses POST",
+ "flowVariables are not set"],
+1,"Page access and data access are separate checks — the data source's domain policy trims rows per user.");
+
+Q('MC','Security',
+"Your app calls the delivered /common/v1/workers REST API. Access to that worker data is governed by…",
+["your app's model component domain only",
+ "the delivered security domains securing worker data, evaluated for the calling user",
+ "the SMD",
+ "no security — REST APIs are open"],
+1,"Delivered data keeps its delivered domain policies; the API executes in the user's security context.");
+
+Q('MC','Data Model',
+"To let users attach a receipt file to an ExpenseItem instance, what do you build?",
+["A RICH_TEXT field storing the file inline",
+ "A model attachment object plus an ATTACHMENT-type reference on ExpenseItem, with upload/display handled in the PMD",
+ "A TEXT field with the file path",
+ "A MULTI_INSTANCE field targeting WORKER"],
+1,"Attachments use a model attachment object referenced from the business object; the page uploads and renders files via the attachment endpoints/widgets.");
+
+/* ===== APP EXPERIENCE (+50) ===== */
+/* endpoints */
+Q('AE','Endpoints',
+"Given: @@{\n  'name': 'getOpenEvents',\n  'url': '<% site.applicationId + \\'/v1/events?status=open\\' %>',\n  'authType': 'sso',\n  'deferred': true\n}@@ When does this endpoint execute?",
+["Automatically when the page loads","Only when invoked from script (or by a widget that drives it)","Every 30 seconds","When the page is submitted"],
+1,"deferred: true removes it from page-load fetching; script (or a search-driven widget) invokes it when needed.");
+
+Q('AE','Endpoints',
+"What must an outbound endpoint's onSend script produce?",
+["Nothing — onSend is only for logging",
+ "The value (data object) to send as the request body",
+ "The HTTP status code",
+ "A security domain"],
+1,"onSend's return value becomes the request body — it is where you assemble the payload from widget values and variables.");
+
+Q('AE','Endpoints',
+"A Submit button in the footer should save the form through createDonation. What is the standard wiring?",
+["The button triggers page submission, which fires the outbound endpoint (its onSend builds the body)",
+ "The button edits the AMD",
+ "The button sets deferred: false",
+ "Buttons cannot trigger endpoints"],
+0,"Footer submit actions drive outboundData endpoints — submission fires the outbound endpoint and onSend shapes the payload.");
+
+Q('AE','Endpoints',
+"An endpoint that worked in the dev tenant returns 403 Forbidden for a tester in the sandbox tenant. Most likely cause?",
+["The JSON is malformed",
+ "The tester lacks access on the securing domain(s) in that tenant (policy not configured/activated)",
+ "403 means the server is down",
+ "The endpoint must be deferred"],
+1,"403 is an authorization failure — endpoints run as the user, so missing domain grants (or unactivated policy changes) in that tenant block the call.");
+
+Q('AE','Endpoints',
+"A page defines three inbound endpoints, one of which is deferred. What loads at page open?",
+["All three","Only the two non-deferred endpoints","Only the deferred one","None until script runs"],
+1,"Non-deferred inbound endpoints fetch at load; deferred ones wait to be invoked.");
+
+Q('AE','Endpoints',
+"An optional 'related news' panel should not block the page if its source is down. Which endpoint attribute helps?",
+["failOnStatusCodes","bestEffort: true","httpMethod: GET","onSend"],
+1,"bestEffort lets the page carry on when the endpoint fails — right for optional, non-critical data.");
+
+Q('AE','Endpoints',
+"Endpoint getWorker returns @@{ 'data': [ { 'name': 'Logan McNeil' } ] }@@ Which expression shows the first worker's name?",
+["<% getWorker.data[0].name %>","<% endPoints.getWorker[0] %>","<% getWorker.name %>","<% data.name %>"],
+0,"Reference the endpoint by name, then walk the response structure: data[0].name.");
+
+Q('AE','Endpoints',
+"The page opens as /eventDetails?eventId=EVT7 and must fetch that event. Which URL expression is right for the inbound endpoint?",
+["<% site.applicationId + '/v1/events/' + queryParams.eventId %>",
+ "<% '/v1/events/' + flowVariables.event %>",
+ "'/v1/events/eventId'",
+ "<% events.data %>"],
+0,"Build the URL from the query parameter — queryParams.eventId carries EVT7 into the request path.");
+
+Q('AE','Endpoints',
+"You only need to change two fields on an existing instance from the page. Which outbound httpMethod is the standard fit?",
+["GET","PATCH","DELETE","HEAD"],
+1,"PATCH performs a partial update with just the changed fields; PUT replaces, GET reads.");
+
+/* widgets */
+Q('AE','Widgets',
+"In this column: @@{\n  'type': 'column', 'columnId': 'titleCol', 'label': 'Title',\n  'cellTemplate': { 'type': 'text', 'value': '<% employee.title %>' }\n}@@ where does the name employee come from?",
+["The endpoint name","The grid's rowVariableName","The SMD","It is a reserved word"],
+1,"rowVariableName names the current-row variable that cellTemplates read — here it was set to employee.");
+
+Q('AE','Widgets',
+"An admin-only section should show when the user checked chkAdmin AND selected 'Advanced' in ddMode. Which visible expression works?",
+["<% chkAdmin.value && ddMode.value == 'Advanced' %>",
+ "<% chkAdmin && ddMode %>",
+ "visible: 'adminOnly'",
+ "<% flowVariables.admin %>"],
+0,"Combine the widget values with && in the visible expression — both conditions must be true.");
+
+Q('AE','Widgets',
+"What is the difference between visible: false and enabled: false on an input widget?",
+["No difference",
+ "visible: false removes it from display; enabled: false shows it but prevents interaction (read-only/greyed)",
+ "enabled: false deletes its value",
+ "visible: false only works on grids"],
+1,"Visibility controls display; enabled controls interactivity — a disabled widget is still shown.");
+
+Q('AE','Widgets',
+"On an instanceList, what does idKey identify?",
+["The page id","The property carrying each instance's identifier used for selection","The security domain","The endpoint's auth type"],
+1,"idKey tells the instanceList which property is the instance id, so selections resolve to the right reference.");
+
+Q('AE','Widgets',
+"Users must pick exactly one of three shipping speeds, all visible at once. Which widget fits best?",
+["checkBox","radioButtonGroup","grid","banner"],
+1,"Radio buttons are the single-choice-from-few control; checkboxes imply multi-select.");
+
+Q('AE','Widgets',
+"Per common Extend practice, how can an image be displayed on a PMD page?",
+["Only from a Workday report",
+ "With an image widget whose value is a URL or base64 data",
+ "Images are not supported",
+ "Via the SMD"],
+1,"The image widget renders from a URL or base64-encoded value — a pattern you'd use for logos or previews.");
+
+Q('AE','Widgets',
+"A date input must be provided before submission. Which is the widget-level approach?",
+["Set required on the widget so submission is blocked with an error when empty",
+ "Hide the submit button permanently",
+ "Set deferred on the widget",
+ "Use a banner instead of an input"],
+0,"Widget-level validation like required blocks submit and messages the user; page-level onSubmit handles cross-field rules.");
+
+Q('AE','Widgets',
+"A grid over thousands of rows should stay responsive. Which combination supports this?",
+["Load everything and hide extra rows",
+ "Endpoint paging (limit/offset) with grid pagination, filtering on indexed fields",
+ "Convert the grid to a banner",
+ "Put the rows in flowVariables"],
+1,"Page and filter server-side: limit/offset paging plus indexed-field filters keep large grids usable — the course's large-data pattern.");
+
+Q('AE','Widgets',
+"Five pages share the same header block of widgets and helper logic. What avoids copy-paste?",
+["A pod included by each page","Five identical PMD sections","An orchestration","A security domain"],
+0,"Pods package reusable presentation fragments; include the pod in each PMD.");
+
+Q('AE','Widgets',
+"On a text input, what is the difference between label and value?",
+["They are interchangeable",
+ "label is the caption shown to the user; value is the data the widget holds",
+ "value is only for grids",
+ "label sets the widget id"],
+1,"label captions the field; value is what script reads (txtName.value) and what gets submitted.");
+
+/* scripting */
+Q('AE','PMD Scripting',
+"What does a list's filter() operation return in PMD script?",
+["The first matching item only","A new list containing the items that match the condition","true/false","The original list, modified in place"],
+1,"filter produces a new collection of matching elements — chain it with map and size for data shaping.");
+
+Q('AE','PMD Scripting',
+"Using the earlier validValues list ['Beth','Logan','George'], what does validValues.contains('Sam') return?",
+["TRUE","FALSE","'Sam'","empty"],
+1,"'Sam' is not in the list, so contains returns the boolean false — the mirror image of the practice-exam question.");
+
+Q('AE','PMD Scripting',
+"Where should you initialize page-scoped variables the page needs from the moment it renders?",
+["onSubmit","The page's onLoad script","An outbound endpoint's onSend","The AMD"],
+1,"onLoad runs at page open — the place for initial state.");
+
+Q('AE','PMD Scripting',
+"A wizard's step 1 stores the chosen transportationType. Which statement lets step 3's page react to it?",
+["<% queryParams.transportationType %>","<% flowVariables.transportationType %>","<% site.transportationType %>","<% self.transportationType %>"],
+1,"Flow variables are the cross-step state of a flow — set in one step, read in later steps and transition conditions.");
+
+Q('AE','PMD Scripting',
+"You want a label to read 'Approved' when status is A, otherwise 'Pending'. Which expression pattern applies?",
+["A conditional (ternary/if) expression: <% status.value == 'A' ? 'Approved' : 'Pending' %>",
+ "Two overlapping labels always visible",
+ "A flowDefinition",
+ "A separate endpoint per label"],
+0,"Conditional expressions compute display values inline — the everyday tool for dynamic labels.");
+
+Q('AE','PMD Scripting',
+"In an onSend like: @@'onSend': '<% { \\'event\\': { \\'id\\': queryParams.eventId } } %>'@@ what does the expression evaluate to?",
+["A string of JSON","A data object used as the request body","An HTML fragment","A boolean"],
+1,"The expression yields the object itself, which the endpoint sends as the body.");
+
+Q('AE','PMD Scripting',
+"Submission must fail with a message when endDate is before startDate. Where does this rule belong?",
+["Widget required attributes only",
+ "Page-level validation in onSubmit that raises an error when the comparison fails",
+ "The AMD",
+ "failOnStatusCodes"],
+1,"Cross-field rules are page-level validation at submit; required alone can't compare two fields.");
+
+Q('AE','PMD Scripting',
+"When creating a parent instance and its child in one payload, why call graph:createId()?",
+["To encrypt the payload",
+ "To mint an id for the new parent so the child's reference can point at it within the same request",
+ "To fetch the next database sequence",
+ "To name the endpoint"],
+1,"createId lets you reference not-yet-persisted instances inside a composite payload.");
+
+Q('AE','PMD Scripting',
+"Which statement about <% %> expressions is TRUE?",
+["They run on a nightly schedule",
+ "They are evaluated to produce dynamic attribute values (strings, booleans, objects) where the PMD allows them",
+ "They can only return strings",
+ "They execute in the AMD"],
+1,"Expressions power dynamic values across the PMD — visibility booleans, computed labels, URLs, request bodies.");
+
+Q('AE','PMD Scripting',
+"A route /details/{workerId} opens your page. Compared to ?workerId=..., the {workerId} segment is a…",
+["flow variable","route parameter defined with the route","site attribute","widget id"],
+1,"Path-segment inputs are route parameters (declared with the route); ?x=… values are query parameters.");
+
+/* structure */
+Q('AE','PMD Structure',
+"Three pages need the same set of helper functions and a static country picklist. Where do they live?",
+["Duplicated in each page's script",
+ "In a .script file listed in each PMD's include",
+ "In the domain security policy",
+ "In defaultCollection"],
+1,"Shared script files hold common functions/static lists; include pulls them into each page.");
+
+Q('AE','PMD Structure',
+"Which file declares the app's tasks-to-page routing and flowDefinitions?",
+["PMD","AMD","SMD","POD"],
+1,"The AMD is the app-level definition — routes and flows; PMDs are individual pages; the SMD carries site-level settings.");
+
+Q('AE','PMD Structure',
+"Which kind of settings belong in the SMD?",
+["Grid columns","Site-level settings such as authentication configuration (siteAuth) for the app",
+ "Business object fields","Transition conditions"],
+1,"The SMD holds site/application-level configuration like auth definitions the pages' endpoints reference.");
+
+Q('AE','PMD Structure',
+"Where is a page's title defined?",
+["presentation attributes (title) in the PMD","The AMD","The task's label only","The script section"],
+0,"The presentation subschema carries the title along with body and footer.");
+
+Q('AE','PMD Structure',
+"A teammate asks where the page 'decides what to render vs what data to fetch.' Which mapping is correct?",
+["presentation = UI to render; endPoints/outboundData = data in and out",
+ "script = UI; presentation = data",
+ "include = UI; footer = data",
+ "securityDomains = rendering"],
+0,"Presentation is the render tree; endpoints move data. Script glues them with logic.");
+
+/* flows */
+Q('AE','Flows & UI',
+"In a flowDefinition, a step has no outgoing transition whose condition is true. What happens for a user on that step?",
+["The flow cannot advance along those transitions — design a catch-all (true) transition if a default route is needed",
+ "The app crashes",
+ "The user is logged out",
+ "A random step is chosen"],
+0,"No true condition means no transition fires — the reason ordered catch-alls exist.");
+
+Q('AE','Flows & UI',
+"You are adding a review step to an existing flow. Which pieces must the new flowStep define at minimum?",
+["An id and the taskId of the task/page it opens (plus transitions to route onward)",
+ "A security domain and an endpoint",
+ "A widget tree",
+ "A launch parameter"],
+0,"Steps are id + taskId (+ transitions/ordering); the task supplies the page.");
+
+Q('AE','Flows & UI',
+"When should a set of pages be modeled as a flow rather than independent tasks?",
+["Whenever there are two or more pages",
+ "When users must move through them in a guided sequence with shared state and conditional branching",
+ "When the pages are read-only",
+ "Never — flows are deprecated"],
+1,"Flows exist for guided, stateful, branching sequences; unrelated pages stay as independent tasks.");
+
+Q('AE','Flows & UI',
+"What ends a micro-page experience gracefully after the user completes the quick action?",
+["A conclusion step confirming the result","A 404 page","Logging out","A nightly orchestration"],
+0,"Micro pages close with a conclusion/confirmation — a lightweight end state for the single-purpose flow.");
+
+Q('AE','Flows & UI',
+"A transition's condition reads <% flowVariables.total > 5000 %>. Where was flowVariables.total set?",
+["By Workday automatically","By script/pages in earlier flow steps","In the SMD","By the domain policy"],
+1,"Earlier steps write flow variables; transitions and later steps read them.");
+
+/* tasks */
+Q('AE','Tasks',
+"Marketing wants to email a link that lands users directly on the New Request page. What must exist for the link to work (and be secure)?",
+["A task mapped to the page, secured by a domain the recipients hold",
+ "A public URL with no task",
+ "An orchestration",
+ "A bigger grid"],
+0,"Deep links resolve through tasks; the task's domain still gates who can open it.");
+
+Q('AE','Tasks',
+"Why is hiding a button not a substitute for task/page security?",
+["It is — hidden means secure",
+ "Users can still reach the page via search, links, or direct navigation; only domain security actually blocks access",
+ "Buttons cannot be hidden",
+ "Security only applies to grids"],
+1,"UI hiding is cosmetic; tasks/pages remain reachable unless domain security denies them.");
+
+/* orchestrations */
+Q('AE','Orchestrations',
+"A page's Calculate button calls an orchestration through an endpoint and renders the returned quote immediately. Which template is in play?",
+["Asynchronous","Synchronous (API) orchestration","Scheduled","Business-process step"],
+1,"Caller waits, response renders — synchronous by definition.");
+
+Q('AE','Orchestrations',
+"After a Donation BP completes approval, matching-gift records must be created in the app and a REST notification sent — no user waiting. Best design?",
+["Synchronous orchestration from the approval page",
+ "Asynchronous orchestration launched from a BP step after approval",
+ "A deferred endpoint",
+ "Client-side script loop"],
+1,"Post-approval side-effects are the classic BP-launched async orchestration.");
+
+Q('AE','Orchestrations',
+"Every night at 2 AM the app must sync reference data from a Workday REST API into a business object. What runs this?",
+["A scheduled (asynchronous) orchestration","A user pressing refresh","onLoad script","A pod"],
+0,"Scheduled orchestrations handle recurring unattended jobs.");
+
+Q('AE','Orchestrations',
+"A synchronous orchestration is called with a request that includes {\"region\": \"EMEA\"}. How does the orchestration receive that value?",
+["Through its launch parameters / input, referenced in its steps",
+ "Through flowVariables",
+ "Through the PMD's presentation",
+ "It cannot receive input"],
+0,"Inputs arrive as launch parameters the orchestration's logic references.");
+
+Q('AE','Orchestrations',
+"Inside an orchestration that must update your app's Donation instance, what does it call?",
+["The app's collection REST API (e.g. PATCH /v1/donations/{id})","The PMD directly","The AMD","The grid widget"],
+0,"Orchestrations act on app data through the same collection APIs — that's how BP-launched updates write back.");
+
+Q('AE','Orchestrations',
+"Processing 20,000 records takes several minutes. Why is a synchronous orchestration the wrong home?",
+["Sync orchestrations cannot loop",
+ "The caller would wait/time out — long-running bulk work belongs in an asynchronous orchestration",
+ "Async cannot call REST",
+ "It would cost extra licenses"],
+1,"Sync means someone is blocked waiting; volume/duration pushes work async.");
+
+Q('AE','Orchestrations',
+"Which statement best describes Orchestration Builder?",
+["A spreadsheet import tool",
+ "The Extend tool where you compose orchestration steps that call APIs, transform data, branch, and loop",
+ "A report writer",
+ "A tenant security console"],
+1,"Orchestration Builder assembles the steps of data/process flows — the exam guide's 'processes that integrate complex data and process flows.'");
+
+/* REST/WQL */
+Q('AE','REST & WQL',
+"Which WQL query returns open donations over 500? ",
+["SELECT donor, amount FROM donations WHERE status = 'open' AND amount > 500",
+ "GET donations IF amount > 500",
+ "FILTER donations BY amount",
+ "POST /v1/donations?amount=500"],
+0,"WQL uses SELECT ... FROM dataSource WHERE ... — fields, source, filter.");
+
+Q('AE','REST & WQL',
+"In WQL, what do you put after FROM when querying your app's data?",
+["The business object's label","The object's data source / collection name (e.g. donations)","The PMD id","The domain name"],
+1,"You query the data source named by the object's collection — the same name the API uses.");
+
+Q('AE','REST & WQL',
+"You need a read-only management dashboard combining fields from your app object and its referenced WORKER data, filtered server-side. Best fit?",
+["One WQL query traversing the relationship","Multiple full-collection GETs joined in page script","SOAP","An attachment object"],
+0,"WQL selects exactly the fields you need across relationships with server-side filtering — the dashboard-read sweet spot.");
+
+Q('AE','REST & WQL',
+"An existing tenant report already computes complex eligibility flags your page must show. The report is web-service-enabled. What should the page call?",
+["The report as RaaS","A rebuilt WQL copy of the logic","The SOAP API","Nothing — reports are unreachable from apps"],
+0,"RaaS reuses the report's logic and security instead of duplicating calc fields in the app.");
+
+Q('AE','REST & WQL',
+"Which is TRUE about calling Workday REST APIs from a PMD endpoint?",
+["Responses are XML only",
+ "They return JSON and run in the signed-in user's security context (authType sso)",
+ "They bypass domain policies",
+ "They require an EIB"],
+1,"Delivered REST APIs speak JSON and are security-trimmed per calling user — ideal for page data.");
+
+/* ===== DEVELOPMENT LIFECYCLE (+8) ===== */
+Q('DL','App Lifecycle',
+"You planned a production promotion the same weekend as a Workday feature release. What should you expect?",
+["Nothing special",
+ "Promotion restrictions/blackout around the release window — schedule the promotion outside it",
+ "Automatic double deployment",
+ "Free training credits"],
+1,"Promotion deadlines and maintenance windows track the release calendar; release weekends are exactly when promotions are restricted.");
+
+Q('DL','App Lifecycle',
+"Your app calls an external service whose URL differs between sandbox and production. Where does the URL belong?",
+["Hardcoded in the PMD with an if statement",
+ "In an application attribute, set per environment in the console and read by the app at runtime",
+ "In a TEXT field on a business object",
+ "In the domain security policy"],
+1,"Attributes are the per-tenant configuration mechanism — no code branches, no redeploys to change environment values.");
+
+Q('DL','App Lifecycle',
+"Which sequence best describes taking a new Extend app to users?",
+["Build in App Builder → deploy/test in development → promote through sandbox → promote to production → configure tenant security/BP",
+ "Configure security → build → skip testing → production",
+ "Production first, then development",
+ "Email the source files to users"],
+0,"Develop, test low, promote up, then complete tenant-side configuration — the lifecycle the guide expects you to explain.");
+
+Q('DL','App Lifecycle',
+"A functional admin needs to see which tasks and security domains an installed app exposes in the tenant. Where do they look?",
+["Workday Extend App Manager","App Builder source","The PMD files","Orchestration Builder"],
+0,"App Manager is the tenant-side inventory of an installed app's components — and the path into its domain policies.");
+
+Q('DL','Logs',
+"You want only the failures from the last hour for your app in the log viewer. Which filters do you combine?",
+["App + time range + error severity","Browser + font size","wd_request_bytes only","You cannot combine filters"],
+0,"Narrow by app, window, and severity first; then pivot to a wd_common_request_id when you find the failing transaction.");
+
+Q('DL','Logs',
+"Which log field tells you which client/integration made a request?",
+["wd_common_request_id","wd_api_client_id","wd_response_time","wd_request_bytes"],
+1,"wd_api_client_id identifies the calling client — useful when several consumers hit the same APIs.");
+
+Q('DL','Data Sources',
+"Your page must both read and update your app's Donation records. Which access path supports the updates?",
+["WQL","The object's collection REST API","RaaS","A custom report"],
+1,"WQL, reports, and RaaS are read paths; writes go through the collection API (or an orchestration calling it).");
+
+Q('DL','App Lifecycle',
+"Where does Workday expect an Extend Pro to look up API references, schemas, and documentation while building?",
+["The Workday Extend Developer site","Random forums","The tenant's release notes only","There is no documentation"],
+0,"The exam guide's first expert task is finding topics and documentation on the Workday Extend Developer site — know your way around it.");
+})();
+
+</script>
+</body>
+</html>

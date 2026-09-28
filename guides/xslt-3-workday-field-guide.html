@@ -1,0 +1,1529 @@
+<!doctype html>
+<html lang="en" data-view="all">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XSLT 3.0 for Workday — Field Guide</title>
+<style>
+:root{
+  --bg:#0b0f17; --bg2:#0e131d; --surface:#141b27; --surface2:#192231; --line:#26313f;
+  --ink:#dbe3ef; --muted:#8694a6; --faint:#5c6b7e;
+  --in:#e3a23c; --xsl:#4ec8d9; --out:#5ccb8b; --primary:#4ec8d9; --warn:#e2723f;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(1200px 700px at 78% -8%,#13202e 0%,var(--bg) 55%) fixed,var(--bg);
+  color:var(--ink);font-family:var(--sans);line-height:1.62;font-size:15.5px;-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration:none}
+code{font-family:var(--mono);font-size:.86em;background:#0c1019;border:1px solid var(--line);
+  padding:.06em .38em;border-radius:5px;color:#bfe6ec}
+h1,h2,h3{line-height:1.18;letter-spacing:-.01em}
+.wrap{display:grid;grid-template-columns:268px minmax(0,1fr);max-width:1280px;margin:0 auto;gap:0}
+
+/* sidebar */
+aside{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:26px 18px 40px;
+  border-right:1px solid var(--line);background:linear-gradient(180deg,var(--bg2),transparent 30%)}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand .glyph{font-family:var(--mono);font-weight:700;color:#0b0f17;background:var(--xsl);
+  width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-size:15px;letter-spacing:-1px}
+.brand b{font-size:15px;letter-spacing:.02em}
+.brand small{display:block;color:var(--faint);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:1px}
+.viewtoggle{display:flex;gap:5px;margin:16px 0 14px;background:#0c1019;border:1px solid var(--line);border-radius:9px;padding:4px}
+.viewtoggle button{flex:1;background:transparent;border:0;color:var(--muted);font:600 12.5px/1 var(--sans);
+  letter-spacing:.04em;padding:8px 4px;border-radius:6px;cursor:pointer;transition:.15s}
+.viewtoggle button.active{background:var(--xsl);color:#08222a}
+.toc{font-size:13px}
+.toc .grp{color:var(--faint);text-transform:uppercase;letter-spacing:.16em;font-size:10px;margin:18px 0 7px}
+.toc a{display:flex;gap:9px;padding:5px 8px;border-radius:6px;color:var(--muted);align-items:baseline}
+.toc a span{font-family:var(--mono);color:var(--faint);font-size:11px;min-width:26px}
+.toc a:hover{background:var(--surface);color:var(--ink)}
+.toc a.active{background:var(--surface2);color:var(--xsl)}
+.toc a.active span{color:var(--xsl)}
+
+/* main */
+main{padding:0 clamp(20px,4vw,52px) 90px;min-width:0}
+.hero{padding:54px 0 26px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.eyebrow{font-family:var(--mono);color:var(--xsl);letter-spacing:.22em;font-size:11.5px;text-transform:uppercase}
+.hero h1{font-size:clamp(30px,4.6vw,46px);margin:.34em 0 .28em;font-weight:760}
+.hero h1 .flow{color:var(--faint);font-weight:400}
+.hero p{color:var(--muted);max-width:64ch;margin:0}
+.hero .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);background:#0c1019;color:var(--muted);
+  padding:5px 10px;border-radius:20px}
+.chip b{color:var(--out)}
+
+section{padding:34px 0;border-bottom:1px solid var(--line);scroll-margin-top:12px}
+section>h2{font-size:23px;display:flex;align-items:baseline;gap:12px;margin:0 0 4px}
+section>h2 .s{font-family:var(--mono);font-size:13px;color:var(--xsl);letter-spacing:.06em}
+section>.lead{color:var(--muted);margin:.2em 0 22px;max-width:72ch}
+
+.card{background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--line);
+  border-radius:var(--r);padding:22px 22px 20px;margin:18px 0}
+.feat-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.feat-head .num{font-family:var(--mono);font-size:13px;color:#08222a;background:var(--xsl);
+  padding:3px 9px;border-radius:6px;font-weight:700}
+.feat-head h3{font-size:19px;margin:0;flex:1 1 auto}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--line);
+  padding:3px 7px;border-radius:5px;background:#0c1019}
+.concept{margin:.3em 0 14px;color:#cdd6e3}
+
+.pipeline{display:grid;gap:12px;margin:12px 0 6px}
+@media(min-width:1080px){.pipeline{grid-template-columns:0.85fr 1.25fr 0.95fr;align-items:start}}
+.io{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#0a0e16;min-width:0;position:relative}
+.io-tab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:7px 11px;color:var(--muted);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:#0c1019}
+.io-in .io-tab{color:var(--in)} .io-xsl .io-tab{color:var(--xsl)} .io-out .io-tab{color:var(--out)}
+.io-in{border-color:#3a2f1c} .io-xsl{border-color:#1d3b42} .io-out{border-color:#1d3f2c}
+.verified{margin-left:auto;color:var(--out);font-size:10px;letter-spacing:.08em}
+.copy{margin-left:auto;background:#10202a;border:1px solid #1d3b42;color:var(--xsl);font:600 10px/1 var(--mono);
+  letter-spacing:.08em;padding:4px 8px;border-radius:5px;cursor:pointer}
+.copy:hover{background:#163039}.copy.done{color:var(--out);border-color:#1d3f2c}
+pre.code{margin:0;padding:13px 14px;overflow-x:auto;font-family:var(--mono);font-size:12.4px;line-height:1.55;
+  color:#c7d2e0;tab-size:2}
+pre.code.mini{font-size:11.4px;color:var(--muted);white-space:pre-wrap}
+pre.code.out{color:#bfe9d2}
+pre.code code{background:none;border:0;padding:0;color:inherit;font-size:inherit}
+
+.callout{display:flex;gap:11px;border-radius:8px;padding:11px 13px;margin-top:13px;font-size:13.6px}
+.callout .ci{flex:none;width:21px;height:21px;border-radius:5px;display:grid;place-items:center;
+  font:700 12px/1 var(--mono)}
+.callout.rel{background:#0e1a24;border:1px solid #16323b}.callout.rel .ci{background:var(--xsl);color:#08222a}
+.callout.note{background:#1d150c;border:1px solid #3a2f1c}.callout.note .ci{background:var(--in);color:#1a1305}
+.callout.warn{background:#1f140e;border:1px solid #3a241a}.callout.warn .ci{background:var(--warn);color:#1a0d06}
+
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13.6px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+td.ctr,th.ctr{text-align:center}
+tbody tr:hover{background:#0e1620}
+
+.gxs{display:grid;gap:9px;margin-top:6px}
+@media(min-width:760px){.gxs{grid-template-columns:1fr 1fr}}
+.gx{display:flex;gap:12px;background:#120e0c;border:1px solid #2c2018;border-radius:8px;padding:11px 13px;font-size:13.4px}
+.gx-sym{font:700 12.5px/1.35 var(--sans);color:var(--warn);flex:0 0 38%;}
+
+.prob-head{display:flex;gap:14px;align-items:flex-start}
+.pn{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--faint)}
+.pt h3{margin:0 0 5px;font-size:18px}
+.meta{display:flex;align-items:center;gap:12px}
+.diff{display:inline-flex;gap:4px}
+.diff .d{width:8px;height:8px;border-radius:50%;background:#23303f;border:1px solid var(--line)}
+.diff .d.on{background:var(--out);border-color:var(--out)}
+.skill{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.prompt{margin:13px 0 14px;color:#cdd6e3}
+.reveal{background:#10202a;border:1px solid #1d3b42;color:var(--xsl);font:600 13px/1 var(--sans);
+  padding:10px 16px;border-radius:8px;cursor:pointer;transition:.15s}
+.reveal:hover{background:#163039}.reveal[aria-expanded=true]{color:var(--muted)}
+.solution{margin-top:16px;display:grid;gap:12px;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+
+.note-inline{color:var(--muted);font-size:13.4px}
+.hidden-view{display:none!important}
+footer{color:var(--faint);font-size:12.5px;padding:30px 0 0;max-width:74ch}
+.backtop{position:fixed;right:18px;bottom:18px;background:var(--surface2);border:1px solid var(--line);
+  color:var(--xsl);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:17px;display:none;z-index:9}
+.backtop.show{display:block}
+.mobtoggle{display:none}
+@media(max-width:880px){
+  .wrap{grid-template-columns:1fr}
+  aside{position:fixed;z-index:20;left:0;top:0;width:280px;transform:translateX(-100%);transition:.25s;height:100vh}
+  aside.open{transform:none}
+  .mobtoggle{display:inline-flex;position:fixed;z-index:21;left:14px;top:14px;background:var(--surface2);
+    border:1px solid var(--line);color:var(--xsl);border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:600}
+  main{padding-top:8px}.hero{padding-top:64px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<button class="mobtoggle">☰ Contents</button>
+<div class="wrap">
+<aside>
+  <div class="brand">
+    <span class="glyph">{}</span>
+    <div><b>XSLT&nbsp;3.0 · Workday</b><small>Field Guide</small></div>
+  </div>
+  <div class="viewtoggle" role="tablist" aria-label="View">
+    <button data-v="all" class="active">All</button>
+    <button data-v="reference">Reference</button>
+    <button data-v="practice">Practice</button>
+  </div>
+  <nav class="toc">
+    <div class="grp">Foundations</div>
+    <a href="#intro"><span>·</span>How to use</a>
+    <a href="#context" data-view="reference"><span>1</span>XSLT in Workday</a>
+    <a href="#sample" data-view="reference"><span>2</span>The sample document</a>
+    <div class="grp" data-view="reference">Features &middot; §3</div>
+    <a href="#f-tvt" data-view="reference"><span>3.1</span>Text Value Templates</a><a href="#f-fn" data-view="reference"><span>3.2</span>Functions &amp; sequence types</a><a href="#f-map" data-view="reference"><span>3.3</span>Maps &amp; arrays</a><a href="#f-grp" data-view="reference"><span>3.4</span>Grouping</a><a href="#f-jsonout" data-view="reference"><span>3.5</span>Native JSON output</a><a href="#f-jsonin" data-view="reference"><span>3.6</span>Native JSON input</a><a href="#f-stream" data-view="reference"><span>3.7</span>Streaming I — snapshot pattern</a><a href="#f-iter" data-view="reference"><span>3.8</span>Streaming II — xsl:iterate</a><a href="#f-acc" data-view="reference"><span>3.9</span>Streaming III — accumulators</a><a href="#f-try" data-view="reference"><span>3.10</span>Error handling — try / catch</a><a href="#f-rx" data-view="reference"><span>3.11</span>Regular expressions</a><a href="#f-boom" data-view="reference"><span>3.12</span>The boomerang write-back</a>
+    <div class="grp" data-view="reference">Practical</div>
+    <a href="#refset" data-view="reference"><span>4</span>Reference transforms</a>
+    <a href="#wiring" data-view="reference"><span>5</span>Wiring &amp; gotchas</a>
+    <a href="#quickref" data-view="reference"><span>9</span>Quick reference</a>
+    <a href="#run" data-view="reference"><span>12</span>Running locally</a>
+    <div class="grp" data-view="practice">Practice set</div>
+    <a href="#p1" data-view="practice"><span>01</span>Name list</a><a href="#p2" data-view="practice"><span>02</span>Count by currency</a><a href="#p3" data-view="practice"><span>03</span>Filter by hire date</a><a href="#p4" data-view="practice"><span>04</span>Typed JSON array</a><a href="#p5" data-view="practice"><span>05</span>Explode dependents</a><a href="#p6" data-view="practice"><span>06</span>Company roll-up</a><a href="#p7" data-view="practice"><span>07</span>Streamed per-currency subtotals</a><a href="#p8" data-view="practice"><span>08</span>Inbound JSON → WWS skeleton</a><a href="#p9" data-view="practice"><span>09</span>Fault-tolerant total</a><a href="#p10" data-view="practice"><span>10</span>Validate Employee_ID</a>
+  </nav>
+</aside>
+
+<main>
+  <header class="hero" id="intro">
+    <div class="eyebrow">Runnable · Verified with SaxonC-HE 13</div>
+    <h1>XSLT 3.0 for Workday <span class="flow">— input&nbsp;→&nbsp;stylesheet&nbsp;→&nbsp;output</span></h1>
+    <p>A hands-on field guide built from your uploaded transforms. Every stylesheet here was
+    executed against the sample RaaS document — the outputs shown are the actual program output,
+    not hand-typed. Switch to <strong>Practice</strong> for a graded problem set with verified solutions.</p>
+    <div class="chips">
+      <span class="chip">12 feature demos</span>
+      <span class="chip">4 reference transforms</span>
+      <span class="chip">10 problems <b>+ solutions</b></span>
+      <span class="chip">offline · single file</span>
+    </div>
+    <p class="note-inline" style="margin-top:18px">Each example is a three-stage card:
+      <span style="color:var(--in)">INPUT</span> →
+      <span style="color:var(--xsl)">STYLESHEET</span> →
+      <span style="color:var(--out)">OUTPUT</span>, mirroring the real data flow.
+      Use the <strong>copy</strong> button on any stylesheet to grab the code.</p>
+  </header>
+
+  <section id="context" data-view="reference">
+    <h2><span class="s">§1</span>XSLT 3.0 in the Workday world</h2>
+    <p class="lead">Workday hands you XML at almost every integration boundary, and XSLT is the
+    in-platform tool for reshaping it.</p>
+    <table><thead><tr><th>Boundary</th><th>What you get / produce</th><th>Typical XSLT job</th></tr></thead>
+    <tbody><tr><td>RaaS outbound</td><td><code>Report_Data</code> XML in <code>urn:com.workday.report/…</code></td><td>Flatten to CSV / fixed-width / JSON / a partner schema</td></tr><tr><td>EIB outbound</td><td>A report or WWS response</td><td>A Custom Transformation (XSLT Attachment) on the Transform step</td></tr><tr><td>Studio / Orchestrate</td><td>Any message in the pipe</td><td>XSLT step (Saxon factory) between routes</td></tr><tr><td>WWS inbound</td><td>You must build a <code>*_Request</code></td><td>Boomerang: RaaS row → XSLT → <code>Put_Worker</code> / <code>Change_*</code></td></tr></tbody></table>
+    <div class="callout warn"><span class="ci">!</span><div><strong>Version reality:</strong>
+    Workday's documented Studio best practice is still <strong>XSLT 2.0</strong> with the Saxon factory;
+    <strong>3.0 + streaming</strong> is taught mainly for high-volume EIB cases. Write 3.0 freely for
+    EIB/RaaS transforms; when targeting a Studio XSLT step, confirm the configured version. Anything that
+    doesn't use streaming/maps/JSON (e.g. the boomerang §3.12) is valid 2.0 and drops straight in.</div></div>
+    <div class="callout rel"><span class="ci">E</span><div><strong>Saxon-HE vs EE:</strong>
+    maps, JSON, grouping, try/catch and TVTs are all core 3.0 and run on free <strong>Saxon-HE</strong>.
+    Only <strong>streaming</strong> needs Saxon-EE — and a streamable stylesheet produces identical output
+    on HE (it just buffers). So you can develop and test everything on HE, as this guide does.</div></div>
+  </section>
+
+  <section id="sample" data-view="reference">
+    <h2><span class="s">§2</span>The sample document</h2>
+    <p class="lead">One RaaS document drives every example: three workers, two with dependents,
+    two currencies, one nested repeating element — enough to exercise every feature.</p>
+    <div class="io io-in"><div class="io-tab">INPUT · sample-data/report.xml <button class="copy" data-copy>copy</button></div>
+    <pre class="code lang-xml"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!--
+  Sample Workday RaaS (Report-as-a-Service) output.
+  Namespace mirrors a real RaaS WWS namespace: urn:com.workday.report/&lt;Report_Name&gt;
+  Use this file as the input document for every transform in ../transforms/.
+--&gt;
+&lt;wd:Report_Data xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"&gt;
+    &lt;wd:Report_Entry&gt;
+        &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+        &lt;wd:Worker wd:Descriptor="Logan McNeil"&gt;Logan McNeil&lt;/wd:Worker&gt;
+        &lt;wd:Legal_First_Name&gt;Logan&lt;/wd:Legal_First_Name&gt;
+        &lt;wd:Legal_Last_Name&gt;McNeil&lt;/wd:Legal_Last_Name&gt;
+        &lt;wd:Hire_Date&gt;2000-01-01&lt;/wd:Hire_Date&gt;
+        &lt;wd:Company&gt;Global Modern Services, Inc. (USA)&lt;/wd:Company&gt;
+        &lt;wd:Cost_Center wd:Descriptor="40100 HR Services"&gt;40100&lt;/wd:Cost_Center&gt;
+        &lt;wd:Annual_Salary wd:Currency="USD"&gt;185000.00&lt;/wd:Annual_Salary&gt;
+        &lt;wd:Dependent wd:Type="Spouse"&gt;
+            &lt;wd:Dependent_Name&gt;Karen McNeil&lt;/wd:Dependent_Name&gt;
+        &lt;/wd:Dependent&gt;
+        &lt;wd:Dependent wd:Type="Child"&gt;
+            &lt;wd:Dependent_Name&gt;Aiden McNeil&lt;/wd:Dependent_Name&gt;
+        &lt;/wd:Dependent&gt;
+    &lt;/wd:Report_Entry&gt;
+    &lt;wd:Report_Entry&gt;
+        &lt;wd:Employee_ID&gt;21505&lt;/wd:Employee_ID&gt;
+        &lt;wd:Worker wd:Descriptor="John Davis"&gt;John Davis&lt;/wd:Worker&gt;
+        &lt;wd:Legal_First_Name&gt;John&lt;/wd:Legal_First_Name&gt;
+        &lt;wd:Legal_Last_Name&gt;Davis&lt;/wd:Legal_Last_Name&gt;
+        &lt;wd:Hire_Date&gt;2018-05-14&lt;/wd:Hire_Date&gt;
+        &lt;wd:Company&gt;Global Modern Services, Inc. (USA)&lt;/wd:Company&gt;
+        &lt;wd:Cost_Center wd:Descriptor="21100 Field Sales"&gt;21100&lt;/wd:Cost_Center&gt;
+        &lt;wd:Annual_Salary wd:Currency="USD"&gt;96000.00&lt;/wd:Annual_Salary&gt;
+    &lt;/wd:Report_Entry&gt;
+    &lt;wd:Report_Entry&gt;
+        &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+        &lt;wd:Worker wd:Descriptor="Oliver Reynolds"&gt;Oliver Reynolds&lt;/wd:Worker&gt;
+        &lt;wd:Legal_First_Name&gt;Oliver&lt;/wd:Legal_First_Name&gt;
+        &lt;wd:Legal_Last_Name&gt;Reynolds&lt;/wd:Legal_Last_Name&gt;
+        &lt;wd:Hire_Date&gt;2021-09-20&lt;/wd:Hire_Date&gt;
+        &lt;wd:Company&gt;Global Modern Services Ltd (UK)&lt;/wd:Company&gt;
+        &lt;wd:Cost_Center wd:Descriptor="30000 Engineering"&gt;30000&lt;/wd:Cost_Center&gt;
+        &lt;wd:Annual_Salary wd:Currency="GBP"&gt;72000.00&lt;/wd:Annual_Salary&gt;
+        &lt;wd:Dependent wd:Type="Child"&gt;
+            &lt;wd:Dependent_Name&gt;Mia Reynolds&lt;/wd:Dependent_Name&gt;
+        &lt;/wd:Dependent&gt;
+    &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div>
+    <div class="callout warn"><span class="ci">!</span><div><strong>The #1 RaaS gotcha:</strong>
+    the <code>xmlns:wd</code> URI in your stylesheet <strong>must match</strong> the report's WWS namespace
+    exactly (<code>urn:com.workday.report/&lt;Report_Name&gt;</code>). A mismatch produces
+    <em>empty output with no error</em> — templates simply never match. Best practice: override the report
+    namespace to a value you control.</div></div>
+  </section>
+
+  <section id="features" data-view="reference">
+    <h2><span class="s">§3</span>Core features</h2>
+    <p class="lead">Each feature: concept → sample stylesheet → real output → why it matters in Workday.</p>
+    
+    <article class="feature card" id="f-tvt" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.1</span>
+        <h3>Text Value Templates</h3>
+        <span class="tags"><span class="tag">expand-text</span> <span class="tag">TVT</span></span>
+      </header>
+      <p class="concept">Set <code>expand-text="yes"</code> and <code>{…}</code> inside text is evaluated as XPath — replacing a wall of <code>&lt;xsl:value-of&gt;</code> with inline interpolation. Escape a literal brace by doubling it: <code>{{</code>.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:for-each select="wd:Report_Entry"&gt;{wd:Legal_First_Name} {wd:Legal_Last_Name} earns {format-number(wd:Annual_Salary,'#,##0')} {wd:Annual_Salary/@wd:Currency}&amp;#xA;&lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>Logan McNeil earns 185,000 USD
+John Davis earns 96,000 USD
+Oliver Reynolds earns 72,000 GBP</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Building delimited / fixed-format payroll lines is far cleaner with TVTs. Watch the <code>{{ }}</code> escaping rule whenever your output itself contains braces.</div></div>
+    </article>
+    <article class="feature card" id="f-fn" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.2</span>
+        <h3>Functions &amp; sequence types</h3>
+        <span class="tags"><span class="tag">xsl:function</span> <span class="tag">types</span></span>
+      </header>
+      <p class="concept"><code>xsl:function</code> with a namespaced name, typed <code>xsl:param</code>s, an <code>as</code> return type, and <code>xsl:sequence</code> to return a value. The right home for business rules — banding, code mapping, formatting.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    xmlns:f="urn:local:fn" expand-text="yes" exclude-result-prefixes="xs wd f"&gt;
+  &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+  &lt;xsl:function name="f:band" as="xs:string"&gt;
+    &lt;xsl:param name="salary" as="xs:decimal"/&gt;
+    &lt;xsl:sequence select="if ($salary ge 150000) then 'A'
+                          else if ($salary ge 90000) then 'B'
+                          else 'C'"/&gt;
+  &lt;/xsl:function&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:for-each select="wd:Report_Entry"&gt;{wd:Employee_ID}: band {f:band(xs:decimal(wd:Annual_Salary))}&amp;#xA;&lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>21001: band A
+21505: band B
+21002: band C</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Centralize mapping logic (pay components, location crosswalks, eligibility) in functions instead of copy-pasted <code>choose</code> blocks. The <code>as</code> types catch bad data early.</div></div>
+    </article>
+    <article class="feature card" id="f-map" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.3</span>
+        <h3>Maps &amp; arrays</h3>
+        <span class="tags"><span class="tag">map</span> <span class="tag">aggregation</span></span>
+      </header>
+      <p class="concept">First-class maps (<code>map{ k: v }</code>) and arrays (<code>array{}</code>). Build a map from grouped data and you get an O(1) lookup table. Key functions: <code>map:put</code>, <code>map:get</code>/<code>$m(k)</code>, <code>map:keys</code>, <code>map:contains</code>, <code>map:size</code>.</p>
+      <div class="callout note"><span class="ci">!</span><div><strong>Saxon strict-typing:</strong> declaring <code>as="map(xs:string, xs:decimal)"</code> can throw <code>XTTE0570</code>. Either cast every value <em>and</em> the sum, or use <code>as="map(*)"</code> as shown.</div></div>
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:map="http://www.w3.org/2005/xpath-functions/map"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    expand-text="yes" exclude-result-prefixes="xs map wd"&gt;
+  &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;!-- Build a map: company name -&gt; total salary --&gt;
+    &lt;xsl:variable name="byCompany" as="map(*)"&gt;
+      &lt;xsl:map&gt;
+        &lt;xsl:for-each-group select="wd:Report_Entry" group-by="wd:Company"&gt;
+          &lt;xsl:map-entry key="current-grouping-key()"
+                         select="sum(current-group()/xs:decimal(wd:Annual_Salary))"/&gt;
+        &lt;/xsl:for-each-group&gt;
+      &lt;/xsl:map&gt;
+    &lt;/xsl:variable&gt;
+    &lt;xsl:text&gt;Companies in map: {map:size($byCompany)}&amp;#xA;&lt;/xsl:text&gt;
+    &lt;xsl:for-each select="map:keys($byCompany)"&gt;{.} = {format-number($byCompany(.),'#,##0.00')}&amp;#xA;&lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>Companies in map: 2
+Global Modern Services, Inc. (USA) = 281,000.00
+Global Modern Services Ltd (UK) = 72,000.00</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Two big uses: load a crosswalk into a map once then look up per row; or accumulate subtotals while streaming (the map becomes the running state of an <code>xsl:iterate</code>).</div></div>
+    </article>
+    <article class="feature card" id="f-grp" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.4</span>
+        <h3>Grouping</h3>
+        <span class="tags"><span class="tag">for-each-group</span> <span class="tag">sort</span></span>
+      </header>
+      <p class="concept">The workhorse for &ldquo;group by X, do something per group.&rdquo; Inside a group: <code>current-grouping-key()</code> is the key, <code>current-group()</code> the members. Modes: <code>group-by</code>, <code>group-adjacent</code>, <code>group-starting-with</code>. Nest them for multi-level grouping.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="xml" indent="yes" encoding="UTF-8"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;Companies&gt;
+      &lt;xsl:for-each-group select="wd:Report_Entry" group-by="wd:Company"&gt;
+        &lt;xsl:sort select="current-grouping-key()"/&gt;
+        &lt;Company name="{current-grouping-key()}" headcount="{count(current-group())}"&gt;
+          &lt;xsl:for-each select="current-group()"&gt;
+            &lt;xsl:sort select="xs:decimal(wd:Annual_Salary)" order="descending"/&gt;
+            &lt;Worker id="{wd:Employee_ID}"&gt;{wd:Legal_First_Name} {wd:Legal_Last_Name}&lt;/Worker&gt;
+          &lt;/xsl:for-each&gt;
+        &lt;/Company&gt;
+      &lt;/xsl:for-each-group&gt;
+    &lt;/Companies&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · XML <span class="verified">✓ verified</span></div><pre class="code out"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Companies&gt;
+   &lt;Company name="Global Modern Services Ltd (UK)" headcount="1"&gt;
+      &lt;Worker id="21002"&gt;Oliver Reynolds&lt;/Worker&gt;
+   &lt;/Company&gt;
+   &lt;Company name="Global Modern Services, Inc. (USA)" headcount="2"&gt;
+      &lt;Worker id="21001"&gt;Logan McNeil&lt;/Worker&gt;
+      &lt;Worker id="21505"&gt;John Davis&lt;/Worker&gt;
+   &lt;/Company&gt;
+&lt;/Companies&gt;</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Everywhere in real integrations. The INT067 Belgium time transform nests <code>for-each-group</code> by date then by calculation tag, summing per group — the canonical Workday time/payroll roll-up.</div></div>
+    </article>
+    <article class="feature card" id="f-jsonout" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.5</span>
+        <h3>Native JSON output</h3>
+        <span class="tags"><span class="tag">xml-to-json</span> <span class="tag">Saxon-HE</span></span>
+      </header>
+      <p class="concept">Build the W3C JSON-in-XML vocabulary (<code>xf:map</code>, <code>xf:array</code>, <code>xf:string</code>, <code>xf:number</code>, <code>xf:boolean</code>, <code>xf:null</code>) then serialize with <code>xml-to-json()</code>. No external library, and it runs on Saxon-<strong>HE</strong>.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!--
+  ============================================================================
+  03_report-to-json.xsl
+  ============================================================================
+  Purpose : Emit JSON directly from a Workday RaaS document using XSLT 3.0's
+            native xml-to-json(). Useful for REST endpoints / iPaaS targets
+            that want JSON instead of CSV or XML. No external library needed.
+  Engine  : Saxon-HE 9.8+ or Saxon-EE (xml-to-json is a 3.0 core feature and
+            does NOT require EE). Not declared streamable: building the
+            intermediate map tree is an in-memory operation.
+  Note    : We construct the W3C JSON-XML vocabulary (xf:map / xf:array /
+            xf:string / xf:number) and let xml-to-json() serialize it.
+  ============================================================================
+--&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xf="http://www.w3.org/2005/xpath-functions"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    exclude-result-prefixes="xs xf wd"&gt;
+
+    &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+
+    &lt;xsl:template match="/wd:Report_Data"&gt;
+        &lt;xsl:variable name="json-xml"&gt;
+            &lt;xf:array key="workers"&gt;
+                &lt;xsl:for-each select="wd:Report_Entry"&gt;
+                    &lt;xf:map&gt;
+                        &lt;xf:string  key="employeeId"&gt;&lt;xsl:value-of select="wd:Employee_ID"/&gt;&lt;/xf:string&gt;
+                        &lt;xf:string  key="firstName"&gt;&lt;xsl:value-of select="wd:Legal_First_Name"/&gt;&lt;/xf:string&gt;
+                        &lt;xf:string  key="lastName"&gt;&lt;xsl:value-of select="wd:Legal_Last_Name"/&gt;&lt;/xf:string&gt;
+                        &lt;xf:string  key="hireDate"&gt;&lt;xsl:value-of select="wd:Hire_Date"/&gt;&lt;/xf:string&gt;
+                        &lt;xf:string  key="company"&gt;&lt;xsl:value-of select="wd:Company"/&gt;&lt;/xf:string&gt;
+                        &lt;xf:string  key="costCenter"&gt;&lt;xsl:value-of select="wd:Cost_Center"/&gt;&lt;/xf:string&gt;
+                        &lt;xf:number  key="annualSalary"&gt;&lt;xsl:value-of select="number(wd:Annual_Salary)"/&gt;&lt;/xf:number&gt;
+                        &lt;xf:string  key="currency"&gt;&lt;xsl:value-of select="wd:Annual_Salary/@wd:Currency"/&gt;&lt;/xf:string&gt;
+                        &lt;xf:array key="dependents"&gt;
+                            &lt;xsl:for-each select="wd:Dependent"&gt;
+                                &lt;xf:map&gt;
+                                    &lt;xf:string key="type"&gt;&lt;xsl:value-of select="@wd:Type"/&gt;&lt;/xf:string&gt;
+                                    &lt;xf:string key="name"&gt;&lt;xsl:value-of select="wd:Dependent_Name"/&gt;&lt;/xf:string&gt;
+                                &lt;/xf:map&gt;
+                            &lt;/xsl:for-each&gt;
+                        &lt;/xf:array&gt;
+                    &lt;/xf:map&gt;
+                &lt;/xsl:for-each&gt;
+            &lt;/xf:array&gt;
+        &lt;/xsl:variable&gt;
+
+        &lt;!-- serialize the JSON-XML vocabulary to a JSON string --&gt;
+        &lt;xsl:value-of select="xml-to-json($json-xml, map { 'indent' : true() })"/&gt;
+    &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · JSON <span class="verified">✓ verified</span></div><pre class="code out"><code>
+ [ 
+  { "employeeId" : "21001",
+   "firstName" : "Logan",
+   "lastName" : "McNeil",
+   "hireDate" : "2000-01-01",
+   "company" : "Global Modern Services, Inc. (USA)",
+   "costCenter" : "40100",
+   "annualSalary" : 185000,
+   "currency" : "USD",
+   "dependents" : 
+   [ 
+    { "type" : "Spouse",
+     "name" : "Karen McNeil" },
+    
+    { "type" : "Child",
+     "name" : "Aiden McNeil" } ] },
+  
+  { "employeeId" : "21505",
+   "firstName" : "John",
+   "lastName" : "Davis",
+   "hireDate" : "2018-05-14",
+   "company" : "Global Modern Services, Inc. (USA)",
+   "costCenter" : "21100",
+   "annualSalary" : 96000,
+   "currency" : "USD",
+   "dependents" : 
+   [  ] },
+  
+  { "employeeId" : "21002",
+   "firstName" : "Oliver",
+   "lastName" : "Reynolds",
+   "hireDate" : "2021-09-20",
+   "company" : "Global Modern Services Ltd (UK)",
+   "costCenter" : "30000",
+   "annualSalary" : 72000,
+   "currency" : "GBP",
+   "dependents" : 
+   [ 
+    { "type" : "Child",
+     "name" : "Mia Reynolds" } ] } ]</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> REST / Extend / iPaaS targets want JSON. Use <code>xf:number</code>/<code>xf:boolean</code> (not <code>xf:string</code>) so the JSON is correctly typed. Far safer than concatenating JSON by hand.</div></div>
+    </article>
+    <article class="feature card" id="f-jsonin" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.6</span>
+        <h3>Native JSON input</h3>
+        <span class="tags"><span class="tag">parse-json</span> <span class="tag">? lookup</span></span>
+      </header>
+      <p class="concept"><code>json-to-xml()</code> turns JSON into the JSON-XML vocabulary you can run XPath over; <code>parse-json()</code> turns it into native maps/arrays you navigate with the lookup operator <code>?</code> (<code>$m?key</code>, <code>$arr?*</code> for &ldquo;all members&rdquo;).</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · JSON</div>
+          <pre class="code mini"><code>{ "workers": [
+    { "employeeId": "21001", "name": "Logan McNeil", "salary": 185000, "active": true },
+    { "employeeId": "21505", "name": "John Davis",  "salary": 96000,  "active": false }
+] }</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    expand-text="yes" exclude-result-prefixes="xs"&gt;
+  &lt;xsl:output method="xml" indent="yes" encoding="UTF-8"/&gt;
+  &lt;!-- path to the JSON file, supplied at launch --&gt;
+  &lt;xsl:param name="json-uri" as="xs:string" select="'sample-data/workers.json'"/&gt;
+  &lt;xsl:template name="xsl:initial-template" match="/"&gt;
+    &lt;xsl:variable name="data" select="parse-json(unparsed-text($json-uri))"/&gt;
+    &lt;Workers&gt;
+      &lt;xsl:for-each select="$data?workers?*"&gt;
+        &lt;Worker id="{?employeeId}" active="{?active}"&gt;
+          &lt;Name&gt;{?name}&lt;/Name&gt;
+          &lt;Salary&gt;{?salary}&lt;/Salary&gt;
+        &lt;/Worker&gt;
+      &lt;/xsl:for-each&gt;
+    &lt;/Workers&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · XML <span class="verified">✓ verified</span></div><pre class="code out"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Workers&gt;
+   &lt;Worker id="21001" active="true"&gt;
+      &lt;Name&gt;Logan McNeil&lt;/Name&gt;
+      &lt;Salary&gt;185000&lt;/Salary&gt;
+   &lt;/Worker&gt;
+   &lt;Worker id="21505" active="false"&gt;
+      &lt;Name&gt;John Davis&lt;/Name&gt;
+      &lt;Salary&gt;96000&lt;/Salary&gt;
+   &lt;/Worker&gt;
+&lt;/Workers&gt;</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Inbound integrations that fetch JSON from a REST source then build a WWS request lean on exactly this. <code>xsl:initial-template</code> + <code>match="/"</code> lets the stylesheet run even when the main input is JSON, not XML.</div></div>
+    </article>
+    <article class="feature card" id="f-stream" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.7</span>
+        <h3>Streaming I — snapshot pattern</h3>
+        <span class="tags"><span class="tag">streamable</span> <span class="tag">copy-of</span></span>
+      </header>
+      <p class="concept">Add <code>&lt;xsl:mode streamable="yes"/&gt;</code> and Saxon-EE reads the source <strong>forward-only</strong>. The rule that keeps you streamable: <em>never look back at a sibling</em>. Stream the outer loop and <strong>snapshot one entry</strong> with <code>copy-of(.)</code> into a tiny in-memory tree, then read fields from the copy.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!--
+  ============================================================================
+  01_report-to-csv.streamable.xsl
+  ============================================================================
+  Purpose : Outbound EIB / Studio transform. Converts a Workday RaaS
+            Report_Data document into a header-row + double-quoted CSV.
+  Engine  : Saxon-EE (required for streamable="yes"). Saxon-HE will run it
+            non-streamed if you remove the xsl:mode streamable attribute.
+  Pattern : Forward-only streaming. We never look back at a sibling entry.
+            Each Report_Entry is snapshotted with copy-of() into a tiny
+            in-memory tree, then fields are pulled from that snapshot. This
+            is the canonical Workday high-volume pattern: stream the outer
+            loop, buffer one entry at a time.
+  ============================================================================
+--&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    exclude-result-prefixes="xs wd"&gt;
+
+    &lt;!-- text output: no XML wrapper, just the CSV bytes --&gt;
+    &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+
+    &lt;!-- streamable mode: the processor reads the source forward-only --&gt;
+    &lt;xsl:mode streamable="yes" on-no-match="shallow-skip"/&gt;
+
+    &lt;!-- field/record separators centralised so the file is easy to retarget --&gt;
+    &lt;xsl:param name="delimiter"   as="xs:string" select="','"/&gt;
+    &lt;xsl:param name="quote"       as="xs:string" select="'&amp;quot;'"/&gt;
+    &lt;xsl:param name="newline"     as="xs:string" select="'&amp;#xA;'"/&gt;
+    &lt;xsl:param name="emit-header" as="xs:boolean" select="true()"/&gt;
+
+    &lt;!--
+      Reusable CSV-cell function: wraps a value in quotes and doubles any
+      embedded quote (RFC 4180). Pure function, fully streamable.
+    --&gt;
+    &lt;xsl:function name="wd:csv" as="xs:string"&gt;
+        &lt;xsl:param name="v" as="xs:string?"/&gt;
+        &lt;xsl:sequence select="concat($quote,
+                                      replace(string($v), $quote, concat($quote,$quote)),
+                                      $quote)"/&gt;
+    &lt;/xsl:function&gt;
+
+    &lt;!-- entry point: matches the streamed root, prints header, streams rows --&gt;
+    &lt;xsl:template match="wd:Report_Data"&gt;
+        &lt;xsl:if test="$emit-header"&gt;
+            &lt;xsl:value-of select="string-join(
+                ('Employee_ID','First_Name','Last_Name','Hire_Date',
+                 'Company','Cost_Center','Annual_Salary','Currency','Dependent_Count'),
+                $delimiter)"/&gt;
+            &lt;xsl:value-of select="$newline"/&gt;
+        &lt;/xsl:if&gt;
+        &lt;xsl:apply-templates select="wd:Report_Entry"/&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;!--
+      Snapshot each entry, then hand the in-memory copy to a normal
+      (non-streamed) template. copy-of() is the streaming-safe boundary.
+    --&gt;
+    &lt;xsl:template match="wd:Report_Entry"&gt;
+        &lt;xsl:apply-templates select="copy-of(.)" mode="in-memory"/&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:mode name="in-memory" streamable="no"/&gt;
+
+    &lt;xsl:template match="wd:Report_Entry" mode="in-memory"&gt;
+        &lt;xsl:value-of select="string-join((
+            wd:csv(wd:Employee_ID),
+            wd:csv(wd:Legal_First_Name),
+            wd:csv(wd:Legal_Last_Name),
+            wd:csv(wd:Hire_Date),
+            wd:csv(wd:Company),
+            wd:csv(wd:Cost_Center),
+            wd:csv(wd:Annual_Salary),
+            wd:csv(wd:Annual_Salary/@wd:Currency),
+            wd:csv(string(count(wd:Dependent)))
+        ), $delimiter)"/&gt;
+        &lt;xsl:value-of select="$newline"/&gt;
+    &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · CSV <span class="verified">✓ verified</span></div><pre class="code out"><code>Employee_ID,First_Name,Last_Name,Hire_Date,Company,Cost_Center,Annual_Salary,Currency,Dependent_Count
+"21001","Logan","McNeil","2000-01-01","Global Modern Services, Inc. (USA)","40100","185000.00","USD","2"
+"21505","John","Davis","2018-05-14","Global Modern Services, Inc. (USA)","21100","96000.00","USD","0"
+"21002","Oliver","Reynolds","2021-09-20","Global Modern Services Ltd (UK)","30000","72000.00","GBP","1"</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> <em>The</em> pattern for high-volume outbound (full-population payroll, time, GL) that won't fit in memory. Develop on HE (buffers, identical output); deploy on EE so it actually streams.</div></div>
+    </article>
+    <article class="feature card" id="f-iter" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.8</span>
+        <h3>Streaming II — xsl:iterate</h3>
+        <span class="tags"><span class="tag">xsl:iterate</span> <span class="tag">running state</span></span>
+      </header>
+      <p class="concept"><code>xsl:for-each</code> can't carry state across a streamed pass; <code>xsl:iterate</code> can. Declare <code>xsl:param</code>s as running state, update them in <code>xsl:next-iteration</code>, emit a trailer in <code>xsl:on-completion</code>. State must be grounded — snapshot with <code>copy-of()</code>.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+  &lt;xsl:mode streamable="yes" on-no-match="shallow-skip"/&gt;
+  &lt;xsl:template match="wd:Report_Data"&gt;
+    &lt;xsl:text&gt;Employee_ID,Annual_Salary&amp;#xA;&lt;/xsl:text&gt;
+    &lt;xsl:iterate select="wd:Report_Entry"&gt;
+      &lt;xsl:param name="running" as="xs:decimal" select="0"/&gt;
+      &lt;xsl:on-completion&gt;
+        &lt;xsl:text&gt;TOTAL,{format-number($running,'#,##0.00')}&amp;#xA;&lt;/xsl:text&gt;
+      &lt;/xsl:on-completion&gt;
+      &lt;xsl:variable name="e" select="copy-of(.)"/&gt;
+      &lt;xsl:text&gt;{$e/wd:Employee_ID},{$e/wd:Annual_Salary}&amp;#xA;&lt;/xsl:text&gt;
+      &lt;xsl:next-iteration&gt;
+        &lt;xsl:with-param name="running" select="$running + xs:decimal($e/wd:Annual_Salary)"/&gt;
+      &lt;/xsl:next-iteration&gt;
+    &lt;/xsl:iterate&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · CSV <span class="verified">✓ verified</span></div><pre class="code out"><code>Employee_ID,Annual_Salary
+21001,185000.00
+21505,96000.00
+21002,72000.00
+TOTAL,353,000.00</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Control totals and trailer records (counts, hash totals, sum-of-amounts) are required by most payroll vendors. <code>xsl:iterate</code> computes them in a single streamed pass — no second read.</div></div>
+    </article>
+    <article class="feature card" id="f-acc" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.9</span>
+        <h3>Streaming III — accumulators</h3>
+        <span class="tags"><span class="tag">xsl:accumulator</span></span>
+      </header>
+      <p class="concept">An <code>xsl:accumulator</code> updates as the processor walks the document, readable anywhere via <code>accumulator-before/after('name')</code>. It decouples &ldquo;compute a total&rdquo; from &ldquo;where you emit it,&rdquo; and it streams.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="xml" indent="yes" encoding="UTF-8"/&gt;
+  &lt;xsl:mode streamable="yes" use-accumulators="#all" on-no-match="shallow-skip"/&gt;
+  &lt;xsl:accumulator name="rows" as="xs:integer" initial-value="0" streamable="yes"&gt;
+    &lt;xsl:accumulator-rule match="wd:Report_Entry" select="$value + 1"/&gt;
+  &lt;/xsl:accumulator&gt;
+  &lt;xsl:accumulator name="paySum" as="xs:decimal" initial-value="0" streamable="yes"&gt;
+    &lt;xsl:accumulator-rule match="wd:Annual_Salary" select="$value + xs:decimal(.)"/&gt;
+  &lt;/xsl:accumulator&gt;
+  &lt;xsl:template match="wd:Report_Data"&gt;
+    &lt;Summary&gt;
+      &lt;xsl:apply-templates select="wd:Report_Entry"/&gt;
+      &lt;Rows&gt;{accumulator-after('rows')}&lt;/Rows&gt;
+      &lt;TotalPay&gt;{format-number(accumulator-after('paySum'),'#,##0.00')}&lt;/TotalPay&gt;
+    &lt;/Summary&gt;
+  &lt;/xsl:template&gt;
+  &lt;xsl:template match="wd:Report_Entry"/&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · XML <span class="verified">✓ verified</span></div><pre class="code out"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Summary&gt;
+   &lt;Rows&gt;3&lt;/Rows&gt;
+   &lt;TotalPay&gt;353,000.00&lt;/TotalPay&gt;
+&lt;/Summary&gt;</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Your <code>SSK*_CountRecords.xsl</code> utilities are exactly this — a streamable record-count accumulator with rule <code>match="/*/*"</code>. Use for header/trailer counts and totals without threading state manually.</div></div>
+    </article>
+    <article class="feature card" id="f-try" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.10</span>
+        <h3>Error handling — try / catch</h3>
+        <span class="tags"><span class="tag">xsl:try</span> <span class="tag">resilience</span></span>
+      </header>
+      <p class="concept">Wrap a risky expression so a failure produces a fallback instead of aborting. The <strong>element</strong> form <code>&lt;xsl:try&gt;&lt;xsl:catch/&gt;&lt;/xsl:try&gt;</code> works on Saxon-HE; the inline XPath <code>try{…}catch{…}</code> is <strong>EE-only</strong>. Use the element form for portability.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:for-each select="wd:Report_Entry"&gt;
+      &lt;xsl:variable name="hire" as="xs:string"&gt;
+        &lt;xsl:try select="string(xs:date(wd:Hire_Date))"&gt;
+          &lt;xsl:catch select="concat('INVALID(', wd:Hire_Date, ')')"/&gt;
+        &lt;/xsl:try&gt;
+      &lt;/xsl:variable&gt;
+      &lt;xsl:text&gt;{wd:Employee_ID}: {$hire}&amp;#xA;&lt;/xsl:text&gt;
+    &lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>21001: 2000-01-01
+21505: 2018-05-14
+21002: 2021-09-20</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Source data is never clean — blank dates, &ldquo;N/A&rdquo; in numeric fields. <code>xsl:try</code> lets one bad row degrade gracefully (flag, default, route to exceptions) instead of failing the whole run.</div></div>
+    </article>
+    <article class="feature card" id="f-rx" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.11</span>
+        <h3>Regular expressions</h3>
+        <span class="tags"><span class="tag">analyze-string</span> <span class="tag">matches</span></span>
+      </header>
+      <p class="concept"><code>matches()</code> tests, <code>replace()</code> substitutes, <code>tokenize()</code> splits, and <code>xsl:analyze-string</code> gives structured access via <code>xsl:matching-substring</code> / <code>xsl:non-matching-substring</code> and <code>regex-group(n)</code>.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="text" encoding="UTF-8"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:for-each select="wd:Report_Entry"&gt;
+      &lt;!-- turn 2000-01-01 into 01/01/2000 --&gt;
+      &lt;xsl:analyze-string select="wd:Hire_Date" regex="(\d{{4}})-(\d{{2}})-(\d{{2}})"&gt;
+        &lt;xsl:matching-substring&gt;{regex-group(2)}/{regex-group(3)}/{regex-group(1)}&amp;#xA;&lt;/xsl:matching-substring&gt;
+        &lt;xsl:non-matching-substring&gt;UNPARSEABLE&amp;#xA;&lt;/xsl:non-matching-substring&gt;
+      &lt;/xsl:analyze-string&gt;
+    &lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>01/01/2000
+05/14/2018
+09/20/2021</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Reformatting dates/IDs, validating patterns (postal codes, SSNs, account numbers), splitting concatenated values. Note the doubled braces <code>\d{{4}}</code> — that's the TVT escape, needed only because <code>expand-text</code> is on.</div></div>
+    </article>
+    <article class="feature card" id="f-boom" data-view="reference">
+      <header class="feat-head">
+        <span class="num">3.12</span>
+        <h3>The boomerang write-back</h3>
+        <span class="tags"><span class="tag">WWS</span> <span class="tag">inbound</span></span>
+      </header>
+      <p class="concept">Inbound integrations require you to <em>construct</em> a Workday Web Service request. The boomerang reads a RaaS row and emits a <code>*_Request</code> in the operation's <code>bsvc</code> namespace. Uses no streaming or 3.0-only functions, so it's valid under XSLT&nbsp;2.0 too.</p>
+      
+      <div class="pipeline">
+        <div class="io io-in">
+          <div class="io-tab">INPUT · RaaS XML</div>
+          <pre class="code mini"><code>— uses sample-data/report.xml (see §2) —</code></pre>
+        </div>
+        <div class="io io-xsl">
+          <div class="io-tab">STYLESHEET · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!--
+  ============================================================================
+  04_raas-to-wws-request.xsl   (the "boomerang" pattern)
+  ============================================================================
+  Purpose : Transform a RaaS report row into a Workday Web Service (WWS)
+            inbound request so data can be written back into Workday. This is
+            the transform half of a boomerang integration
+            (RaaS out -&gt; XSLT -&gt; WWS in). Here we build a
+            Change_Other_IDs_Request that pushes a custom ID, but the same
+            skeleton retargets to any WWS operation.
+  Engine  : Saxon-HE or EE. Written in 3.0 but this construct is also valid
+            under 2.0 (it does not use streaming or 3.0-only functions), so
+            it drops straight into a Studio XSLT step set to 2.0 if needed.
+  Critical: The bsvc namespace below MUST match the operation's namespace in
+            the Workday Web Services Directory, and the RaaS namespace MUST
+            match the report's WWS namespace (best practice: override the
+            report namespace to urn:com.workday/bsvc to avoid mismatches).
+  ============================================================================
+--&gt;
+&lt;xsl:stylesheet version="3.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wd="urn:com.workday.report/INHCM0001-Outbound"
+    xmlns:bsvc="urn:com.workday/bsvc"
+    exclude-result-prefixes="xs wd"&gt;
+
+    &lt;xsl:output method="xml" indent="yes" encoding="UTF-8"/&gt;
+
+    &lt;!-- WWS API version the request targets; surface as a launch parameter --&gt;
+    &lt;xsl:param name="wws-version" as="xs:string" select="'v44.0'"/&gt;
+
+    &lt;xsl:template match="/wd:Report_Data"&gt;
+        &lt;!--
+          One &lt;bsvc:*_Request&gt; per worker. If your EIB expects a single
+          request document, filter wd:Report_Entry to one row instead, or
+          wrap these in a Studio split-transform-aggregate.
+        --&gt;
+        &lt;Requests&gt;
+            &lt;xsl:apply-templates select="wd:Report_Entry"/&gt;
+        &lt;/Requests&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:template match="wd:Report_Entry"&gt;
+        &lt;bsvc:Change_Other_IDs_Request bsvc:version="{$wws-version}"&gt;
+            &lt;bsvc:Business_Process_Parameters&gt;
+                &lt;bsvc:Auto_Complete&gt;true&lt;/bsvc:Auto_Complete&gt;
+                &lt;bsvc:Run_Now&gt;true&lt;/bsvc:Run_Now&gt;
+            &lt;/bsvc:Business_Process_Parameters&gt;
+            &lt;bsvc:Change_Other_IDs_Data&gt;
+                &lt;bsvc:Worker_Reference&gt;
+                    &lt;bsvc:ID bsvc:type="Employee_ID"&gt;
+                        &lt;xsl:value-of select="wd:Employee_ID"/&gt;
+                    &lt;/bsvc:ID&gt;
+                &lt;/bsvc:Worker_Reference&gt;
+                &lt;bsvc:Custom_Identification_Data bsvc:Replace_All="false"&gt;
+                    &lt;bsvc:Custom_ID&gt;
+                        &lt;bsvc:Custom_ID_Data&gt;
+                            &lt;bsvc:ID&gt;
+                                &lt;!-- example payload: cost center stamped as a custom ID --&gt;
+                                &lt;xsl:value-of select="wd:Cost_Center"/&gt;
+                            &lt;/bsvc:ID&gt;
+                            &lt;bsvc:ID_Type_Reference&gt;
+                                &lt;bsvc:ID bsvc:type="Custom_ID_Type_ID"&gt;COST_CENTER&lt;/bsvc:ID&gt;
+                            &lt;/bsvc:ID_Type_Reference&gt;
+                        &lt;/bsvc:Custom_ID_Data&gt;
+                    &lt;/bsvc:Custom_ID&gt;
+                &lt;/bsvc:Custom_Identification_Data&gt;
+            &lt;/bsvc:Change_Other_IDs_Data&gt;
+        &lt;/bsvc:Change_Other_IDs_Request&gt;
+    &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · XML <span class="verified">✓ verified</span></div><pre class="code out"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Requests xmlns:bsvc="urn:com.workday/bsvc"&gt;
+   &lt;bsvc:Change_Other_IDs_Request bsvc:version="v44.0"&gt;
+      &lt;bsvc:Business_Process_Parameters&gt;
+         &lt;bsvc:Auto_Complete&gt;true&lt;/bsvc:Auto_Complete&gt;
+         &lt;bsvc:Run_Now&gt;true&lt;/bsvc:Run_Now&gt;
+      &lt;/bsvc:Business_Process_Parameters&gt;
+      &lt;bsvc:Change_Other_IDs_Data&gt;
+         &lt;bsvc:Worker_Reference&gt;
+            &lt;bsvc:ID bsvc:type="Employee_ID"&gt;21001&lt;/bsvc:ID&gt;
+         &lt;/bsvc:Worker_Reference&gt;
+         &lt;bsvc:Custom_Identification_Data bsvc:Replace_All="false"&gt;
+            &lt;bsvc:Custom_ID&gt;
+               &lt;bsvc:Custom_ID_Data&gt;
+                  &lt;bsvc:ID&gt;40100&lt;/bsvc:ID&gt;
+                  &lt;bsvc:ID_Type_Reference&gt;
+                     &lt;bsvc:ID bsvc:type="Custom_ID_Type_ID"&gt;COST_CENTER&lt;/bsvc:ID&gt;
+                  &lt;/bsvc:ID_Type_Reference&gt;
+               &lt;/bsvc:Custom_ID_Data&gt;
+            &lt;/bsvc:Custom_ID&gt;
+         &lt;/bsvc:Custom_Identification_Data&gt;
+      &lt;/bsvc:Change_Other_IDs_Data&gt;
+   &lt;/bsvc:Change_Other_IDs_Request&gt;
+   &lt;bsvc:Change_Other_IDs_Request bsvc:version="v44.0"&gt;
+      &lt;bsvc:Business_Process_Parameters&gt;
+         &lt;bsvc:Auto_Complete&gt;true&lt;/bsvc:Auto_Complete&gt;
+         &lt;bsvc:Run_Now&gt;true&lt;/bsvc:Run_Now&gt;
+      &lt;/bsvc:Business_Process_Parameters&gt;
+      &lt;bsvc:Change_Other_IDs_Data&gt;
+         &lt;bsvc:Worker_Reference&gt;
+            &lt;bsvc:ID bsvc:type="Employee_ID"&gt;21505&lt;/bsvc:ID&gt;
+         &lt;/bsvc:Worker_Reference&gt;
+         &lt;bsvc:Custom_Identification_Data bsvc:Replace_All="false"&gt;
+            &lt;bsvc:Custom_ID&gt;
+               &lt;bsvc:Custom_ID_Data&gt;
+                  &lt;bsvc:ID&gt;21100&lt;/bsvc:ID&gt;
+                  &lt;bsvc:ID_Type_Reference&gt;
+                     &lt;bsvc:ID bsvc:type="Custom_ID_Type_ID"&gt;COST_CENTER&lt;/bsvc:ID&gt;
+                  &lt;/bsvc:ID_Type_Reference&gt;
+               &lt;/bsvc:Custom_ID_Data&gt;
+            &lt;/bsvc:Custom_ID&gt;
+         &lt;/bsvc:Custom_Identification_Data&gt;
+      &lt;/bsvc:Change_Other_IDs_Data&gt;
+   &lt;/bsvc:Change_Other_IDs_Request&gt;
+   &lt;bsvc:Change_Other_IDs_Request bsvc:version="v44.0"&gt;
+      &lt;bsvc:Business_Process_Parameters&gt;
+         &lt;bsvc:Auto_Complete&gt;true&lt;/bsvc:Auto_Complete&gt;
+         &lt;bsvc:Run_Now&gt;true&lt;/bsvc:Run_Now&gt;
+      &lt;/bsvc:Business_Process_Parameters&gt;
+      &lt;bsvc:Change_Other_IDs_Data&gt;
+         &lt;bsvc:Worker_Reference&gt;
+            &lt;bsvc:ID bsvc:type="Employee_ID"&gt;21002&lt;/bsvc:ID&gt;
+         &lt;/bsvc:Worker_Reference&gt;
+         &lt;bsvc:Custom_Identification_Data bsvc:Replace_All="false"&gt;
+            &lt;bsvc:Custom_ID&gt;
+               &lt;bsvc:Custom_ID_Data&gt;
+                  &lt;bsvc:ID&gt;30000&lt;/bsvc:ID&gt;
+                  &lt;bsvc:ID_Type_Reference&gt;
+                     &lt;bsvc:ID bsvc:type="Custom_ID_Type_ID"&gt;COST_CENTER&lt;/bsvc:ID&gt;
+                  &lt;/bsvc:ID_Type_Reference&gt;
+               &lt;/bsvc:Custom_ID_Data&gt;
+            &lt;/bsvc:Custom_ID&gt;
+         &lt;/bsvc:Custom_Identification_Data&gt;
+      &lt;/bsvc:Change_Other_IDs_Data&gt;
+   &lt;/bsvc:Change_Other_IDs_Request&gt;
+&lt;/Requests&gt;</code></pre></div>
+      </div>
+      <div class="callout rel"><span class="ci">W</span><div><strong>In Workday:</strong> Retarget the operation + namespace to any WWS call (<code>Put_Worker</code>, <code>Submit_Time_Off</code>, …). The <code>bsvc</code> namespace and <code>version</code> must match the Web Services Directory; the RaaS namespace must match the report.</div></div>
+    </article>
+  </section>
+
+  <section id="refset" data-view="reference">
+    <h2><span class="s">§4</span>The four reference transforms</h2>
+    <p class="lead">These ship in <code>reference-transforms/</code> and are worth keeping as templates.
+    Their full source appears in the §3 cards above (CSV→§3.7, JSON→§3.5, boomerang→§3.12) plus the flatten variant.</p>
+    <table><thead><tr><th>File</th><th>Teaches</th><th class="ctr">Stream</th><th>Engine</th></tr></thead>
+    <tbody><tr><td><code>01_report-to-csv.streamable.xsl</code></td><td>Streaming + snapshot + RFC-4180 CSV (reusable <code>wd:csv()</code> quoting)</td><td class='ctr'>yes</td><td>EE streams; HE buffers</td></tr><tr><td><code>02_report-flatten.streamable.xsl</code></td><td>Streaming that emits <strong>XML</strong> — namespace-free <code>&lt;Workers&gt;</code> tree</td><td class='ctr'>yes</td><td>EE streams; HE buffers</td></tr><tr><td><code>03_report-to-json.xsl</code></td><td>Native JSON via <code>xml-to-json()</code></td><td class='ctr'>no</td><td>HE or EE</td></tr><tr><td><code>04_raas-to-wws-request.xsl</code></td><td>Boomerang write-back; 2.0-compatible</td><td class='ctr'>no</td><td>HE or EE</td></tr></tbody></table>
+    <div class="callout rel"><span class="ci">★</span><div>The RFC-4180 quoting function from <code>01</code>
+    is worth memorizing — it doubles embedded quotes, the correct CSV escaping most hand-rolled transforms
+    get wrong: <code>replace(string($v), '&quot;', '&quot;&quot;')</code> wrapped in quotes.</div></div>
+  </section>
+
+  <section id="wiring" data-view="reference">
+    <h2><span class="s">§5–6</span>Wiring into Workday &amp; gotchas</h2>
+    <p class="lead">The practical checklist, then the traps that cost the most time.</p>
+    <ol style="color:#cdd6e3;padding-left:20px;line-height:1.8">
+      <li><strong>Namespace match first.</strong> Override the RaaS report namespace and copy it verbatim into <code>xmlns:wd</code>. Mismatch = silent empty output.</li>
+      <li><strong>EIB outbound:</strong> Transform step → Custom Transformation → upload the <code>.xsl</code> as an XSLT Attachment; set the step to 3.0 for streaming.</li>
+      <li><strong>Studio:</strong> XSLT step with the Saxon factory — confirm the configured version (many shops standardize on 2.0).</li>
+      <li><strong>Inbound / boomerang:</strong> verify <code>bsvc</code> namespace + <code>version</code> against the Web Services Directory; feed the request to a step that calls the API.</li>
+      <li><strong>Parameters:</strong> surface API version, delimiters, effective dates as <code>xsl:param</code> with defaults.</li>
+      <li><strong>Test on Saxon-HE locally</strong> — identical output to the cloud except for streaming behavior, which only changes memory use.</li>
+    </ol>
+    <h3 style="margin:22px 0 6px;font-size:15px;color:var(--warn)">Gotcha cheat-sheet</h3>
+    <div class="gxs"><div class="gx"><div class="gx-sym">Empty output, no error</div><div>Namespace mismatch — check <code>xmlns:wd</code> against the report's WWS namespace (§2). The single most common failure.</div></div><div class="gx"><div class="gx-sym">XTTE0570 building a typed map</div><div>Use <code>as="map(*)"</code>, or cast both the value and the <code>sum()</code> (§3.3).</div></div><div class="gx"><div class="gx-sym">&ldquo;try/catch not allowed in XPath&rdquo;</div><div>You used inline <code>try{}catch{}</code> on Saxon-HE; switch to the <code>&lt;xsl:try&gt;</code> element form (§3.10).</div></div><div class="gx"><div class="gx-sym">&ldquo;not streamable&rdquo; errors</div><div>You looked back at a sibling or read a node twice. Snapshot with <code>copy-of(.)</code> and process the copy in a non-streamed mode (§3.7).</div></div><div class="gx"><div class="gx-sym">Literal brace parses wrong</div><div>With <code>expand-text="yes"</code>, escape literal braces as <code>{{</code> <code>}}</code> (matters in regex and hand-emitted JSON).</div></div><div class="gx"><div class="gx-sym">JSON numbers quoted as strings</div><div>Use <code>xf:number</code> / <code>xf:boolean</code>, not <code>xf:string</code> (§3.5).</div></div><div class="gx"><div class="gx-sym">Trailer total always 0 in a stream</div><div><code>xsl:for-each</code> can't carry state; use <code>xsl:iterate</code> + <code>xsl:next-iteration</code> or an accumulator (§3.8–3.9).</div></div></div>
+  </section>
+
+  <section id="quickref" data-view="reference">
+    <h2><span class="s">§9</span>Quick reference</h2>
+    <p class="lead">The 3.0 constructs you'll reach for most.</p>
+    <table><thead><tr><th>Need</th><th>Function / construct</th></tr></thead><tbody><tr><td>Interpolate into text</td><td><code>expand-text="yes"</code>, <code>{ xpath }</code> (escape <code>{{</code>)</td></tr><tr><td>Reusable logic</td><td><code>xsl:function</code> + <code>xsl:sequence</code>, typed <code>as</code></td></tr><tr><td>Lookup / aggregation</td><td><code>map{}</code>, <code>map:put</code>, <code>$m(k)</code>, <code>map:keys</code>, <code>map:contains</code></td></tr><tr><td>Ordered list value</td><td><code>array{}</code>, <code>$a(n)</code>, <code>array:flatten</code></td></tr><tr><td>Group</td><td><code>xsl:for-each-group</code>, <code>current-group()</code>, <code>current-grouping-key()</code></td></tr><tr><td>JSON out</td><td><code>xml-to-json()</code> + <code>xf:map/array/string/number/boolean/null</code></td></tr><tr><td>JSON in</td><td><code>parse-json()</code> + <code>?key</code>/<code>?*</code>; or <code>json-to-xml()</code></td></tr><tr><td>Read external text</td><td><code>unparsed-text()</code>, <code>unparsed-text-lines()</code></td></tr><tr><td>Stream</td><td><code>xsl:mode streamable="yes"</code>, <code>copy-of(.)</code>, <code>xsl:source-document</code></td></tr><tr><td>Streamed state</td><td><code>xsl:iterate</code> + <code>xsl:next-iteration</code> + <code>xsl:on-completion</code></td></tr><tr><td>Streamed totals</td><td><code>xsl:accumulator</code> + <code>accumulator-after('n')</code></td></tr><tr><td>Errors</td><td><code>&lt;xsl:try&gt;…&lt;xsl:catch/&gt;&lt;/xsl:try&gt;</code> (HE-safe)</td></tr><tr><td>Regex</td><td><code>matches</code>, <code>replace</code>, <code>tokenize</code>, <code>xsl:analyze-string</code> + <code>regex-group(n)</code></td></tr><tr><td>Run without XML input</td><td><code>xsl:template name="xsl:initial-template"</code></td></tr></tbody></table>
+  </section>
+
+  <section id="run" data-view="reference">
+    <h2><span class="s">§12</span>Running these locally</h2>
+    <p class="lead">Exactly how this guide was validated.</p>
+    <div class="io io-xsl"><div class="io-tab">SaxonC-HE · Python <button class="copy" data-copy>copy</button></div>
+    <pre class="code lang-python"><code>from saxonche import PySaxonProcessor   # pip install saxonche
+with PySaxonProcessor(license=False) as p:
+    xp = p.new_xslt30_processor()
+    exe = xp.compile_stylesheet(stylesheet_file="examples/a_expand_text.xsl")
+    print(exe.transform_to_string(source_file="sample-data/report.xml"))</code></pre></div>
+    <div class="io io-xsl" style="margin-top:12px"><div class="io-tab">Saxon-J · command line <button class="copy" data-copy>copy</button></div>
+    <pre class="code lang-bash"><code>java -jar saxon-he-12.x.jar -s:sample-data/report.xml \
+  -xsl:examples/a_expand_text.xsl -o:out.txt
+
+# inbound-JSON transforms (g_json_in, sol8) read JSON via a parameter:
+java -jar saxon-he-12.x.jar -it -xsl:solutions/sol8.xsl \
+  json-uri=sample-data/workers.json</code></pre></div>
+    <div class="callout rel"><span class="ci">i</span><div>Streamable transforms run buffered on
+    Saxon-HE with identical output; under Saxon-EE leave <code>streamable="yes"</code> for true streaming.
+    In Workday, set the EIB/Studio XSLT step to 3.0.</div></div>
+  </section>
+
+  <section id="practice" data-view="practice">
+    <h2><span class="s">§7–8</span>Practice set</h2>
+    <p class="lead">Ten graded exercises against <code>sample-data/report.xml</code> (Problem 8 uses
+    <code>workers.json</code>). Try each, then reveal the verified solution.
+    Difficulty <span class="diff" style="vertical-align:middle"><span class="d on"></span><span class="d"></span><span class="d"></span></span> easy →
+    <span class="diff" style="vertical-align:middle"><span class="d on"></span><span class="d on"></span><span class="d on"></span></span> hard.</p>
+    
+    <article class="problem card" id="p1" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">01</span>
+        <div class="pt">
+          <h3>Name list</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d"></span><span class="d"></span></span><span class="skill">string-join · paths</span></div>
+        </div>
+      </header>
+      <p class="prompt">Produce a single pipe-delimited line: <code>LastName, FirstName</code> for each worker.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:value-of select="string-join(wd:Report_Entry/concat(wd:Legal_Last_Name,', ',wd:Legal_First_Name),'|')"/&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>McNeil, Logan|Davis, John|Reynolds, Oliver</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> A path can end in a function call (<code>/concat(...)</code>), producing one string per node; <code>string-join</code> glues them. No loop needed.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p2" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">02</span>
+        <div class="pt">
+          <h3>Count by currency</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d"></span><span class="d"></span></span><span class="skill">for-each-group · sort</span></div>
+        </div>
+      </header>
+      <p class="prompt">Output one line per currency: <code>&lt;currency&gt;: &lt;count&gt;</code>, sorted by currency.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:for-each-group select="wd:Report_Entry" group-by="wd:Annual_Salary/@wd:Currency"&gt;
+      &lt;xsl:sort select="current-grouping-key()"/&gt;
+      &lt;xsl:text&gt;{current-grouping-key()}: {count(current-group())}&amp;#xA;&lt;/xsl:text&gt;
+    &lt;/xsl:for-each-group&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>GBP: 1
+USD: 2</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> Group by an <strong>attribute</strong> value; <code>count(current-group())</code> is the group size.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p3" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">03</span>
+        <div class="pt">
+          <h3>Filter by hire date</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d"></span></span><span class="skill">typed comparison · date</span></div>
+        </div>
+      </header>
+      <p class="prompt">Emit a CSV of <code>Employee_ID,Hire_Date</code> for workers hired <strong>after</strong> 2010-01-01.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:text&gt;Employee_ID,Hire_Date&amp;#xA;&lt;/xsl:text&gt;
+    &lt;xsl:for-each select="wd:Report_Entry[xs:date(wd:Hire_Date) gt xs:date('2010-01-01')]"&gt;
+      &lt;xsl:text&gt;{wd:Employee_ID},{wd:Hire_Date}&amp;#xA;&lt;/xsl:text&gt;
+    &lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>Employee_ID,Hire_Date
+21505,2018-05-14
+21002,2021-09-20</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> Cast both sides to <code>xs:date</code> so <code>gt</code> is a real date comparison, not string comparison. Filter in the predicate to keep the body clean.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p4" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">04</span>
+        <div class="pt">
+          <h3>Typed JSON array</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d"></span></span><span class="skill">xml-to-json · xf:boolean</span></div>
+        </div>
+      </header>
+      <p class="prompt">Build a JSON array of <code>{ id, fullName, hasDependents }</code> where <code>hasDependents</code> is a real JSON boolean.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xf="http://www.w3.org/2005/xpath-functions"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" exclude-result-prefixes="xf wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:variable name="j"&gt;
+      &lt;xf:array&gt;
+        &lt;xsl:for-each select="wd:Report_Entry"&gt;
+          &lt;xf:map&gt;
+            &lt;xf:string key="id"&gt;&lt;xsl:value-of select="wd:Employee_ID"/&gt;&lt;/xf:string&gt;
+            &lt;xf:string key="fullName"&gt;&lt;xsl:value-of select="concat(wd:Legal_First_Name,' ',wd:Legal_Last_Name)"/&gt;&lt;/xf:string&gt;
+            &lt;xf:boolean key="hasDependents"&gt;&lt;xsl:value-of select="exists(wd:Dependent)"/&gt;&lt;/xf:boolean&gt;
+          &lt;/xf:map&gt;
+        &lt;/xsl:for-each&gt;
+      &lt;/xf:array&gt;
+    &lt;/xsl:variable&gt;
+    &lt;xsl:value-of select="xml-to-json($j, map{'indent':true()})"/&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · JSON <span class="verified">✓ verified</span></div><pre class="code out"><code>
+ [ 
+  { "id" : "21001",
+   "fullName" : "Logan McNeil",
+   "hasDependents" : true },
+  
+  { "id" : "21505",
+   "fullName" : "John Davis",
+   "hasDependents" : false },
+  
+  { "id" : "21002",
+   "fullName" : "Oliver Reynolds",
+   "hasDependents" : true } ]</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> <code>xf:boolean</code> + <code>exists(...)</code> yields a real JSON <code>true</code>/<code>false</code>. Using <code>xf:string</code> there is the common mistake.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p5" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">05</span>
+        <div class="pt">
+          <h3>Explode dependents</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d"></span></span><span class="skill">parent axis</span></div>
+        </div>
+      </header>
+      <p class="prompt">One CSV row <strong>per dependent</strong>: <code>Employee_ID,Dependent_Type,Dependent_Name</code>. Workers with no dependents produce no rows.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:text&gt;Employee_ID,Dependent_Type,Dependent_Name&amp;#xA;&lt;/xsl:text&gt;
+    &lt;xsl:for-each select="wd:Report_Entry/wd:Dependent"&gt;
+      &lt;xsl:text&gt;{../wd:Employee_ID},{@wd:Type},{wd:Dependent_Name}&amp;#xA;&lt;/xsl:text&gt;
+    &lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>Employee_ID,Dependent_Type,Dependent_Name
+21001,Spouse,Karen McNeil
+21001,Child,Aiden McNeil
+21002,Child,Mia Reynolds</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> Iterate the <strong>child</strong> (<code>Dependent</code>) directly, then reach up with <code>../</code> for the worker-level field — exactly the de-normalization a child table needs.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p6" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">06</span>
+        <div class="pt">
+          <h3>Company roll-up</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d"></span></span><span class="skill">grouping · aggregate sort</span></div>
+        </div>
+      </header>
+      <p class="prompt">Per company output <code>name</code>, <code>headcount</code>, <code>avgSalary</code>, <strong>sorted by average salary descending</strong>.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="xml" indent="yes"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;Companies&gt;
+      &lt;xsl:for-each-group select="wd:Report_Entry" group-by="wd:Company"&gt;
+        &lt;xsl:sort select="avg(current-group()/xs:decimal(wd:Annual_Salary))" order="descending"/&gt;
+        &lt;Company name="{current-grouping-key()}"
+                 headcount="{count(current-group())}"
+                 avgSalary="{format-number(avg(current-group()/xs:decimal(wd:Annual_Salary)),'#0.00')}"/&gt;
+      &lt;/xsl:for-each-group&gt;
+    &lt;/Companies&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · XML <span class="verified">✓ verified</span></div><pre class="code out"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Companies&gt;
+   &lt;Company name="Global Modern Services, Inc. (USA)"
+            headcount="2"
+            avgSalary="140500.00"/&gt;
+   &lt;Company name="Global Modern Services Ltd (UK)"
+            headcount="1"
+            avgSalary="72000.00"/&gt;
+&lt;/Companies&gt;</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> You can <code>xsl:sort</code> a group by a <strong>computed aggregate</strong> of its members: <code>avg(current-group()/xs:decimal(...))</code>.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p7" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">07</span>
+        <div class="pt">
+          <h3>Streamed per-currency subtotals</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d on"></span></span><span class="skill">streamable iterate · map state</span></div>
+        </div>
+      </header>
+      <p class="prompt">In a <strong>streamable</strong> transform, produce a subtotal per currency plus a grand total, carrying a <code>map(*)</code> as the running state of an <code>xsl:iterate</code>.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:map="http://www.w3.org/2005/xpath-functions/map"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="xs map wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:mode streamable="yes" on-no-match="shallow-skip"/&gt;
+  &lt;xsl:template match="wd:Report_Data"&gt;
+    &lt;xsl:iterate select="wd:Report_Entry"&gt;
+      &lt;xsl:param name="subtotals" as="map(*)" select="map{}"/&gt;
+      &lt;xsl:on-completion&gt;
+        &lt;xsl:for-each select="sort(map:keys($subtotals))"&gt;{.}: {format-number($subtotals(.),'#,##0.00')}&amp;#xA;&lt;/xsl:for-each&gt;
+        &lt;xsl:text&gt;GRAND: {format-number(sum(map:keys($subtotals)!$subtotals(.)),'#,##0.00')}&amp;#xA;&lt;/xsl:text&gt;
+      &lt;/xsl:on-completion&gt;
+      &lt;xsl:variable name="e" select="copy-of(.)"/&gt;
+      &lt;xsl:variable name="ccy" select="string($e/wd:Annual_Salary/@wd:Currency)"/&gt;
+      &lt;xsl:variable name="amt" select="xs:decimal($e/wd:Annual_Salary)"/&gt;
+      &lt;xsl:next-iteration&gt;
+        &lt;xsl:with-param name="subtotals"
+          select="map:put($subtotals, $ccy,
+                          (if (map:contains($subtotals,$ccy)) then $subtotals($ccy) else 0) + $amt)"/&gt;
+      &lt;/xsl:next-iteration&gt;
+    &lt;/xsl:iterate&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>GBP: 72,000.00
+USD: 281,000.00
+GRAND: 353,000.00</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> The map <em>is</em> the running state. <code>map:put</code> returns a new map (maps are immutable), threaded via <code>xsl:next-iteration</code>. <code>map:keys($m)!$m(.)</code> gives all values for the grand total.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p8" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">08</span>
+        <div class="pt">
+          <h3>Inbound JSON → WWS skeleton</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d on"></span></span><span class="skill">parse-json · filter · namespaces</span></div>
+        </div>
+      </header>
+      <p class="prompt">Read <code>workers.json</code>, keep only <code>active = true</code>, and emit a <code>Put_Worker_Request</code> skeleton (in the <code>bsvc</code> namespace) per remaining worker.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:bsvc="urn:com.workday/bsvc" expand-text="yes" exclude-result-prefixes="xs"&gt;
+  &lt;xsl:output method="xml" indent="yes"/&gt;
+  &lt;xsl:param name="json-uri" as="xs:string" select="'sample-data/workers.json'"/&gt;
+  &lt;xsl:template name="xsl:initial-template" match="/"&gt;
+    &lt;xsl:variable name="data" select="parse-json(unparsed-text($json-uri))"/&gt;
+    &lt;Requests&gt;
+      &lt;xsl:for-each select="$data?workers?*[?active eq true()]"&gt;
+        &lt;bsvc:Put_Worker_Request bsvc:version="v44.0"&gt;
+          &lt;bsvc:Worker_Reference&gt;
+            &lt;bsvc:ID bsvc:type="Employee_ID"&gt;{?employeeId}&lt;/bsvc:ID&gt;
+          &lt;/bsvc:Worker_Reference&gt;
+          &lt;bsvc:Worker_Data&gt;
+            &lt;bsvc:Legal_Name&gt;{?name}&lt;/bsvc:Legal_Name&gt;
+            &lt;bsvc:Annual_Salary&gt;{?salary}&lt;/bsvc:Annual_Salary&gt;
+          &lt;/bsvc:Worker_Data&gt;
+        &lt;/bsvc:Put_Worker_Request&gt;
+      &lt;/xsl:for-each&gt;
+    &lt;/Requests&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · XML <span class="verified">✓ verified</span></div><pre class="code out"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Requests xmlns:bsvc="urn:com.workday/bsvc"&gt;
+   &lt;bsvc:Put_Worker_Request bsvc:version="v44.0"&gt;
+      &lt;bsvc:Worker_Reference&gt;
+         &lt;bsvc:ID bsvc:type="Employee_ID"&gt;21001&lt;/bsvc:ID&gt;
+      &lt;/bsvc:Worker_Reference&gt;
+      &lt;bsvc:Worker_Data&gt;
+         &lt;bsvc:Legal_Name&gt;Logan McNeil&lt;/bsvc:Legal_Name&gt;
+         &lt;bsvc:Annual_Salary&gt;185000&lt;/bsvc:Annual_Salary&gt;
+      &lt;/bsvc:Worker_Data&gt;
+   &lt;/bsvc:Put_Worker_Request&gt;
+&lt;/Requests&gt;</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> The predicate <code>[?active eq true()]</code> filters array members; <code>?employeeId</code> etc. look up each member map. Inbound JSON (3.6) + boomerang shape (3.12) = a REST-to-Workday inbound skeleton.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p9" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">09</span>
+        <div class="pt">
+          <h3>Fault-tolerant total</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d on"></span></span><span class="skill">xsl:try element form</span></div>
+        </div>
+      </header>
+      <p class="prompt">Sum all annual salaries, but if any fails to cast to a number, count it as 0 instead of failing the run.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="xs wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:variable name="amounts" as="xs:decimal*"&gt;
+      &lt;xsl:for-each select="wd:Report_Entry"&gt;
+        &lt;xsl:try select="xs:decimal(wd:Annual_Salary)"&gt;
+          &lt;xsl:catch select="0"/&gt;
+        &lt;/xsl:try&gt;
+      &lt;/xsl:for-each&gt;
+    &lt;/xsl:variable&gt;
+    &lt;xsl:text&gt;Total payroll (bad values counted as 0): {format-number(sum($amounts),'#,##0.00')}&amp;#xA;&lt;/xsl:text&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>Total payroll (bad values counted as 0): 353,000.00</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> The element form of try/catch (portable to HE) wraps each cast. Building a typed sequence (<code>xs:decimal*</code>) and <code>sum()</code>-ing it beats threading a running total when you don't need streaming.</div></div>
+      </div>
+    </article>
+    <article class="problem card" id="p10" data-view="practice">
+      <header class="prob-head">
+        <span class="pn">10</span>
+        <div class="pt">
+          <h3>Validate Employee_ID</h3>
+          <div class="meta"><span class="diff" title="difficulty"><span class="d on"></span><span class="d on"></span><span class="d on"></span></span><span class="skill">regex · matches</span></div>
+        </div>
+      </header>
+      <p class="prompt">Print <code>&lt;id&gt;: VALID</code> if the Employee_ID is exactly five digits, else <code>INVALID</code>.</p>
+      <button class="reveal" data-reveal>Show solution &amp; verified output</button>
+      <div class="solution" hidden>
+        <div class="io io-xsl">
+          <div class="io-tab">SOLUTION · XSLT 3.0 <button class="copy" data-copy>copy</button></div>
+          <pre class="code lang-xslt"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:wd="urn:com.workday.report/INHCM0001-Outbound" expand-text="yes" exclude-result-prefixes="wd"&gt;
+  &lt;xsl:output method="text"/&gt;
+  &lt;xsl:template match="/wd:Report_Data"&gt;
+    &lt;xsl:for-each select="wd:Report_Entry"&gt;
+      &lt;xsl:text&gt;{wd:Employee_ID}: {if (matches(wd:Employee_ID,'^\d{5}$')) then 'VALID' else 'INVALID'}&amp;#xA;&lt;/xsl:text&gt;
+    &lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+        </div>
+        <div class="io io-out"><div class="io-tab">OUTPUT · TEXT <span class="verified">✓ verified</span></div><pre class="code out"><code>21001: VALID
+21505: VALID
+21002: VALID</code></pre></div>
+        <div class="callout rel"><span class="ci">i</span><div><strong>Key idea:</strong> <code>matches()</code> with anchors <code>^…$</code> enforces &ldquo;exactly five digits.&rdquo; Here the regex is a string literal, so braces are <strong>not</strong> doubled — the <code>{{</code> escape only applies to braces in TVT text.</div></div>
+      </div>
+    </article>
+  </section>
+
+  <footer>
+    All code is original and independently validated against the sample RaaS document with SaxonC-HE 13.
+    Built from your <code>workday-xslt3</code> and <code>XSLT3_Transforms</code> uploads.
+    &ldquo;Workday&rdquo; and &ldquo;Saxon&rdquo; are trademarks of their respective owners.
+  </footer>
+</main>
+</div>
+<button class="backtop" aria-label="Back to top">↑</button>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+// view switching
+function setView(v){
+  $$('.viewtoggle button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  $$('[data-view]').forEach(el=>{
+    if(el.matches('section[data-view],article[data-view],.toc a[data-view]'))
+      el.classList.toggle('hidden-view', v!=='all' && el.dataset.view!==v);
+  });
+  document.documentElement.dataset.view=v;
+}
+$$('.viewtoggle button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+setView('all');
+// reveal solutions
+$$('[data-reveal]').forEach(btn=>{
+  btn.setAttribute('aria-expanded','false');
+  btn.onclick=()=>{const sol=btn.nextElementSibling,open=!sol.hidden;
+    sol.hidden=open;btn.setAttribute('aria-expanded',String(!open));
+    btn.textContent=open?'Show solution & verified output':'Hide solution';};
+});
+// copy buttons
+$$('[data-copy]').forEach(btn=>btn.onclick=()=>{
+  const pre=btn.closest('.io').querySelector('pre.code code');
+  navigator.clipboard.writeText(pre.textContent).then(()=>{
+    const t=btn.textContent;btn.textContent='copied';btn.classList.add('done');
+    setTimeout(()=>{btn.textContent=t;btn.classList.remove('done')},1100);});
+});
+// scrollspy
+const links=$$('.toc a');const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+const ob=new IntersectionObserver(es=>{es.forEach(e=>{
+  if(e.isIntersecting){links.forEach(a=>a.classList.remove('active'));
+    const a=map.get(e.target.id);if(a)a.classList.add('active');}});},
+  {rootMargin:'-12% 0px -78% 0px'});
+$$('[id]').forEach(el=>{if(map.has(el.id))ob.observe(el);});
+// back to top + mobile
+const bt=$('.backtop');addEventListener('scroll',()=>bt.classList.toggle('show',scrollY>700));
+bt.onclick=()=>scrollTo({top:0});
+$('.mobtoggle').onclick=()=>$('aside').classList.toggle('open');
+$$('.toc a').forEach(a=>a.addEventListener('click',()=>$('aside').classList.remove('open')));
+</script>
+</body>
+</html>

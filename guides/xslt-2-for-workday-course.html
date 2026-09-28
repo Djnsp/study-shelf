@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XSLT 2.0 for Workday — a hands-on course</title>
+<style>
+:root{
+  --paper:#f6f4ef; --card:#ffffff; --ink:#1b2030; --muted:#5b6472;
+  --line:#e6e1d7; --line2:#efeae0; --accent:#4338ca; --accent-soft:#eceafe;
+  --amber:#b45309; --amber-soft:#fbf0e0; --teal:#0f766e; --teal-soft:#e3f1ef;
+  --codebg:#0f1422; --codeink:#dce4f5; --codedim:#7e8aa6;
+  --slate:#64748b;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.88em;
+  background:#eee9df;border:1px solid var(--line);border-radius:4px;padding:.05em .35em;color:#2a3142}
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:248px 1fr;gap:0}
+/* ---- masthead ---- */
+.masthead{grid-column:1/-1;padding:54px 40px 30px;border-bottom:1px solid var(--line)}
+.kick{font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.masthead h1{font-size:42px;line-height:1.05;margin:14px 0 8px;letter-spacing:-.02em;font-weight:800}
+.masthead .sub{font-size:18px;color:var(--muted);max-width:60ch;margin:0 0 20px}
+.pipe{display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:ui-monospace,monospace;font-size:12.5px}
+.pipe .b{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:7px 11px}
+.pipe .b.src{color:var(--slate)} .pipe .b.xsl{color:var(--accent);border-color:#cdc8f5;background:var(--accent-soft)}
+.pipe .b.out{color:var(--teal);border-color:#bfe0db;background:var(--teal-soft)}
+.pipe .ar{color:var(--muted)}
+.howto{grid-column:1/-1;padding:18px 40px;background:#fcfbf8;border-bottom:1px solid var(--line);
+  font-size:14.5px;color:var(--muted)}
+.howto b{color:var(--ink)}
+/* ---- toc ---- */
+.toc{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;
+  padding:26px 18px 60px;border-right:1px solid var(--line);background:#fbfaf6}
+.toc ul{list-style:none;margin:0;padding:0}
+.toc-phase{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink);font-weight:700;margin:20px 0 7px;line-height:1.3}
+.toc-phase span{display:block;color:var(--accent);font-size:10px;margin-bottom:2px}
+.toc-item a{display:flex;gap:9px;padding:4px 8px;border-radius:6px;color:var(--muted);font-size:13.5px}
+.toc-item a:hover{background:var(--accent-soft);color:var(--ink)}
+.toc-item .tn{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--accent);min-width:26px}
+/* ---- content ---- */
+.content{padding:30px 40px 90px;min-width:0}
+.phase{display:flex;gap:18px;align-items:baseline;margin:46px 0 10px;padding-top:18px;border-top:2px solid var(--ink)}
+.phase:first-of-type{margin-top:8px}
+.phase-num{font-size:54px;font-weight:800;line-height:1;color:var(--accent);letter-spacing:-.03em;font-family:ui-monospace,monospace}
+.phase-eyebrow{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.phase-head h2{font-size:27px;margin:3px 0 5px;letter-spacing:-.01em;font-weight:800}
+.phase-head p{margin:0;color:var(--muted);font-size:15px}
+.topic{padding:26px 0 10px;border-bottom:1px solid var(--line2)}
+.eyebrow{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.topic h3{font-size:22px;margin:5px 0 12px;letter-spacing:-.01em;font-weight:750}
+.topic p{margin:0 0 12px;max-width:72ch}
+.topic ul{max-width:72ch;margin:0 0 14px;padding-left:22px}
+.topic li{margin:4px 0}
+.note{font-size:14px;color:var(--muted);border-left:3px solid var(--line);padding-left:12px}
+/* ---- code ---- */
+.codelbl{font-family:ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:#fff;display:inline-block;padding:4px 10px;border-radius:7px 7px 0 0;margin-top:10px;font-weight:600}
+.codelbl.xslt{background:var(--accent)} .codelbl.xml{background:var(--slate)}
+.codelbl.out{background:var(--teal)} .codelbl.xpath{background:var(--amber)}
+pre.code{margin:0 0 6px;background:var(--codebg);color:var(--codeink);border-radius:0 8px 8px 8px;
+  padding:14px 16px;overflow:auto;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-size:12.8px;line-height:1.6;border:1px solid #1d2538}
+pre.code.xpath{border-top:2px solid var(--amber)}
+pre.code code{background:none;border:0;padding:0;color:inherit;font-size:inherit}
+/* ---- example / assignment / solution ---- */
+.ex{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:8px;padding:14px 18px 18px;margin:16px 0}
+.extag{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);font-weight:700;margin-bottom:4px}
+.as{background:var(--amber-soft);border:1px solid #ecd9b8;border-radius:8px;padding:14px 18px;margin:16px 0}
+.astag{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber);font-weight:700;margin-bottom:5px}
+.as p{margin:0;max-width:72ch}
+details.sol{margin:10px 0 4px;border:1px solid var(--teal);border-radius:8px;overflow:hidden;background:var(--teal-soft)}
+details.sol summary{cursor:pointer;list-style:none;padding:11px 16px;display:flex;align-items:center;gap:10px;
+  font-weight:600;color:var(--teal)}
+details.sol summary::-webkit-details-marker{display:none}
+.soltag{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.solhint{font-size:12px;color:var(--muted);font-weight:400}
+details.sol[open] summary .solhint{display:none}
+.solbody{padding:4px 16px 16px;background:var(--card);border-top:1px solid var(--teal)}
+.solbody p{max-width:72ch}
+footer{grid-column:1/-1;padding:26px 40px 50px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+/* focus + motion */
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+/* responsive */
+@media (max-width:880px){
+  .shell{grid-template-columns:1fr}
+  .toc{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .masthead,.content,.howto,footer{padding-left:22px;padding-right:22px}
+  .masthead h1{font-size:33px}
+}
+/* print */
+@media print{
+  .toc{display:none}.shell{display:block;max-width:none}
+  details.sol{break-inside:avoid}details.sol[open] .solbody,details.sol .solbody{display:block}
+  details.sol{border-color:#999}.phase{break-before:page}
+  pre.code{white-space:pre-wrap;word-break:break-word}
+}
+</style>
+</head><body>
+<div class="shell">
+  <header class="masthead">
+    <div class="kick">Workday Integrations &middot; Document Transformation</div>
+    <h1>XSLT 2.0 for Workday</h1>
+    <p class="sub">A hands-on course in the language Workday Studio and Document Transformation run on Saxon. Five phases, twenty-two skills — each with a worked example and an assignment with a full solution.</p>
+    <div class="pipe">
+      <span class="b src">wd:Report_Entry</span><span class="ar">&rarr;</span>
+      <span class="b xsl">&lt;xsl:template&gt;</span><span class="ar">&rarr;</span>
+      <span class="b out">vendor.csv</span>
+    </div>
+  </header>
+  <div class="howto">
+    <b>How to use this:</b> work top to bottom — each phase builds on the last. Read the concept, study the Example, then attempt the Assignment before expanding the Solution. All examples use one shared Workday-style RaaS sample so the data stays familiar. Examples are XSLT&nbsp;2.0 (the Workday baseline); they run on the Saxon engine inside Studio and Document Transformation.
+  </div>
+  <nav class="toc"><ul>
+<li class="toc-phase"><span>Phase 1</span>Foundations &amp; Navigation</li>
+<li class="toc-item"><a href="#xmlbasics"><span class="tn">1.1</span>XML Basics</a></li>
+<li class="toc-item"><a href="#namespaces"><span class="tn">1.2</span>Namespace Awareness</a></li>
+<li class="toc-item"><a href="#paths"><span class="tn">1.3</span>Path Navigation</a></li>
+<li class="toc-item"><a href="#predicates"><span class="tn">1.4</span>Predicates &amp; Filtering</a></li>
+<li class="toc-item"><a href="#sequences"><span class="tn">1.5</span>The Sequence Concept</a></li>
+<li class="toc-phase"><span>Phase 2</span>Core Processing &amp; Logic</li>
+<li class="toc-item"><a href="#stylesheets"><span class="tn">2.1</span>Stylesheets &amp; Outputs</a></li>
+<li class="toc-item"><a href="#match"><span class="tn">2.2</span>Match Templates</a></li>
+<li class="toc-item"><a href="#named"><span class="tn">2.3</span>Named Templates</a></li>
+<li class="toc-item"><a href="#loops"><span class="tn">2.4</span>Loops (xsl:for-each)</a></li>
+<li class="toc-item"><a href="#conditionals"><span class="tn">2.5</span>Conditionals</a></li>
+<li class="toc-phase"><span>Phase 3</span>Data Control &amp; Customization</li>
+<li class="toc-item"><a href="#variables"><span class="tn">3.1</span>Variables &amp; Scope</a></li>
+<li class="toc-item"><a href="#temptrees"><span class="tn">3.2</span>Temporary Trees</a></li>
+<li class="toc-item"><a href="#typing"><span class="tn">3.3</span>Strong Typing</a></li>
+<li class="toc-item"><a href="#functions"><span class="tn">3.4</span>Custom Functions</a></li>
+<li class="toc-phase"><span>Phase 4</span>Advanced Data Manipulation</li>
+<li class="toc-item"><a href="#grouping"><span class="tn">4.1</span>Advanced Grouping</a></li>
+<li class="toc-item"><a href="#tokenize"><span class="tn">4.2</span>String Tokenization</a></li>
+<li class="toc-item"><a href="#regex"><span class="tn">4.3</span>Regex Manipulation</a></li>
+<li class="toc-item"><a href="#dates"><span class="tn">4.4</span>Date &amp; Time Formatting</a></li>
+<li class="toc-phase"><span>Phase 5</span>Output Engineering &amp; Performance</li>
+<li class="toc-item"><a href="#layouts"><span class="tn">5.1</span>Delimited &amp; Fixed-Width Layouts</a></li>
+<li class="toc-item"><a href="#numbers"><span class="tn">5.2</span>Number Formatting</a></li>
+<li class="toc-item"><a href="#whitespace"><span class="tn">5.3</span>Whitespace Control</a></li>
+<li class="toc-item"><a href="#performance"><span class="tn">5.4</span>Performance Tuning</a></li>
+  </ul></nav>
+  <main class="content">
+<section class="phase" id="phase1"><div class="phase-num">01</div><div class="phase-head"><div class="phase-eyebrow">Phase 1</div><h2>Foundations &amp; Navigation</h2><p>XPath 2.0 — read the XML tree and point at exactly the data you want.</p></div></section>
+<section class="topic" id="xmlbasics"><div class="eyebrow">Phase 1 &middot; 1.1</div><h3>XML Basics</h3><p>Workday integrations move <b>XML</b>. A Report-as-a-Service (RaaS) feed, a PECI extract, a Worker Sync — all arrive as a tree of nested tags. Four building blocks make up that tree:</p><ul><li><b>Elements</b> — the tags, e.g. <code>wd:Report_Entry</code>, <code>wd:Name</code>.</li><li><b>Attributes</b> — name/value pairs <i>on</i> an element, e.g. <code>wd:currency="USD"</code>.</li><li><b>Parent–child hierarchy</b> — nesting. <code>wd:Report_Entry</code> is the parent of <code>wd:Employee_ID</code>.</li><li><b>Text nodes</b> — the character data inside an element, e.g. the text <code>Asha Rao</code> inside <code>wd:Name</code>.</li></ul><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><p class='note'>This is the shared sample we transform throughout the course. Here <code>wd:Base_Pay</code> is an <b>element</b> whose <b>text node</b> is <code>120000</code> and which carries the <b>attribute</b> <code>wd:currency="USD"</code>. Its <b>parent</b> is <code>wd:Report_Entry</code>; its <b>siblings</b> include <code>wd:Name</code> and <code>wd:Status</code>.</p></div><div class="as"><div class="astag">Assignment</div>Using the input below, answer: (a) What is the <b>parent</b> element of <code>wd:Name</code>? (b) Name every <b>attribute</b> that appears in the document. (c) What is the <b>text node</b> of the first worker's <code>wd:Department</code>?<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><p>(a) The parent of <code>wd:Name</code> is <code>wd:Report_Entry</code>.<br>(b) The only attribute is <code>wd:currency</code> (value <code>USD</code>), appearing once per <code>wd:Base_Pay</code>.<br>(c) The text node of the first <code>wd:Department</code> is <code>Engineering</code>.</p></div></details></section>
+<section class="topic" id="namespaces"><div class="eyebrow">Phase 1 &middot; 1.2</div><h3>Namespace Awareness</h3><p>Every Workday element lives in a <b>namespace</b> — a URI bound to a prefix. The sample binds <code>xmlns:wd="urn:com.workday/bsvc"</code>. To match those elements in your stylesheet you must declare the <b>same URI</b>. The prefix name is yours to choose; what must match is the URI it points to.</p><p>Forgetting this is the No. 1 reason a template “matches nothing.” <code>match="Report_Entry"</code> (no prefix) will never hit <code>wd:Report_Entry</code>, because an unprefixed name means <i>no namespace</i>. Use <code>exclude-result-prefixes</code> to keep helper prefixes out of your output.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:stylesheet version=&quot;2.0&quot;
+    xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+    xmlns:wd=&quot;urn:com.workday/bsvc&quot;
+    xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot;
+    exclude-result-prefixes=&quot;wd xs&quot;&gt;
+
+  &lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+    &lt;!-- fires because the wd: URI matches the input --&gt;
+    &lt;worker&gt;&lt;xsl:value-of select=&quot;wd:Name&quot;/&gt;&lt;/worker&gt;
+  &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;worker&gt;Asha Rao&lt;/worker&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>The input below uses <code>xmlns:pi="urn:com.workday/picof"</code>. Write the opening <code>xsl:stylesheet</code> tag and a template that matches <code>pi:Employee</code> and outputs its <code>pi:Name</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;pi:Payroll_Extract_Employees xmlns:pi=&quot;urn:com.workday/picof&quot;&gt;
+  &lt;pi:Employee&gt;
+    &lt;pi:Employee_ID&gt;88888&lt;/pi:Employee_ID&gt;
+    &lt;pi:Name&gt;Test Name&lt;/pi:Name&gt;
+  &lt;/pi:Employee&gt;
+&lt;/pi:Payroll_Extract_Employees&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:stylesheet version=&quot;2.0&quot;
+    xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+    xmlns:pi=&quot;urn:com.workday/picof&quot;
+    exclude-result-prefixes=&quot;pi&quot;&gt;
+
+  &lt;xsl:template match=&quot;pi:Employee&quot;&gt;
+    &lt;emp&gt;&lt;xsl:value-of select=&quot;pi:Name&quot;/&gt;&lt;/emp&gt;
+  &lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</code></pre><p class='note'>The prefix could be <code>p</code> or <code>emp</code> instead of <code>pi</code> — only the URI <code>urn:com.workday/picof</code> has to match.</p></div></details></section>
+<section class="topic" id="paths"><div class="eyebrow">Phase 1 &middot; 1.3</div><h3>Path Navigation</h3><p>XPath walks the tree with <b>axes</b>. Master these four and you can reach anything: <code>/</code> absolute, <code>.</code> current node, <code>..</code> parent, <code>//</code> descendant (deep search). Attributes use <code>@</code>.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xpath">XPath</div><pre class="code xpath"><code>/wd:Report_Data/wd:Report_Entry/wd:Department  (* absolute: every department *)
+wd:Name                                         (* a child of the context node *)
+..                                              (* the parent *)
+wd:Base_Pay/@wd:currency                        (* an attribute *)
+//wd:Employee_ID                                (* deep search: every id below root *)</code></pre></div><div class="as"><div class="astag">Assignment</div>Your context node is a <code>wd:Base_Pay</code> element in the input below. Write XPath to get: (a) its <code>wd:currency</code> attribute, (b) the <code>wd:Employee_ID</code> of the same worker, (c) every <code>wd:Name</code> in the whole document.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xpath">Solution</div><pre class="code xpath"><code>(a) @wd:currency
+(b) ../wd:Employee_ID
+(c) //wd:Name        (* or /wd:Report_Data/wd:Report_Entry/wd:Name *)</code></pre></div></details></section>
+<section class="topic" id="predicates"><div class="eyebrow">Phase 1 &middot; 1.4</div><h3>Predicates &amp; Filtering</h3><p>A <b>predicate</b> is a test in square brackets that filters a node sequence — “only the ones where…”. Value tests, numeric tests, attribute tests, positional <code>[1]</code>/<code>[last()]</code>, and chained predicates all work.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xpath">XPath</div><pre class="code xpath"><code>/wd:Report_Data/wd:Report_Entry[wd:Status = &#x27;Active&#x27;]   (* active workers *)
+/wd:Report_Data/wd:Report_Entry[wd:Base_Pay &gt; 100000]   (* high earners *)
+/wd:Report_Data/wd:Report_Entry[1]                      (* the first entry *)</code></pre></div><div class="as"><div class="astag">Assignment</div>From the input below, write XPath that selects: (a) every <code>wd:Report_Entry</code> in Engineering that is also Active, and (b) the <b>last</b> <code>wd:Report_Entry</code> in the file.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xpath">Solution</div><pre class="code xpath"><code>(a) /wd:Report_Data/wd:Report_Entry[wd:Department=&#x27;Engineering&#x27; and wd:Status=&#x27;Active&#x27;]
+    (* =&gt; only Asha (Priya is Terminated) *)
+(b) /wd:Report_Data/wd:Report_Entry[last()]   (* =&gt; Priya Nair *)</code></pre></div></details></section>
+<section class="topic" id="sequences"><div class="eyebrow">Phase 1 &middot; 1.5</div><h3>The Sequence Concept</h3><p>XPath 2.0's big idea: <b>everything is a sequence</b> — an ordered list of items (nodes or atomic values). This kills the XSLT 1.0 <b>node-set</b> headaches: no <code>node-set()</code> extension, and temporary trees run straight through XPath. Tools: <code>count()</code>, <code>distinct-values()</code>, <code>sum()</code>, <code>some/every … satisfies</code>.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xpath">XPath</div><pre class="code xpath"><code>count(/wd:Report_Data/wd:Report_Entry)   (* =&gt; 3 *)
+distinct-values(//wd:Department)         (* =&gt; (&quot;Engineering&quot;,&quot;Finance&quot;) *)
+sum(//wd:Base_Pay/xs:decimal(.))         (* =&gt; 358000 *)</code></pre></div><div class="as"><div class="astag">Assignment</div>Using the input below, write XPath to: (a) count the <b>active</b> workers, (b) list the <b>distinct</b> departments, (c) return <code>true</code> if <b>any</b> worker earns over 200000.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xpath">Solution</div><pre class="code xpath"><code>(a) count(//wd:Report_Entry[wd:Status=&#x27;Active&#x27;])     (* =&gt; 2 *)
+(b) distinct-values(//wd:Department)                 (* =&gt; Engineering, Finance *)
+(c) some $p in //wd:Base_Pay satisfies xs:decimal($p) gt 200000   (* =&gt; false *)</code></pre></div></details></section>
+<section class="phase" id="phase2"><div class="phase-num">02</div><div class="phase-head"><div class="phase-eyebrow">Phase 2</div><h2>Core Processing &amp; Logic</h2><p>XSLT 2.0 — turn matched nodes into output with templates, loops, and branching.</p></div></section>
+<section class="topic" id="stylesheets"><div class="eyebrow">Phase 2 &middot; 2.1</div><h3>Stylesheets &amp; Outputs</h3><p>Every transform starts with <code>xsl:stylesheet</code> (<code>version="2.0"</code>) and an <code>xsl:output</code> that declares the <b>target format</b>: <code>method="xml"</code> (default), <code>"html"</code>, or <code>"text"</code> for <b>CSV / TSV / fixed-width</b> vendor files.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:stylesheet version=&quot;2.0&quot;
+    xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;
+    xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;xsl:output method=&quot;text&quot; encoding=&quot;UTF-8&quot;/&gt;
+  &lt;xsl:template match=&quot;/&quot;&gt;
+    &lt;xsl:text&gt;ID,Name,Pay&amp;#10;&lt;/xsl:text&gt;
+    &lt;xsl:for-each select=&quot;wd:Report_Data/wd:Report_Entry&quot;&gt;
+      &lt;xsl:value-of select=&quot;concat(wd:Employee_ID,&#x27;,&#x27;,wd:Name,&#x27;,&#x27;,wd:Base_Pay,&#x27;&amp;#10;&#x27;)&quot;/&gt;
+    &lt;/xsl:for-each&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>ID,Name,Pay
+21001,Asha Rao,120000
+21002,Mateo Diaz,96000
+21003,Priya Nair,142000</code></pre></div><div class="as"><div class="astag">Assignment</div>Using the input below, produce a <b>tab-separated</b> (TSV) file with a header row <code>ID</code>, <code>Dept</code>, <code>Status</code>, then one line per worker.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:output method=&quot;text&quot; encoding=&quot;UTF-8&quot;/&gt;
+&lt;xsl:template match=&quot;/&quot;&gt;
+  &lt;xsl:text&gt;ID&amp;#9;Dept&amp;#9;Status&amp;#10;&lt;/xsl:text&gt;
+  &lt;xsl:for-each select=&quot;wd:Report_Data/wd:Report_Entry&quot;&gt;
+    &lt;xsl:value-of select=&quot;concat(wd:Employee_ID,&#x27;&amp;#9;&#x27;,wd:Department,&#x27;&amp;#9;&#x27;,wd:Status,&#x27;&amp;#10;&#x27;)&quot;/&gt;
+  &lt;/xsl:for-each&gt;
+&lt;/xsl:template&gt;</code></pre><p class='note'><code>&amp;#9;</code> is a tab and <code>&amp;#10;</code> a newline — character references are the safe way to emit delimiters in text output.</p></div></details></section>
+<section class="topic" id="match"><div class="eyebrow">Phase 2 &middot; 2.2</div><h3>Match Templates</h3><p><b>Match templates</b> are rule-based: <code>xsl:template match="pattern"</code> fires for each node handed over by <code>xsl:apply-templates</code> (the “push” style). Built-in rules recurse into children and copy text by default.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:template match=&quot;/&quot;&gt;
+  &lt;Workers&gt;&lt;xsl:apply-templates select=&quot;wd:Report_Data/wd:Report_Entry&quot;/&gt;&lt;/Workers&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+  &lt;Worker id=&quot;{wd:Employee_ID}&quot;&gt;&lt;xsl:value-of select=&quot;wd:Name&quot;/&gt;&lt;/Worker&gt;
+&lt;/xsl:template&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;Workers&gt;
+  &lt;Worker id=&quot;21001&quot;&gt;Asha Rao&lt;/Worker&gt;
+  &lt;Worker id=&quot;21002&quot;&gt;Mateo Diaz&lt;/Worker&gt;
+  &lt;Worker id=&quot;21003&quot;&gt;Priya Nair&lt;/Worker&gt;
+&lt;/Workers&gt;</code></pre><p class='note'><code>{wd:Employee_ID}</code> inside an attribute is an <b>attribute value template</b> (AVT) — curly braces evaluate XPath inside attribute text.</p></div><div class="as"><div class="astag">Assignment</div>For the input below, write a template matching <code>wd:Report_Entry</code> that outputs an empty element <code>&lt;emp code="<i>ID</i>" dept="<i>Department</i>"/&gt;</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+  &lt;emp code=&quot;{wd:Employee_ID}&quot; dept=&quot;{wd:Department}&quot;/&gt;
+&lt;/xsl:template&gt;
+
+&lt;!-- =&gt;
+&lt;emp code=&quot;21001&quot; dept=&quot;Engineering&quot;/&gt;
+&lt;emp code=&quot;21002&quot; dept=&quot;Finance&quot;/&gt;
+&lt;emp code=&quot;21003&quot; dept=&quot;Engineering&quot;/&gt;
+--&gt;</code></pre></div></details></section>
+<section class="topic" id="named"><div class="eyebrow">Phase 2 &middot; 2.3</div><h3>Named Templates</h3><p>A <b>named template</b> is a procedure called explicitly with <code>xsl:call-template</code>, passing data through <code>xsl:with-param</code>. Use it for reusable formatting that several places need.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:template name=&quot;kv&quot;&gt;
+  &lt;xsl:param name=&quot;label&quot;/&gt;
+  &lt;xsl:param name=&quot;value&quot;/&gt;
+  &lt;xsl:value-of select=&quot;concat($label, &#x27;: &#x27;, $value, &#x27;&amp;#10;&#x27;)&quot;/&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+  &lt;xsl:call-template name=&quot;kv&quot;&gt;
+    &lt;xsl:with-param name=&quot;label&quot; select=&quot;&#x27;Name&#x27;&quot;/&gt;
+    &lt;xsl:with-param name=&quot;value&quot; select=&quot;wd:Name&quot;/&gt;
+  &lt;/xsl:call-template&gt;
+&lt;/xsl:template&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>Name: Asha Rao
+Name: Mateo Diaz
+Name: Priya Nair</code></pre></div><div class="as"><div class="astag">Assignment</div>For the input below, build a named template <code>repeat-char</code> that takes a <code>char</code> and a <code>count</code> and outputs a separator line, then call it to print 20 dashes before each worker's name. <i>Hint:</i> <code>string-join(for $i in 1 to $count return $char, '')</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:template name=&quot;repeat-char&quot;&gt;
+  &lt;xsl:param name=&quot;char&quot; select=&quot;&#x27;-&#x27;&quot;/&gt;
+  &lt;xsl:param name=&quot;count&quot; select=&quot;20&quot;/&gt;
+  &lt;xsl:value-of select=&quot;string-join(for $i in 1 to $count return $char, &#x27;&#x27;)&quot;/&gt;
+  &lt;xsl:text&gt;&amp;#10;&lt;/xsl:text&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+  &lt;xsl:call-template name=&quot;repeat-char&quot;/&gt;
+  &lt;xsl:value-of select=&quot;concat(wd:Name,&#x27;&amp;#10;&#x27;)&quot;/&gt;
+&lt;/xsl:template&gt;</code></pre></div></details></section>
+<section class="topic" id="loops"><div class="eyebrow">Phase 2 &middot; 2.4</div><h3>Loops (xsl:for-each)</h3><p><code>xsl:for-each</code> walks a sequence; inside, the <b>context node</b> is the current item. Add <code>xsl:sort</code> to order items (use <code>data-type="number"</code> or cast for numeric sorts).</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:for-each select=&quot;wd:Report_Data/wd:Report_Entry&quot;&gt;
+  &lt;xsl:sort select=&quot;wd:Name&quot;/&gt;
+  &lt;row&gt;&lt;xsl:value-of select=&quot;wd:Name&quot;/&gt;&lt;/row&gt;
+&lt;/xsl:for-each&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;row&gt;Asha Rao&lt;/row&gt;
+&lt;row&gt;Mateo Diaz&lt;/row&gt;
+&lt;row&gt;Priya Nair&lt;/row&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>From the input below, loop over <b>active</b> workers only, sorted by <code>wd:Base_Pay</code> <b>highest first</b>, and output each name.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:for-each select=&quot;wd:Report_Data/wd:Report_Entry[wd:Status=&#x27;Active&#x27;]&quot;&gt;
+  &lt;xsl:sort select=&quot;xs:decimal(wd:Base_Pay)&quot; data-type=&quot;number&quot; order=&quot;descending&quot;/&gt;
+  &lt;name&gt;&lt;xsl:value-of select=&quot;wd:Name&quot;/&gt;&lt;/name&gt;
+&lt;/xsl:for-each&gt;
+
+&lt;!-- =&gt; Asha Rao (120000), then Mateo Diaz (96000) --&gt;</code></pre><p class='note'>Casting with <code>xs:decimal()</code> is essential — a text sort would order <code>120000</code> before <code>96000</code> incorrectly in some cases.</p></div></details></section>
+<section class="topic" id="conditionals"><div class="eyebrow">Phase 2 &middot; 2.5</div><h3>Conditionals</h3><p><code>xsl:if</code> is a single yes/no gate (no <code>else</code>). For multi-way logic use <code>xsl:choose</code> with <code>xsl:when</code> branches and an optional <code>xsl:otherwise</code> — the first matching <code>when</code> wins.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+  &lt;xsl:value-of select=&quot;wd:Name&quot;/&gt;&lt;xsl:text&gt; = &lt;/xsl:text&gt;
+  &lt;xsl:choose&gt;
+    &lt;xsl:when test=&quot;xs:decimal(wd:Base_Pay) gt 150000&quot;&gt;HIGH&lt;/xsl:when&gt;
+    &lt;xsl:when test=&quot;xs:decimal(wd:Base_Pay) gt 80000&quot;&gt;MID&lt;/xsl:when&gt;
+    &lt;xsl:otherwise&gt;LOW&lt;/xsl:otherwise&gt;
+  &lt;/xsl:choose&gt;
+  &lt;xsl:text&gt;&amp;#10;&lt;/xsl:text&gt;
+&lt;/xsl:template&gt;</code></pre><div class="codelbl out">Output (none exceed 150000)</div><pre class="code out"><code>Asha Rao = MID
+Mateo Diaz = MID
+Priya Nair = MID</code></pre></div><div class="as"><div class="astag">Assignment</div>Using the input below and <code>xsl:choose</code>, print <code>FLAG <i>Name</i></code> for <b>Terminated</b> workers and <code>OK <i>Name</i></code> for everyone else.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+  &lt;xsl:choose&gt;
+    &lt;xsl:when test=&quot;wd:Status = &#x27;Terminated&#x27;&quot;&gt;
+      &lt;xsl:value-of select=&quot;concat(&#x27;FLAG &#x27;, wd:Name, &#x27;&amp;#10;&#x27;)&quot;/&gt;
+    &lt;/xsl:when&gt;
+    &lt;xsl:otherwise&gt;
+      &lt;xsl:value-of select=&quot;concat(&#x27;OK &#x27;, wd:Name, &#x27;&amp;#10;&#x27;)&quot;/&gt;
+    &lt;/xsl:otherwise&gt;
+  &lt;/xsl:choose&gt;
+&lt;/xsl:template&gt;
+
+&lt;!-- =&gt; OK Asha Rao / OK Mateo Diaz / FLAG Priya Nair --&gt;</code></pre></div></details></section>
+<section class="phase" id="phase3"><div class="phase-num">03</div><div class="phase-head"><div class="phase-eyebrow">Phase 3</div><h2>Data Control &amp; Customization</h2><p>Hold, type, and reshape data with variables, temporary trees, and functions.</p></div></section>
+<section class="topic" id="variables"><div class="eyebrow">Phase 3 &middot; 3.1</div><h3>Variables &amp; Scope</h3><p><code>xsl:variable</code> stores a value or node-sequence and is <b>immutable</b>. Scope is lexical (visible to following siblings/descendants); at the top level it is <b>global</b>. <code>xsl:param</code> is a variable whose value can be supplied from outside — a template param (<code>with-param</code>) or a stylesheet param set by the integration.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:variable name=&quot;targetCurrency&quot; select=&quot;&#x27;USD&#x27;&quot;/&gt;
+&lt;xsl:param name=&quot;minPay&quot; select=&quot;100000&quot; as=&quot;xs:decimal&quot;/&gt;
+
+&lt;xsl:template match=&quot;/&quot;&gt;
+  &lt;xsl:for-each select=&quot;wd:Report_Data/wd:Report_Entry
+                        [wd:Base_Pay/@wd:currency = $targetCurrency]
+                        [xs:decimal(wd:Base_Pay) ge $minPay]&quot;&gt;
+    &lt;hit&gt;&lt;xsl:value-of select=&quot;wd:Name&quot;/&gt;&lt;/hit&gt;
+  &lt;/xsl:for-each&gt;
+&lt;/xsl:template&gt;</code></pre><div class="codelbl out">Output (USD, pay &gt;= 100000)</div><pre class="code out"><code>&lt;hit&gt;Asha Rao&lt;/hit&gt;
+&lt;hit&gt;Priya Nair&lt;/hit&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>For the input below, define a template <code>show</code> with a param <code>prefix</code> (default <code>'EMP-'</code>) that outputs the prefix + <code>wd:Employee_ID</code>. Call it once with the default and once overriding the prefix to <code>'WD-'</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:template name=&quot;show&quot;&gt;
+  &lt;xsl:param name=&quot;prefix&quot; select=&quot;&#x27;EMP-&#x27;&quot;/&gt;
+  &lt;xsl:param name=&quot;id&quot;/&gt;
+  &lt;xsl:value-of select=&quot;concat($prefix, $id, &#x27;&amp;#10;&#x27;)&quot;/&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:call-template name=&quot;show&quot;&gt;
+  &lt;xsl:with-param name=&quot;id&quot; select=&quot;wd:Employee_ID&quot;/&gt;
+&lt;/xsl:call-template&gt;
+&lt;xsl:call-template name=&quot;show&quot;&gt;
+  &lt;xsl:with-param name=&quot;prefix&quot; select=&quot;&#x27;WD-&#x27;&quot;/&gt;
+  &lt;xsl:with-param name=&quot;id&quot; select=&quot;wd:Employee_ID&quot;/&gt;
+&lt;/xsl:call-template&gt;
+
+&lt;!-- =&gt; EMP-21001 / WD-21001 --&gt;</code></pre></div></details></section>
+<section class="topic" id="temptrees"><div class="eyebrow">Phase 3 &middot; 3.2</div><h3>Temporary Trees</h3><p>When an <code>xsl:variable</code> contains <i>element content</i> (no <code>select</code>), it becomes a <b>temporary tree</b> — a navigable document in memory. In 2.0 you query it directly with XPath (no <code>node-set()</code>), enabling clean multi-pass transforms.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;!-- pass 1: build a normalized tree --&gt;
+&lt;xsl:variable name=&quot;norm&quot;&gt;
+  &lt;xsl:for-each select=&quot;wd:Report_Data/wd:Report_Entry&quot;&gt;
+    &lt;emp dept=&quot;{wd:Department}&quot; pay=&quot;{xs:decimal(wd:Base_Pay)}&quot;/&gt;
+  &lt;/xsl:for-each&gt;
+&lt;/xsl:variable&gt;
+
+&lt;!-- pass 2: query the temporary tree directly --&gt;
+&lt;EngineeringCount&gt;&lt;xsl:value-of select=&quot;count($norm/emp[@dept=&#x27;Engineering&#x27;])&quot;/&gt;&lt;/EngineeringCount&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;EngineeringCount&gt;2&lt;/EngineeringCount&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>For the input below, build a temporary tree <code>$pays</code> with one <code>&lt;p&gt;</code> per <b>active</b> worker holding their pay, then output the <b>average</b> from that tree.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:variable name=&quot;pays&quot;&gt;
+  &lt;xsl:for-each select=&quot;wd:Report_Data/wd:Report_Entry[wd:Status=&#x27;Active&#x27;]&quot;&gt;
+    &lt;p&gt;&lt;xsl:value-of select=&quot;xs:decimal(wd:Base_Pay)&quot;/&gt;&lt;/p&gt;
+  &lt;/xsl:for-each&gt;
+&lt;/xsl:variable&gt;
+
+&lt;Average&gt;&lt;xsl:value-of select=&quot;avg($pays/p/xs:decimal(.))&quot;/&gt;&lt;/Average&gt;
+&lt;!-- active = 120000 and 96000 =&gt; 108000 --&gt;</code></pre></div></details></section>
+<section class="topic" id="typing"><div class="eyebrow">Phase 3 &middot; 3.3</div><h3>Strong Typing</h3><p>XSLT 2.0 is typed. Declaring <code>as="xs:decimal"</code>, <code>as="xs:date"</code>, <code>as="xs:integer"</code>, or <code>as="xs:string"</code> enforces integrity and unlocks correct arithmetic, date math, and numeric sorting. Cast on the way in with <code>xs:decimal(.)</code>, <code>xs:date(.)</code>.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:variable name=&quot;pay&quot;   as=&quot;xs:decimal&quot; select=&quot;xs:decimal(wd:Report_Data/wd:Report_Entry/wd:Base_Pay)&quot;/&gt;
+&lt;xsl:variable name=&quot;hired&quot; as=&quot;xs:date&quot;    select=&quot;xs:date(wd:Report_Data/wd:Report_Entry/wd:Hire_Date)&quot;/&gt;
+
+&lt;monthly&gt;&lt;xsl:value-of select=&quot;$pay div 12&quot;/&gt;&lt;/monthly&gt;
+&lt;year&gt;&lt;xsl:value-of select=&quot;year-from-date($hired)&quot;/&gt;&lt;/year&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;monthly&gt;10000&lt;/monthly&gt;
+&lt;year&gt;2021&lt;/year&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>For the input below, compute the <b>total</b> base pay of all <b>active</b> workers as a typed <code>xs:decimal</code>, and declare a typed <code>xs:date</code> from the first worker's <code>wd:Hire_Date</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:variable name=&quot;total&quot; as=&quot;xs:decimal&quot;
+   select=&quot;sum(wd:Report_Data/wd:Report_Entry[wd:Status=&#x27;Active&#x27;]/wd:Base_Pay/xs:decimal(.))&quot;/&gt;
+&lt;!-- =&gt; 216000 (120000 + 96000) --&gt;
+
+&lt;xsl:variable name=&quot;firstHire&quot; as=&quot;xs:date&quot;
+   select=&quot;xs:date(wd:Report_Data/wd:Report_Entry[1]/wd:Hire_Date)&quot;/&gt;</code></pre></div></details></section>
+<section class="topic" id="functions"><div class="eyebrow">Phase 3 &middot; 3.4</div><h3>Custom Functions</h3><p><code>xsl:function</code> packages reusable logic you can call inside any XPath expression. The name <b>must be in a namespace</b> (declare your own, e.g. <code>xmlns:my="urn:local:fn"</code>) and you type the result with <code>as</code>.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:function name=&quot;my:monthly&quot; as=&quot;xs:decimal&quot;&gt;
+  &lt;xsl:param name=&quot;annual&quot; as=&quot;xs:decimal&quot;/&gt;
+  &lt;xsl:sequence select=&quot;round($annual div 12 * 100) div 100&quot;/&gt;
+&lt;/xsl:function&gt;
+
+&lt;!-- applied to the input --&gt;
+&lt;Monthly&gt;&lt;xsl:value-of select=&quot;my:monthly(xs:decimal(//wd:Base_Pay))&quot;/&gt;&lt;/Monthly&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;Monthly&gt;10000&lt;/Monthly&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>For the input below, write a function <code>my:initials</code> that takes a name (<code>xs:string</code>) and returns upper-case initials — <code>my:initials('Asha Rao')</code> &rarr; <code>AR</code> — then apply it to <code>wd:Name</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:function name=&quot;my:initials&quot; as=&quot;xs:string&quot;&gt;
+  &lt;xsl:param name=&quot;name&quot; as=&quot;xs:string&quot;/&gt;
+  &lt;xsl:sequence select=&quot;upper-case(
+      string-join(for $t in tokenize(normalize-space($name),&#x27; &#x27;)
+                  return substring($t,1,1), &#x27;&#x27;))&quot;/&gt;
+&lt;/xsl:function&gt;
+
+&lt;Initials&gt;&lt;xsl:value-of select=&quot;my:initials(//wd:Name)&quot;/&gt;&lt;/Initials&gt;
+&lt;!-- =&gt; AR --&gt;</code></pre></div></details></section>
+<section class="phase" id="phase4"><div class="phase-num">04</div><div class="phase-head"><div class="phase-eyebrow">Phase 4</div><h2>Advanced Data Manipulation</h2><p>Group, split, scrub, and reformat with grouping, tokenize, regex, and dates.</p></div></section>
+<section class="topic" id="grouping"><div class="eyebrow">Phase 4 &middot; 4.1</div><h3>Advanced Grouping</h3><p><code>xsl:for-each-group</code> aggregates flat data by a key. <code>group-by</code> buckets items; inside, <code>current-grouping-key()</code> is the bucket value and <code>current-group()</code> is the items. (Variants: <code>group-adjacent</code>, <code>group-starting-with</code>.)</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:for-each-group select=&quot;wd:Report_Data/wd:Report_Entry&quot; group-by=&quot;wd:Department&quot;&gt;
+  &lt;xsl:sort select=&quot;current-grouping-key()&quot;/&gt;
+  &lt;Dept name=&quot;{current-grouping-key()}&quot;
+        headcount=&quot;{count(current-group())}&quot;
+        total=&quot;{sum(current-group()/wd:Base_Pay/xs:decimal(.))}&quot;/&gt;
+&lt;/xsl:for-each-group&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;Dept name=&quot;Engineering&quot; headcount=&quot;2&quot; total=&quot;262000&quot;/&gt;
+&lt;Dept name=&quot;Finance&quot; headcount=&quot;1&quot; total=&quot;96000&quot;/&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>For the input below, group <b>active</b> workers by department; output each department with name, headcount, and <b>average</b> base pay, sorted by department.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21002&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Mateo Diaz&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Finance&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;96000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2019-11-04&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Terminated&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;142000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2018-06-20&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:for-each-group select=&quot;wd:Report_Data/wd:Report_Entry[wd:Status=&#x27;Active&#x27;]&quot;
+                    group-by=&quot;wd:Department&quot;&gt;
+  &lt;xsl:sort select=&quot;current-grouping-key()&quot;/&gt;
+  &lt;Dept name=&quot;{current-grouping-key()}&quot;
+        headcount=&quot;{count(current-group())}&quot;
+        avg=&quot;{avg(current-group()/wd:Base_Pay/xs:decimal(.))}&quot;/&gt;
+&lt;/xsl:for-each-group&gt;
+
+&lt;!-- Engineering: Asha only (120000); Finance: Mateo (96000) --&gt;</code></pre></div></details></section>
+<section class="topic" id="tokenize"><div class="eyebrow">Phase 4 &middot; 4.2</div><h3>String Tokenization</h3><p><code>tokenize(string, regex)</code> splits a string into a <b>sequence</b> by a delimiter pattern — perfect for breaking a full name, a comma list, or an address. Index the result like any sequence.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>tokenize(&#x27;Asha Rao&#x27;, &#x27; &#x27;)   (* =&gt; (&quot;Asha&quot;, &quot;Rao&quot;) *)
+
+&lt;First&gt;&lt;xsl:value-of select=&quot;tokenize(normalize-space(//wd:Name),&#x27; &#x27;)[1]&quot;/&gt;&lt;/First&gt;
+&lt;Last&gt; &lt;xsl:value-of select=&quot;tokenize(normalize-space(//wd:Name),&#x27; &#x27;)[last()]&quot;/&gt;&lt;/Last&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;First&gt;Asha&lt;/First&gt;
+&lt;Last&gt;Rao&lt;/Last&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>The worker's <code>wd:Name</code> in the input below is <code>Asha Kumari Rao</code>. Output <code>&lt;FirstName&gt;</code> as the first token and <code>&lt;LastName&gt;</code> as the last token.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Entry xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Name&gt;Asha Kumari Rao&lt;/wd:Name&gt;
+&lt;/wd:Report_Entry&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:variable name=&quot;parts&quot; select=&quot;tokenize(normalize-space(wd:Name),&#x27; &#x27;)&quot;/&gt;
+&lt;FirstName&gt;&lt;xsl:value-of select=&quot;$parts[1]&quot;/&gt;&lt;/FirstName&gt;
+&lt;LastName&gt; &lt;xsl:value-of select=&quot;$parts[last()]&quot;/&gt;&lt;/LastName&gt;
+
+&lt;!-- =&gt; FirstName=Asha, LastName=Rao --&gt;</code></pre></div></details></section>
+<section class="topic" id="regex"><div class="eyebrow">Phase 4 &middot; 4.3</div><h3>Regex Manipulation</h3><p><code>matches(string, pattern)</code> tests against a regex; <code>replace(string, pattern, replacement)</code> rewrites it with capture groups <code>$1</code>, <code>$2</code>. Use them to validate and scrub phone numbers, SSNs, and IDs before they reach the vendor.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;Worker&gt;
+  &lt;Phone&gt;(919) 555-1234&lt;/Phone&gt;
+&lt;/Worker&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>matches(//Phone, &#x27;^\(\d{3}\)\s?\d{3}-\d{4}$&#x27;)        (* =&gt; true  *)
+replace(//Phone, &#x27;[^0-9]&#x27;, &#x27;&#x27;)                       (* =&gt; 9195551234 *)
+replace(&#x27;9195551234&#x27;,&#x27;(\d{3})(\d{3})(\d{4})&#x27;,&#x27;$1-$2-$3&#x27;) (* =&gt; 919-555-1234 *)</code></pre><div class="codelbl out">Output (normalized)</div><pre class="code out"><code>919-555-1234</code></pre></div><div class="as"><div class="astag">Assignment</div>From the input below, produce the normalized phone <code>919-555-1234</code> in <b>one expression</b> (strip non-digits, then reformat with capture groups).<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;Worker&gt;
+  &lt;Phone&gt;(919) 555-1234&lt;/Phone&gt;
+&lt;/Worker&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;Phone&gt;
+  &lt;xsl:value-of select=&quot;replace(
+     replace(//Phone, &#x27;[^0-9]&#x27;, &#x27;&#x27;),
+     &#x27;(\d{3})(\d{3})(\d{4})&#x27;, &#x27;$1-$2-$3&#x27;)&quot;/&gt;
+&lt;/Phone&gt;
+&lt;!-- =&gt; 919-555-1234 --&gt;</code></pre><p class='note'>Always normalize before validating — a stray space or non-breaking space is a classic cause of a broken delimited file.</p></div></details></section>
+<section class="topic" id="dates"><div class="eyebrow">Phase 4 &middot; 4.4</div><h3>Date &amp; Time Formatting</h3><p><code>format-date()</code> and <code>format-dateTime()</code> convert ISO values to any vendor layout via a <b>picture string</b>: <code>[Y0001]</code> year, <code>[M01]</code> month, <code>[D01]</code> day, <code>[MNn,*-3]</code> 3-letter month, <code>[H01]:[m01]</code> time.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>format-date(xs:date(//wd:Hire_Date), &#x27;[M01]/[D01]/[Y0001]&#x27;)    (* =&gt; 03/15/2021 *)
+format-date(xs:date(//wd:Hire_Date), &#x27;[D01]-[MNn,*-3]-[Y0001]&#x27;) (* =&gt; 15-Mar-2021 *)</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>15-Mar-2021</code></pre></div><div class="as"><div class="astag">Assignment</div>From the input below, convert <code>wd:Hire_Date</code> (<code>2021-03-15</code>) into the vendor format <code>15-Mar-2021</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;HireDate&gt;
+  &lt;xsl:value-of select=&quot;format-date(xs:date(//wd:Hire_Date), &#x27;[D01]-[MNn,*-3]-[Y0001]&#x27;)&quot;/&gt;
+&lt;/HireDate&gt;
+&lt;!-- =&gt; 15-Mar-2021 --&gt;</code></pre></div></details></section>
+<section class="phase" id="phase5"><div class="phase-num">05</div><div class="phase-head"><div class="phase-eyebrow">Phase 5</div><h2>Output Engineering &amp; Performance</h2><p>Build strict vendor files and keep large transforms fast.</p></div></section>
+<section class="topic" id="layouts"><div class="eyebrow">Phase 5 &middot; 5.1</div><h3>Delimited &amp; Fixed-Width Layouts</h3><p>Vendor files are <b>delimited</b> (CSV/TSV) or <b>fixed-width</b> (each field padded to an exact column). With <code>method="text"</code> you build them from <code>concat()</code>, loops, and padding. The pad idiom is <code>substring(concat(value, pad), 1, width)</code> for right-pad.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;!-- CSV line --&gt;
+&lt;xsl:value-of select=&quot;concat(//wd:Employee_ID, &#x27;,&#x27;, //wd:Name, &#x27;,&#x27;, //wd:Base_Pay, &#x27;&amp;#10;&#x27;)&quot;/&gt;
+
+&lt;!-- fixed width: Name in 20 cols, right padded with spaces --&gt;
+&lt;xsl:value-of select=&quot;substring(concat(//wd:Name,&#x27;                    &#x27;), 1, 20)&quot;/&gt;</code></pre><div class="codelbl out">Output (20-char field)</div><pre class="code out"><code>Asha Rao            </code></pre></div><div class="as"><div class="astag">Assignment</div>From the input below, produce a fixed-width line: <code>wd:Employee_ID</code> <b>left-padded with zeros to 8</b>, immediately followed by <code>wd:Name</code> <b>right-padded with spaces to 20</b>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:variable name=&quot;id8&quot;
+   select=&quot;substring(concat(&#x27;00000000&#x27;, //wd:Employee_ID),
+                     string-length(concat(&#x27;00000000&#x27;, //wd:Employee_ID)) - 7)&quot;/&gt;
+&lt;xsl:variable name=&quot;name20&quot;
+   select=&quot;substring(concat(//wd:Name, &#x27;                    &#x27;), 1, 20)&quot;/&gt;
+
+&lt;xsl:value-of select=&quot;concat($id8, $name20, &#x27;&amp;#10;&#x27;)&quot;/&gt;
+&lt;!-- =&gt; 00021001Asha Rao             --&gt;</code></pre><p class='note'>Left-pad: prepend 8 zeros, then keep the <b>last 8</b> characters with <code>substring(…, len-7)</code>.</p></div></details></section>
+<section class="topic" id="numbers"><div class="eyebrow">Phase 5 &middot; 5.2</div><h3>Number Formatting</h3><p><code>format-number(value, picture)</code> forces decimals, grouping, and signs. <code>#</code> optional digit, <code>0</code> required digit, <code>,</code> grouping, <code>%</code> multiplies by 100.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>format-number(1234.5, &#x27;#,##0.00&#x27;)   (* =&gt; 1,234.50 *)
+format-number(0.075,  &#x27;0.0%&#x27;)       (* =&gt; 7.5% *)
+
+&lt;Pay&gt;&lt;xsl:value-of select=&quot;concat(&#x27;$&#x27;, format-number(xs:decimal(//wd:Base_Pay), &#x27;#,##0.00&#x27;))&quot;/&gt;&lt;/Pay&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;Pay&gt;$120,000.00&lt;/Pay&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>From the input below, format <code>wd:Base_Pay</code> (<code>120000</code>) as the US currency string <code>$120,000.00</code>.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Department&gt;Engineering&lt;/wd:Department&gt;
+    &lt;wd:Status&gt;Active&lt;/wd:Status&gt;
+    &lt;wd:Base_Pay wd:currency=&quot;USD&quot;&gt;120000&lt;/wd:Base_Pay&gt;
+    &lt;wd:Hire_Date&gt;2021-03-15&lt;/wd:Hire_Date&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;Pay&gt;
+  &lt;xsl:value-of select=&quot;concat(&#x27;$&#x27;, format-number(xs:decimal(//wd:Base_Pay), &#x27;#,##0.00&#x27;))&quot;/&gt;
+&lt;/Pay&gt;
+&lt;!-- =&gt; $120,000.00 --&gt;</code></pre></div></details></section>
+<section class="topic" id="whitespace"><div class="eyebrow">Phase 5 &middot; 5.3</div><h3>Whitespace Control</h3><p>Rogue tabs and newlines break delimited files. <code>xsl:strip-space elements="*"</code> drops whitespace-only text nodes in the source; <code>xsl:preserve-space</code> exempts elements that need spacing; <code>normalize-space()</code> trims and collapses internal runs to single spaces in a value.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Entry xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Name&gt;  Asha   Rao  &lt;/wd:Name&gt;
+&lt;/wd:Report_Entry&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:strip-space elements=&quot;*&quot;/&gt;
+&lt;xsl:output method=&quot;text&quot;/&gt;
+
+&lt;!-- wd:Name arrived as &quot;  Asha   Rao  &quot; --&gt;
+&lt;xsl:value-of select=&quot;normalize-space(//wd:Name)&quot;/&gt;   (* =&gt; &quot;Asha Rao&quot; *)</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>Asha Rao</code></pre></div><div class="as"><div class="astag">Assignment</div>The <code>wd:Comment</code> in the input below contains leading/trailing spaces and double tabs. Output it as a single clean line with single spaces between words.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Entry xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Comment&gt;  Needs		review  &lt;/wd:Comment&gt;
+&lt;/wd:Report_Entry&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;Comment&gt;&lt;xsl:value-of select=&quot;normalize-space(//wd:Comment)&quot;/&gt;&lt;/Comment&gt;
+&lt;!-- =&gt; &quot;Needs review&quot; --&gt;</code></pre><p class='note'><code>normalize-space()</code> collapses the tabs and space runs; pair it with <code>strip-space</code> so the source's indentation never leaks into text output.</p></div></details></section>
+<section class="topic" id="performance"><div class="eyebrow">Phase 5 &middot; 5.4</div><h3>Performance Tuning</h3><p>On large extracts, the descendant axis <code>//</code> rescans the whole subtree every time. Anchor paths, and replace repeated lookups with <b>keys</b> (<code>xsl:key</code> → <code>key()</code>), which turn an O(n²) nested scan into a near-O(1) indexed lookup.</p><div class="ex"><div class="extag">Example</div><div class="codelbl xml">Input XML</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Manager_ID&gt;21003&lt;/wd:Manager_ID&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Manager_ID/&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre><div class="codelbl xslt">XSLT</div><pre class="code xslt"><code>&lt;xsl:key name=&quot;byId&quot; match=&quot;wd:Report_Entry&quot; use=&quot;wd:Employee_ID&quot;/&gt;
+
+&lt;!-- O(1) lookup instead of //wd:Report_Entry[wd:Employee_ID=$id] --&gt;
+&lt;xsl:variable name=&quot;match&quot; select=&quot;key(&#x27;byId&#x27;, &#x27;21003&#x27;)&quot;/&gt;
+&lt;Name&gt;&lt;xsl:value-of select=&quot;$match/wd:Name&quot;/&gt;&lt;/Name&gt;</code></pre><div class="codelbl out">Output</div><pre class="code out"><code>&lt;Name&gt;Priya Nair&lt;/Name&gt;</code></pre></div><div class="as"><div class="astag">Assignment</div>In the input below, each worker has a <code>wd:Manager_ID</code>. A slow stylesheet resolves the manager with <code>//wd:Report_Entry[wd:Employee_ID = current()/wd:Manager_ID]</code> inside a loop. Rewrite it using an <code>xsl:key</code> to output each worker's manager name.<div class="codelbl xml">Input XML to transform</div><pre class="code xml"><code>&lt;wd:Report_Data xmlns:wd=&quot;urn:com.workday/bsvc&quot;&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21001&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Asha Rao&lt;/wd:Name&gt;
+    &lt;wd:Manager_ID&gt;21003&lt;/wd:Manager_ID&gt;
+  &lt;/wd:Report_Entry&gt;
+  &lt;wd:Report_Entry&gt;
+    &lt;wd:Employee_ID&gt;21003&lt;/wd:Employee_ID&gt;
+    &lt;wd:Name&gt;Priya Nair&lt;/wd:Name&gt;
+    &lt;wd:Manager_ID/&gt;
+  &lt;/wd:Report_Entry&gt;
+&lt;/wd:Report_Data&gt;</code></pre></div><details class="sol"><summary><span class="soltag">Solution</span><span class="solhint">click to reveal</span></summary><div class="solbody"><div class="codelbl xslt">Solution</div><pre class="code xslt"><code>&lt;xsl:key name=&quot;empById&quot; match=&quot;wd:Report_Entry&quot; use=&quot;wd:Employee_ID&quot;/&gt;
+
+&lt;xsl:template match=&quot;wd:Report_Entry&quot;&gt;
+  &lt;xsl:variable name=&quot;mgr&quot; select=&quot;key(&#x27;empById&#x27;, wd:Manager_ID)&quot;/&gt;
+  &lt;row name=&quot;{wd:Name}&quot; manager=&quot;{$mgr/wd:Name}&quot;/&gt;
+&lt;/xsl:template&gt;
+
+&lt;!-- Asha&#x27;s Manager_ID 21003 =&gt; manager=&quot;Priya Nair&quot; --&gt;</code></pre><p class='note'>A key turns an O(n²) nested scan into a single indexed pass — seconds vs minutes on a 100k-row extract.</p></div></details></section>
+  </main>
+  <footer>
+    XSLT 2.0 for Workday &middot; single-file offline course &middot; examples target the Saxon engine used by Workday Studio &amp; Document Transformation. Solutions are collapsible and expand automatically when printed.
+  </footer>
+</div>
+</body></html>

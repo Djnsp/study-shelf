@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The OSI Model — A Plain-English Field Guide</title>
+<style>
+:root{
+  --paper:#F7F6F2; --card:#FFFFFF; --ink:#191B21; --ink2:#4B505C; --ink3:#7A8090;
+  --line:#E4E2DA; --line2:#CFCCC2;
+  --l7:#7C3AED; --l6:#2563EB; --l5:#0891B2; --l4:#059669; --l3:#D97706; --l2:#EA580C; --l1:#DC2626;
+  --l7bg:#F3EEFD; --l6bg:#EAF1FD; --l5bg:#E6F6FA; --l4bg:#E7F6F0; --l3bg:#FBF1E1; --l2bg:#FCEEE5; --l1bg:#FBE9E9;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,monospace;
+  --sans:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px 80px}
+
+/* ---------- layer rail ---------- */
+#rail{position:fixed;left:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:4px;z-index:50}
+#rail a{display:flex;align-items:center;gap:8px;text-decoration:none}
+#rail .chip{width:10px;height:26px;border-radius:3px;opacity:.35;transition:all .2s}
+#rail .lbl{font:600 11px var(--mono);color:var(--ink3);opacity:0;transform:translateX(-4px);transition:all .2s;letter-spacing:.04em}
+#rail a:hover .lbl,#rail a.on .lbl{opacity:1;transform:none}
+#rail a.on .chip{opacity:1;width:16px}
+@media(max-width:1150px){#rail{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding:72px 0 40px;border-bottom:1px solid var(--line)}
+.kicker{font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+h1{font-size:clamp(34px,5vw,52px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:14px 0 16px}
+.lede{font-size:19px;color:var(--ink2);max-width:640px}
+.hero-stack{margin-top:36px;display:flex;flex-direction:column;gap:6px}
+.hs-row{display:grid;grid-template-columns:44px 1fr 150px;align-items:center;gap:14px;padding:11px 16px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:transform .15s,border-color .15s;text-decoration:none;color:var(--ink)}
+.hs-row:hover{transform:translateX(6px);border-color:var(--line2)}
+.hs-num{font:700 15px var(--mono)}
+.hs-name{font-weight:600;font-size:15px}
+.hs-ex{font:500 12px var(--mono);color:var(--ink3);text-align:right}
+@media(max-width:560px){.hs-row{grid-template-columns:36px 1fr}.hs-ex{display:none}}
+
+/* ---------- shared ---------- */
+section{padding:56px 0;border-bottom:1px solid var(--line)}
+h2{font-size:28px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+h3{font-size:17px;font-weight:600;margin:26px 0 10px}
+p{margin:12px 0;color:var(--ink2)}
+p strong,li strong{color:var(--ink)}
+.eyebrow{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.oneliner{font-size:19px;color:var(--ink);font-weight:500;margin:4px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:16px 0}
+.analogy{border-left:4px solid;border-radius:0 12px 12px 0}
+.analogy .tag{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+ul.ex{list-style:none;margin:8px 0}
+ul.ex li{padding:9px 0 9px 26px;position:relative;color:var(--ink2);border-bottom:1px dashed var(--line)}
+ul.ex li:last-child{border-bottom:none}
+ul.ex li::before{content:"→";position:absolute;left:2px;font-family:var(--mono);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.chip-p{font:600 12px var(--mono);padding:5px 11px;border-radius:99px;border:1px solid}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:18px}
+.meta .m{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.meta .k{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.meta .v{font-weight:600;font-size:14px;margin-top:4px}
+figure{margin:22px 0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{font:500 12px var(--mono);color:var(--ink3);margin-top:10px;text-align:center}
+.breaks{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-top:18px}
+.breaks .k{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.breaks p{margin:4px 0;font-size:15px}
+code{font:600 13px var(--mono);background:#EDECE6;padding:2px 6px;border-radius:5px;color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin:16px 0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+th{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:12px 14px;background:#F1F0EA;color:var(--ink2)}
+td{padding:11px 14px;border-top:1px solid var(--line);color:var(--ink2);vertical-align:top}
+td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+
+/* ---------- encapsulation stepper ---------- */
+.stepper{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;margin:20px 0}
+.step-ctrl{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.step-ctrl button{font:600 14px var(--sans);padding:8px 18px;border-radius:8px;border:1px solid var(--line2);background:var(--paper);color:var(--ink);cursor:pointer}
+.step-ctrl button:hover{background:#EDECE6}
+.step-ctrl button:disabled{opacity:.4;cursor:default}
+.dots{display:flex;gap:6px;margin-left:auto}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line2)}
+.dots i.on{background:var(--ink)}
+#pkt{display:flex;justify-content:center;align-items:center;gap:0;min-height:64px;flex-wrap:wrap}
+.hdr{font:700 12px var(--mono);padding:14px 12px;border:1.5px solid;border-radius:8px;margin:2px;transition:all .3s;white-space:nowrap}
+#stepTitle{font-weight:700;font-size:16px;margin-bottom:2px}
+#stepDesc{color:var(--ink2);font-size:15px;min-height:48px}
+.footer{padding-top:40px;color:var(--ink3);font-size:13px;font-family:var(--mono);text-align:center}
+@media print{#rail{display:none}section{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<nav id="rail" aria-label="Layer navigation">
+  <a href="#l7"><span class="chip" style="background:var(--l7)"></span><span class="lbl">7 APP</span></a>
+  <a href="#l6"><span class="chip" style="background:var(--l6)"></span><span class="lbl">6 PRES</span></a>
+  <a href="#l5"><span class="chip" style="background:var(--l5)"></span><span class="lbl">5 SESS</span></a>
+  <a href="#l4"><span class="chip" style="background:var(--l4)"></span><span class="lbl">4 TRANS</span></a>
+  <a href="#l3"><span class="chip" style="background:var(--l3)"></span><span class="lbl">3 NET</span></a>
+  <a href="#l2"><span class="chip" style="background:var(--l2)"></span><span class="lbl">2 LINK</span></a>
+  <a href="#l1"><span class="chip" style="background:var(--l1)"></span><span class="lbl">1 PHYS</span></a>
+</nav>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">Networking field guide</div>
+  <h1>The OSI Model, in plain English</h1>
+  <p class="lede">Seven layers, one job each. Every message your computer sends — a web page, an email, a Workday SFTP file drop — travels down this stack on the way out and back up it on the way in. Click a layer to jump to it.</p>
+  <div class="hero-stack">
+    <a class="hs-row" href="#l7" style="background:var(--l7bg)"><span class="hs-num" style="color:var(--l7)">L7</span><span class="hs-name">Application — the apps you actually use</span><span class="hs-ex">HTTP · DNS · SMTP</span></a>
+    <a class="hs-row" href="#l6" style="background:var(--l6bg)"><span class="hs-num" style="color:var(--l6)">L6</span><span class="hs-name">Presentation — translate, encrypt, compress</span><span class="hs-ex">TLS · JPEG · UTF-8</span></a>
+    <a class="hs-row" href="#l5" style="background:var(--l5bg)"><span class="hs-num" style="color:var(--l5)">L5</span><span class="hs-name">Session — open, hold, and close conversations</span><span class="hs-ex">logins · RPC</span></a>
+    <a class="hs-row" href="#l4" style="background:var(--l4bg)"><span class="hs-num" style="color:var(--l4)">L4</span><span class="hs-name">Transport — deliver it reliably (or fast)</span><span class="hs-ex">TCP · UDP</span></a>
+    <a class="hs-row" href="#l3" style="background:var(--l3bg)"><span class="hs-num" style="color:var(--l3)">L3</span><span class="hs-name">Network — find a route across the world</span><span class="hs-ex">IP · routers</span></a>
+    <a class="hs-row" href="#l2" style="background:var(--l2bg)"><span class="hs-num" style="color:var(--l2)">L2</span><span class="hs-name">Data link — hop to the next device</span><span class="hs-ex">Ethernet · Wi-Fi · MAC</span></a>
+    <a class="hs-row" href="#l1" style="background:var(--l1bg)"><span class="hs-num" style="color:var(--l1)">L1</span><span class="hs-name">Physical — raw bits on wires and radio</span><span class="hs-ex">cables · fiber · signals</span></a>
+  </div>
+</header>
+
+<section id="bigidea">
+  <h2>The big idea: a postal system for data</h2>
+  <p>The OSI model is not software you install — it's a <strong>mental map</strong>. It says: sending data across a network involves seven distinct jobs, and each job only needs to talk to the job directly above and below it. Your browser doesn't need to know whether you're on Wi-Fi or fiber; the Wi-Fi chip doesn't need to know you're loading a cat video. Each layer trusts its neighbors and ignores everything else.</p>
+  <p>The best analogy is <strong>mailing a letter</strong>. You write the message (Application). You translate it into a language the recipient reads (Presentation). You agree you're having an ongoing correspondence (Session). You number the pages so nothing gets lost (Transport). You write the destination address (Network). The postal truck carries it to the next sorting facility (Data link). And physically, it's just paper moving on roads (Physical).</p>
+
+  <h3>Encapsulation — each layer adds an envelope</h3>
+  <p>As data moves <strong>down</strong> the stack on the sending machine, each layer wraps it with its own header — like envelopes inside envelopes. The receiving machine opens them in reverse. Step through it:</p>
+
+  <div class="stepper">
+    <div class="step-ctrl">
+      <button id="prevBtn" onclick="step(-1)">← Back</button>
+      <button id="nextBtn" onclick="step(1)">Next →</button>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div id="stepTitle"></div>
+    <div id="stepDesc"></div>
+    <div id="pkt" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ================= LAYER 7 ================= -->
+<section id="l7">
+  <div class="eyebrow" style="color:var(--l7)">Layer 7 · PDU: Data</div>
+  <h2>Application</h2>
+  <p class="oneliner">The layer you can see — where apps make and answer requests.</p>
+  <p><strong>In plain English:</strong> this is the layer humans touch. When your browser asks for a page, your mail app sends an email, or a Workday integration calls a REST API, that conversation happens in an application-layer protocol. It defines <em>what the messages mean</em>: "GET me this page", "here's a file", "what's the IP for this hostname?"</p>
+  <p>A common trip-up: Layer 7 is <strong>not the app itself</strong>. Chrome isn't Layer 7 — <code>HTTP</code>, the language Chrome speaks, is.</p>
+
+  <div class="card analogy" style="border-color:var(--l7);background:var(--l7bg)">
+    <div class="tag" style="color:var(--l7)">Analogy</div>
+    <p style="margin:0;color:var(--ink)">The <strong>conversation itself</strong>. Two people talking: "Can I get a menu?" — "Here you go." Everything below Layer 7 is just the machinery that carries the words.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 600 190" role="img" aria-label="Browser sending an HTTP request to a server and receiving a response">
+      <rect x="30" y="45" width="170" height="100" rx="10" fill="#F3EEFD" stroke="#7C3AED" stroke-width="1.5"/>
+      <rect x="45" y="60" width="140" height="12" rx="6" fill="#7C3AED" opacity=".25"/>
+      <rect x="45" y="82" width="100" height="8" rx="4" fill="#7C3AED" opacity=".45"/>
+      <rect x="45" y="98" width="120" height="8" rx="4" fill="#7C3AED" opacity=".3"/>
+      <rect x="45" y="114" width="80" height="8" rx="4" fill="#7C3AED" opacity=".3"/>
+      <text x="115" y="170" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="600" fill="#4B505C">Your browser</text>
+      <rect x="400" y="45" width="170" height="100" rx="10" fill="#FFF" stroke="#7C3AED" stroke-width="1.5"/>
+      <rect x="418" y="62" width="134" height="18" rx="4" fill="#7C3AED" opacity=".15"/>
+      <rect x="418" y="86" width="134" height="18" rx="4" fill="#7C3AED" opacity=".15"/>
+      <rect x="418" y="110" width="134" height="18" rx="4" fill="#7C3AED" opacity=".15"/>
+      <circle cx="428" cy="71" r="3" fill="#7C3AED"/><circle cx="428" cy="95" r="3" fill="#7C3AED"/><circle cx="428" cy="119" r="3" fill="#7C3AED"/>
+      <text x="485" y="170" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="600" fill="#4B505C">Web server</text>
+      <line x1="210" y1="75" x2="390" y2="75" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#a7)"/>
+      <text x="300" y="66" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#7C3AED">GET /index.html</text>
+      <line x1="390" y1="118" x2="210" y2="118" stroke="#059669" stroke-width="1.5" marker-end="url(#a7g)"/>
+      <text x="300" y="140" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#059669">200 OK + page</text>
+      <defs>
+        <marker id="a7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a7g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></marker>
+      </defs>
+    </svg>
+    <figcaption>An HTTP request and response — a Layer 7 conversation</figcaption>
+  </figure>
+
+  <h3>Real-world examples</h3>
+  <ul class="ex">
+    <li><strong>Loading a website</strong> — your browser speaks <code>HTTP/HTTPS</code> to the server</li>
+    <li><strong>"What's the address of google.com?"</strong> — <code>DNS</code> turns names into IP addresses</li>
+    <li><strong>Sending an email</strong> — <code>SMTP</code> sends it; <code>IMAP</code> fetches it to your phone</li>
+    <li><strong>A Workday Studio integration</strong> calling a SOAP/REST endpoint or dropping a file via <code>SFTP</code></li>
+    <li><strong>Remote server admin</strong> — <code>SSH</code> gives you a secure terminal on another machine</li>
+  </ul>
+
+  <div class="chips">
+    <span class="chip-p" style="color:var(--l7);border-color:var(--l7);background:var(--l7bg)">HTTP/HTTPS</span>
+    <span class="chip-p" style="color:var(--l7);border-color:var(--l7);background:var(--l7bg)">DNS</span>
+    <span class="chip-p" style="color:var(--l7);border-color:var(--l7);background:var(--l7bg)">SMTP / IMAP</span>
+    <span class="chip-p" style="color:var(--l7);border-color:var(--l7);background:var(--l7bg)">FTP / SFTP</span>
+    <span class="chip-p" style="color:var(--l7);border-color:var(--l7);background:var(--l7bg)">SSH</span>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="k">Data unit</div><div class="v">Data (messages)</div></div>
+    <div class="m"><div class="k">Devices here</div><div class="v">Firewalls (L7), load balancers, API gateways</div></div>
+    <div class="m"><div class="k">Addressing</div><div class="v">URLs, hostnames</div></div>
+  </div>
+  <div class="breaks"><div class="k">When it breaks, it looks like…</div>
+    <p><code>404 Not Found</code>, <code>500 Server Error</code>, "DNS server not responding", API returns malformed JSON. The network is fine — the <em>application conversation</em> failed.</p>
+  </div>
+</section>
+
+<!-- ================= LAYER 6 ================= -->
+<section id="l6">
+  <div class="eyebrow" style="color:var(--l6)">Layer 6 · PDU: Data</div>
+  <h2>Presentation</h2>
+  <p class="oneliner">The translator — makes sure both sides read the same language, safely.</p>
+  <p><strong>In plain English:</strong> computers store and send data in wildly different formats. This layer handles three jobs: <strong>translation</strong> (character encodings like UTF-8, file formats like JPEG), <strong>encryption</strong> (scrambling data so eavesdroppers see gibberish — this is where TLS conceptually lives), and <strong>compression</strong> (shrinking data so it travels faster).</p>
+  <p>In modern practice this layer is mostly absorbed into applications and libraries — but the <em>jobs</em> are very real. Every time you see the padlock in your browser, "Layer 6 work" is happening.</p>
+
+  <div class="card analogy" style="border-color:var(--l6);background:var(--l6bg)">
+    <div class="tag" style="color:var(--l6)">Analogy</div>
+    <p style="margin:0;color:var(--ink)">A <strong>diplomatic interpreter with a locked briefcase</strong>: translates your words into the other side's language, seals them so only the recipient can open them, and shortens the message where possible.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 600 170" role="img" aria-label="Plain text passing through encryption into ciphertext">
+      <rect x="25" y="55" width="150" height="60" rx="10" fill="#FFF" stroke="#2563EB" stroke-width="1.5"/>
+      <text x="100" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#191B21">"Hello!"</text>
+      <text x="100" y="101" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7A8090">plain text</text>
+      <line x1="185" y1="85" x2="230" y2="85" stroke="#2563EB" stroke-width="1.5" marker-end="url(#a6)"/>
+      <rect x="240" y="40" width="120" height="90" rx="12" fill="#EAF1FD" stroke="#2563EB" stroke-width="1.5"/>
+      <rect x="285" y="66" width="30" height="24" rx="4" fill="#2563EB"/>
+      <path d="M291 66 v-8 a9 9 0 0 1 18 0 v8" fill="none" stroke="#2563EB" stroke-width="3.5"/>
+      <text x="300" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="600" fill="#2563EB">TLS encrypt</text>
+      <line x1="370" y1="85" x2="415" y2="85" stroke="#2563EB" stroke-width="1.5" marker-end="url(#a6)"/>
+      <rect x="425" y="55" width="150" height="60" rx="10" fill="#FFF" stroke="#2563EB" stroke-width="1.5"/>
+      <text x="500" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#191B21">x9$k#Qz!</text>
+      <text x="500" y="101" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7A8090">ciphertext</text>
+      <defs><marker id="a6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+    </svg>
+    <figcaption>Encryption: readable on your side, gibberish in transit</figcaption>
+  </figure>
+
+  <h3>Real-world examples</h3>
+  <ul class="ex">
+    <li><strong>The padlock in your browser</strong> — TLS encrypts everything between you and the site</li>
+    <li><strong>Emoji arriving intact</strong> — both ends agree on UTF-8 encoding</li>
+    <li><strong>Streaming video</strong> — compressed with codecs (H.264, VP9) so it fits your bandwidth</li>
+    <li><strong>A photo opening on any device</strong> — JPEG/PNG are agreed-upon presentation formats</li>
+    <li><strong>An integration file that opens as garbage characters</strong> — classic encoding mismatch (UTF-8 vs ISO-8859-1)</li>
+  </ul>
+
+  <div class="chips">
+    <span class="chip-p" style="color:var(--l6);border-color:var(--l6);background:var(--l6bg)">TLS/SSL</span>
+    <span class="chip-p" style="color:var(--l6);border-color:var(--l6);background:var(--l6bg)">UTF-8 / ASCII</span>
+    <span class="chip-p" style="color:var(--l6);border-color:var(--l6);background:var(--l6bg)">JPEG / PNG / MP4</span>
+    <span class="chip-p" style="color:var(--l6);border-color:var(--l6);background:var(--l6bg)">gzip</span>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="k">Data unit</div><div class="v">Data</div></div>
+    <div class="m"><div class="k">Three jobs</div><div class="v">Translate · Encrypt · Compress</div></div>
+    <div class="m"><div class="k">Modern reality</div><div class="v">Usually built into apps/libraries</div></div>
+  </div>
+  <div class="breaks"><div class="k">When it breaks, it looks like…</div>
+    <p>Certificate errors ("your connection is not private"), mojibake text (<code>Ã©</code> instead of <code>é</code>), corrupted images, TLS handshake failures on an integration endpoint.</p>
+  </div>
+</section>
+
+<!-- ================= LAYER 5 ================= -->
+<section id="l5">
+  <div class="eyebrow" style="color:var(--l5)">Layer 5 · PDU: Data</div>
+  <h2>Session</h2>
+  <p class="oneliner">The conversation manager — opens a dialogue, keeps it alive, closes it cleanly.</p>
+  <p><strong>In plain English:</strong> one connection is rarely one message. When you log into a site and browse ten pages, something has to remember "this is still the same conversation with the same person." The session layer establishes that dialogue, keeps it alive (with checkpoints and keep-alives), and tears it down when you're done.</p>
+  <p>Like Layer 6, it's mostly folded into applications today (think login sessions, auth tokens, RPC frameworks) — but the concept explains why you don't have to re-enter your password on every click.</p>
+
+  <div class="card analogy" style="border-color:var(--l5);background:var(--l5bg)">
+    <div class="tag" style="color:var(--l5)">Analogy</div>
+    <p style="margin:0;color:var(--ink)">A <strong>phone call</strong>. You dial (establish), you talk with pauses and "are you still there?" checks (maintain), and you say goodbye and hang up (terminate). The call is the session; the sentences are the data.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 600 180" role="img" aria-label="Session lifecycle: establish, maintain with checkpoints, terminate">
+      <rect x="30" y="60" width="160" height="56" rx="10" fill="#E6F6FA" stroke="#0891B2" stroke-width="1.5"/>
+      <text x="110" y="84" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#0891B2">1 · Establish</text>
+      <text x="110" y="102" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="#4B505C">log in / dial</text>
+      <line x1="200" y1="88" x2="240" y2="88" stroke="#0891B2" stroke-width="1.5" marker-end="url(#a5)"/>
+      <rect x="250" y="60" width="160" height="56" rx="10" fill="#E6F6FA" stroke="#0891B2" stroke-width="1.5"/>
+      <text x="330" y="84" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#0891B2">2 · Maintain</text>
+      <text x="330" y="102" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="#4B505C">keep-alives</text>
+      <line x1="420" y1="88" x2="460" y2="88" stroke="#0891B2" stroke-width="1.5" marker-end="url(#a5)"/>
+      <rect x="470" y="60" width="110" height="56" rx="10" fill="#E6F6FA" stroke="#0891B2" stroke-width="1.5"/>
+      <text x="525" y="84" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#0891B2">3 · Close</text>
+      <text x="525" y="102" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="#4B505C">log out</text>
+      <circle cx="290" cy="140" r="4" fill="#0891B2"/><circle cx="330" cy="140" r="4" fill="#0891B2"/><circle cx="370" cy="140" r="4" fill="#0891B2"/>
+      <text x="330" y="166" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="#7A8090">checkpoints — resume here if interrupted</text>
+    </svg>
+    <figcaption>The session lifecycle</figcaption>
+  </figure>
+
+  <h3>Real-world examples</h3>
+  <ul class="ex">
+    <li><strong>Staying logged into Workday</strong> while clicking through dozens of pages — one session, many requests</li>
+    <li><strong>A video call</strong> — the call setup/teardown is session work; the video itself is data</li>
+    <li><strong>Resuming a large file download</strong> after a drop, thanks to checkpointing</li>
+    <li><strong>"Your session has expired, please log in again"</strong> — a session terminated by timeout</li>
+    <li><strong>Database connections held open</strong> in a connection pool between an app and its DB</li>
+  </ul>
+
+  <div class="chips">
+    <span class="chip-p" style="color:var(--l5);border-color:var(--l5);background:var(--l5bg)">NetBIOS</span>
+    <span class="chip-p" style="color:var(--l5);border-color:var(--l5);background:var(--l5bg)">RPC</span>
+    <span class="chip-p" style="color:var(--l5);border-color:var(--l5);background:var(--l5bg)">PPTP</span>
+    <span class="chip-p" style="color:var(--l5);border-color:var(--l5);background:var(--l5bg)">SIP (calls)</span>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="k">Data unit</div><div class="v">Data</div></div>
+    <div class="m"><div class="k">Three jobs</div><div class="v">Establish · Maintain · Terminate</div></div>
+    <div class="m"><div class="k">Modern reality</div><div class="v">Handled by apps (tokens, cookies)</div></div>
+  </div>
+  <div class="breaks"><div class="k">When it breaks, it looks like…</div>
+    <p>Random logouts, "session expired" mid-task, video calls that connect then silently drop, an SFTP transfer that can't resume.</p>
+  </div>
+</section>
+
+<!-- ================= LAYER 4 ================= -->
+<section id="l4">
+  <div class="eyebrow" style="color:var(--l4)">Layer 4 · PDU: Segment</div>
+  <h2>Transport</h2>
+  <p class="oneliner">The delivery service — breaks data into pieces and gets every piece there (or gets it there fast).</p>
+  <p><strong>In plain English:</strong> big messages don't travel in one piece. The transport layer chops data into numbered <strong>segments</strong>, sends them, and — if you're using <strong>TCP</strong> — tracks every one: lost segments get re-sent, out-of-order segments get re-assembled, and a fast sender slows down for a slow receiver. <strong>UDP</strong> is the no-frills alternative: fire the pieces and don't look back. Slower but perfect? TCP. Fast but lossy is fine? UDP.</p>
+  <p>This layer also introduces <strong>ports</strong> — the apartment numbers of networking. An IP address gets you to the building (the machine); the port gets you to the right door (the program): <code>443</code> for HTTPS, <code>22</code> for SSH/SFTP, <code>53</code> for DNS.</p>
+
+  <div class="card analogy" style="border-color:var(--l4);background:var(--l4bg)">
+    <div class="tag" style="color:var(--l4)">Analogy</div>
+    <p style="margin:0;color:var(--ink)"><strong>TCP is registered mail with tracking</strong>: every page numbered, signature on delivery, lost pages re-sent. <strong>UDP is confetti from a parade float</strong>: fast, cheap, and nobody re-throws the pieces that missed you.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 600 230" role="img" aria-label="A message split into numbered segments; segment 3 is lost and retransmitted">
+      <rect x="30" y="30" width="180" height="44" rx="8" fill="#FFF" stroke="#059669" stroke-width="1.5"/>
+      <text x="120" y="57" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#191B21">One big message</text>
+      <line x1="120" y1="80" x2="120" y2="108" stroke="#059669" stroke-width="1.5" marker-end="url(#a4)"/>
+      <g font-family="ui-monospace,monospace" font-size="13" font-weight="700">
+        <rect x="35" y="118" width="50" height="38" rx="7" fill="#E7F6F0" stroke="#059669" stroke-width="1.5"/><text x="60" y="142" text-anchor="middle" fill="#059669">1</text>
+        <rect x="95" y="118" width="50" height="38" rx="7" fill="#E7F6F0" stroke="#059669" stroke-width="1.5"/><text x="120" y="142" text-anchor="middle" fill="#059669">2</text>
+        <rect x="155" y="118" width="50" height="38" rx="7" fill="#FBE9E9" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="4 3"/><text x="180" y="142" text-anchor="middle" fill="#DC2626">3 ✕</text>
+        <rect x="215" y="118" width="50" height="38" rx="7" fill="#E7F6F0" stroke="#059669" stroke-width="1.5"/><text x="240" y="142" text-anchor="middle" fill="#059669">4</text>
+      </g>
+      <text x="150" y="185" font-family="ui-monospace,monospace" font-size="11" fill="#7A8090" text-anchor="middle">segment 3 lost in transit…</text>
+      <line x1="285" y1="137" x2="330" y2="137" stroke="#059669" stroke-width="1.5" marker-end="url(#a4)"/>
+      <text x="307" y="126" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#4B505C">TCP</text>
+      <g font-family="ui-monospace,monospace" font-size="13" font-weight="700">
+        <rect x="345" y="118" width="50" height="38" rx="7" fill="#E7F6F0" stroke="#059669" stroke-width="1.5"/><text x="370" y="142" text-anchor="middle" fill="#059669">1</text>
+        <rect x="405" y="118" width="50" height="38" rx="7" fill="#E7F6F0" stroke="#059669" stroke-width="1.5"/><text x="430" y="142" text-anchor="middle" fill="#059669">2</text>
+        <rect x="465" y="118" width="50" height="38" rx="7" fill="#E7F6F0" stroke="#059669" stroke-width="2.5"/><text x="490" y="142" text-anchor="middle" fill="#059669">3</text>
+        <rect x="525" y="118" width="50" height="38" rx="7" fill="#E7F6F0" stroke="#059669" stroke-width="1.5"/><text x="550" y="142" text-anchor="middle" fill="#059669">4</text>
+      </g>
+      <text x="460" y="185" font-family="ui-monospace,monospace" font-size="11" fill="#7A8090" text-anchor="middle">…detected, re-sent, re-assembled in order</text>
+      <text x="460" y="103" font-family="ui-monospace,monospace" font-size="11" font-weight="600" fill="#059669" text-anchor="middle">receiver</text>
+      <text x="150" y="103" font-family="ui-monospace,monospace" font-size="11" font-weight="600" fill="#059669" text-anchor="middle">sender</text>
+      <defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#059669" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+    </svg>
+    <figcaption>TCP: segmentation, loss detection, retransmission, reassembly</figcaption>
+  </figure>
+
+  <h3>Real-world examples</h3>
+  <ul class="ex">
+    <li><strong>Downloading a file</strong> — TCP guarantees every byte arrives, in order, uncorrupted</li>
+    <li><strong>A live game or video call</strong> — UDP, because a late packet is worse than a lost one</li>
+    <li><strong>"Connection refused" on port 22</strong> — the machine is up, but nothing is listening at that door</li>
+    <li><strong>An SFTP transfer surviving flaky Wi-Fi</strong> — TCP quietly re-sending lost segments underneath</li>
+    <li><strong>DNS lookups</strong> — mostly UDP: tiny question, tiny answer, no ceremony needed</li>
+  </ul>
+
+  <div class="chips">
+    <span class="chip-p" style="color:var(--l4);border-color:var(--l4);background:var(--l4bg)">TCP</span>
+    <span class="chip-p" style="color:var(--l4);border-color:var(--l4);background:var(--l4bg)">UDP</span>
+    <span class="chip-p" style="color:var(--l4);border-color:var(--l4);background:var(--l4bg)">QUIC</span>
+    <span class="chip-p" style="color:var(--l4);border-color:var(--l4);background:var(--l4bg)">Ports 0–65535</span>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="k">Data unit</div><div class="v">Segment (TCP) / Datagram (UDP)</div></div>
+    <div class="m"><div class="k">Addressing</div><div class="v">Port numbers</div></div>
+    <div class="m"><div class="k">Devices here</div><div class="v">Load balancers, stateful firewalls</div></div>
+  </div>
+  <div class="breaks"><div class="k">When it breaks, it looks like…</div>
+    <p><code>Connection refused</code>, <code>Connection timed out</code>, blocked ports on a firewall, painfully slow transfers from heavy retransmission on a lossy link.</p>
+  </div>
+</section>
+
+<!-- ================= LAYER 3 ================= -->
+<section id="l3">
+  <div class="eyebrow" style="color:var(--l3)">Layer 3 · PDU: Packet</div>
+  <h2>Network</h2>
+  <p class="oneliner">The GPS — gives every machine an address and finds a route between any two of them.</p>
+  <p><strong>In plain English:</strong> this is the layer that makes the Internet an inter-net — a network of networks. Every device gets an <strong>IP address</strong> (like <code>142.250.72.14</code>), and <strong>routers</strong> pass packets from network to network, each one deciding only the <em>next hop</em>. No single router knows the whole path; each just moves the packet one step closer, like handing a letter between postal hubs.</p>
+  <p>Your data may cross 10–20 routers between your laptop and a server — you can watch this with <code>traceroute</code>. And <code>ping</code>, the most-used diagnostic on Earth, is a pure Layer 3 tool: "does this IP answer at all?"</p>
+
+  <div class="card analogy" style="border-color:var(--l3);background:var(--l3bg)">
+    <div class="tag" style="color:var(--l3)">Analogy</div>
+    <p style="margin:0;color:var(--ink)">The <strong>international postal system</strong>. Your local post office doesn't know the street layout of Tokyo — it just knows to hand Japan-bound mail to the next hub. Each hub repeats that logic until the letter arrives.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 600 190" role="img" aria-label="A packet hopping across three routers between two networks">
+      <rect x="20" y="65" width="90" height="60" rx="10" fill="#FFF" stroke="#D97706" stroke-width="1.5"/>
+      <text x="65" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#191B21">You</text>
+      <text x="65" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#7A8090">10.0.0.5</text>
+      <g>
+        <circle cx="190" cy="95" r="26" fill="#FBF1E1" stroke="#D97706" stroke-width="1.5"/>
+        <circle cx="310" cy="60" r="26" fill="#FBF1E1" stroke="#D97706" stroke-width="1.5"/>
+        <circle cx="430" cy="95" r="26" fill="#FBF1E1" stroke="#D97706" stroke-width="1.5"/>
+        <text x="190" y="100" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#D97706">R1</text>
+        <text x="310" y="65" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#D97706">R2</text>
+        <text x="430" y="100" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#D97706">R3</text>
+      </g>
+      <line x1="112" y1="95" x2="160" y2="95" stroke="#D97706" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="212" y1="83" x2="284" y2="66" stroke="#D97706" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="336" y1="66" x2="408" y2="83" stroke="#D97706" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="458" y1="95" x2="488" y2="95" stroke="#D97706" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="212" y1="107" x2="284" y2="150" stroke="#CFCCC2" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <circle cx="300" cy="158" r="16" fill="none" stroke="#CFCCC2" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <text x="345" y="163" font-family="ui-monospace,monospace" font-size="10" fill="#7A8090">slower path — not chosen</text>
+      <rect x="492" y="65" width="90" height="60" rx="10" fill="#FFF" stroke="#D97706" stroke-width="1.5"/>
+      <text x="537" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#191B21">Server</text>
+      <text x="537" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#7A8090">142.250.72.14</text>
+      <text x="300" y="30" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="600" fill="#D97706">each router picks only the next hop</text>
+      <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+    </svg>
+    <figcaption>Routing: hop by hop across networks</figcaption>
+  </figure>
+
+  <h3>Real-world examples</h3>
+  <ul class="ex">
+    <li><strong>Your home router</strong> handing traffic between your Wi-Fi network and your ISP</li>
+    <li><strong><code>ping 8.8.8.8</code></strong> — the classic "is the network path alive?" test</li>
+    <li><strong>A VPN</strong> — your packets get a new Layer 3 route through an encrypted tunnel</li>
+    <li><strong>NAT</strong> — dozens of home devices sharing one public IP address</li>
+    <li><strong>"No route to host"</strong> — a router genuinely doesn't know how to reach that address</li>
+  </ul>
+
+  <div class="chips">
+    <span class="chip-p" style="color:var(--l3);border-color:var(--l3);background:var(--l3bg)">IPv4 / IPv6</span>
+    <span class="chip-p" style="color:var(--l3);border-color:var(--l3);background:var(--l3bg)">ICMP (ping)</span>
+    <span class="chip-p" style="color:var(--l3);border-color:var(--l3);background:var(--l3bg)">BGP / OSPF</span>
+    <span class="chip-p" style="color:var(--l3);border-color:var(--l3);background:var(--l3bg)">NAT</span>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="k">Data unit</div><div class="v">Packet</div></div>
+    <div class="m"><div class="k">Addressing</div><div class="v">IP addresses (logical, global)</div></div>
+    <div class="m"><div class="k">Devices here</div><div class="v">Routers, Layer 3 switches</div></div>
+  </div>
+  <div class="breaks"><div class="k">When it breaks, it looks like…</div>
+    <p><code>Request timed out</code> on ping, <code>Destination host unreachable</code>, wrong subnet mask or gateway, VPN up but nothing routes through it.</p>
+  </div>
+</section>
+
+<!-- ================= LAYER 2 ================= -->
+<section id="l2">
+  <div class="eyebrow" style="color:var(--l2)">Layer 2 · PDU: Frame</div>
+  <h2>Data link</h2>
+  <p class="oneliner">The local courier — moves data one hop, device to device, on the same network.</p>
+  <p><strong>In plain English:</strong> Layer 3 plans the cross-country route; Layer 2 does each individual leg. On your local network, devices identify each other by <strong>MAC address</strong> — a hardware serial number burned into every network card (like <code>a4:83:e7:2f:91:0c</code>). Data is bundled into <strong>frames</strong> stamped with source and destination MAC, and a <strong>switch</strong> reads those stamps to deliver each frame to exactly the right port.</p>
+  <p>Key insight: <strong>MAC addresses never leave the local network.</strong> At every router hop, the frame is unwrapped and re-wrapped with fresh MAC addresses for the next leg — while the IP addresses inside stay the same end to end.</p>
+
+  <div class="card analogy" style="border-color:var(--l2);background:var(--l2bg)">
+    <div class="tag" style="color:var(--l2)">Analogy</div>
+    <p style="margin:0;color:var(--ink)">The <strong>relay race</strong>. The baton (packet) travels the whole race, but each runner (frame) only covers their own leg, then hands off. New runner every leg — same baton the whole way.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 600 200" role="img" aria-label="An Ethernet frame structure and a switch delivering to the right port">
+      <g font-family="ui-monospace,monospace" font-size="11" font-weight="700">
+        <rect x="40" y="40" width="110" height="42" rx="7" fill="#FCEEE5" stroke="#EA580C" stroke-width="1.5"/>
+        <text x="95" y="58" text-anchor="middle" fill="#EA580C">dest MAC</text>
+        <text x="95" y="73" text-anchor="middle" font-weight="400" fill="#7A8090" font-size="9">a4:83:e7:2f:91:0c</text>
+        <rect x="150" y="40" width="110" height="42" rx="7" fill="#FCEEE5" stroke="#EA580C" stroke-width="1.5"/>
+        <text x="205" y="58" text-anchor="middle" fill="#EA580C">src MAC</text>
+        <text x="205" y="73" text-anchor="middle" font-weight="400" fill="#7A8090" font-size="9">08:00:27:4b:aa:31</text>
+        <rect x="260" y="40" width="200" height="42" rx="7" fill="#FFF" stroke="#EA580C" stroke-width="1.5"/>
+        <text x="360" y="66" text-anchor="middle" fill="#191B21">payload (the packet)</text>
+        <rect x="460" y="40" width="100" height="42" rx="7" fill="#FCEEE5" stroke="#EA580C" stroke-width="1.5"/>
+        <text x="510" y="58" text-anchor="middle" fill="#EA580C">checksum</text>
+        <text x="510" y="73" text-anchor="middle" font-weight="400" fill="#7A8090" font-size="9">error check</text>
+      </g>
+      <text x="300" y="26" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="600" fill="#EA580C">an Ethernet frame</text>
+      <rect x="240" y="120" width="120" height="40" rx="8" fill="#FFF" stroke="#EA580C" stroke-width="1.5"/>
+      <text x="300" y="145" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#191B21">Switch</text>
+      <line x1="300" y1="90" x2="300" y2="112" stroke="#EA580C" stroke-width="1.5" marker-end="url(#a2)"/>
+      <line x1="255" y1="164" x2="180" y2="185" stroke="#CFCCC2" stroke-width="1.5"/>
+      <line x1="300" y1="164" x2="300" y2="188" stroke="#CFCCC2" stroke-width="1.5"/>
+      <line x1="345" y1="164" x2="420" y2="185" stroke="#EA580C" stroke-width="2" marker-end="url(#a2)"/>
+      <text x="470" y="192" font-family="ui-monospace,monospace" font-size="10" font-weight="600" fill="#EA580C">only the matching port</text>
+      <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#EA580C" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+    </svg>
+    <figcaption>A frame carries MAC addresses; a switch delivers it to the right port only</figcaption>
+  </figure>
+
+  <h3>Real-world examples</h3>
+  <ul class="ex">
+    <li><strong>Plugging into an office switch</strong> — frames go only to your port, not everyone's</li>
+    <li><strong>Wi-Fi</strong> — the whole 802.11 protocol (association, retries, collision avoidance) is Layer 2</li>
+    <li><strong>MAC filtering</strong> on a home router — allowing only known hardware addresses</li>
+    <li><strong>ARP</strong> — "who has IP 10.0.0.1? Tell me your MAC" — the glue between L3 and L2</li>
+    <li><strong>VLANs</strong> — one physical switch split into isolated virtual networks</li>
+  </ul>
+
+  <div class="chips">
+    <span class="chip-p" style="color:var(--l2);border-color:var(--l2);background:var(--l2bg)">Ethernet</span>
+    <span class="chip-p" style="color:var(--l2);border-color:var(--l2);background:var(--l2bg)">Wi-Fi 802.11</span>
+    <span class="chip-p" style="color:var(--l2);border-color:var(--l2);background:var(--l2bg)">ARP</span>
+    <span class="chip-p" style="color:var(--l2);border-color:var(--l2);background:var(--l2bg)">VLAN</span>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="k">Data unit</div><div class="v">Frame</div></div>
+    <div class="m"><div class="k">Addressing</div><div class="v">MAC addresses (physical, local)</div></div>
+    <div class="m"><div class="k">Devices here</div><div class="v">Switches, bridges, access points, NICs</div></div>
+  </div>
+  <div class="breaks"><div class="k">When it breaks, it looks like…</div>
+    <p>Connected to Wi-Fi but "no internet", duplicate MAC conflicts, wrong VLAN (you're on the network but can't see your servers), ARP cache poisoning.</p>
+  </div>
+</section>
+
+<!-- ================= LAYER 1 ================= -->
+<section id="l1">
+  <div class="eyebrow" style="color:var(--l1)">Layer 1 · PDU: Bits</div>
+  <h2>Physical</h2>
+  <p class="oneliner">The wire — where data stops being an idea and becomes electricity, light, or radio.</p>
+  <p><strong>In plain English:</strong> everything above this layer is abstraction. Here, the 1s and 0s finally become something physical: voltage changes on copper, light pulses in fiber, radio waves in the air. This layer defines the boring-but-critical stuff — connector shapes, voltages, frequencies, cable lengths, how fast bits can be pushed.</p>
+  <p>It's also where a shocking number of real problems live. Seasoned network engineers check the cable <em>first</em> — because the fanciest configuration in the world can't fix a chewed wire or a loose plug.</p>
+
+  <div class="card analogy" style="border-color:var(--l1);background:var(--l1bg)">
+    <div class="tag" style="color:var(--l1)">Analogy</div>
+    <p style="margin:0;color:var(--ink)">The <strong>roads and trucks</strong> of the postal system. Not the letters, not the addresses — the literal asphalt. If the road is washed out, no amount of clever addressing gets the mail through.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 600 170" role="img" aria-label="Digital bits transmitted as an electrical waveform over a cable">
+      <g font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#DC2626">
+        <text x="60" y="45" text-anchor="middle">1</text><text x="100" y="45" text-anchor="middle">0</text>
+        <text x="140" y="45" text-anchor="middle">1</text><text x="180" y="45" text-anchor="middle">1</text>
+        <text x="220" y="45" text-anchor="middle">0</text><text x="260" y="45" text-anchor="middle">1</text>
+      </g>
+      <path d="M40 100 L40 70 L80 70 L80 100 L120 100 L120 70 L200 70 L200 100 L240 100 L240 70 L280 70"
+            fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linejoin="round"/>
+      <text x="160" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7A8090">voltage on copper</text>
+      <line x1="300" y1="85" x2="340" y2="85" stroke="#DC2626" stroke-width="1.5" marker-end="url(#a1)"/>
+      <path d="M360 85 q15 -22 30 0 q15 22 30 0 q15 -22 30 0 q15 22 30 0 q15 -22 30 0" fill="none" stroke="#DC2626" stroke-width="2.5"/>
+      <text x="435" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7A8090">light in fiber · radio in air</text>
+      <text x="300" y="160" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="600" fill="#DC2626">same bits, different physics</text>
+      <defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#DC2626" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+    </svg>
+    <figcaption>Bits become signals: square waves on copper, sine waves in air and fiber</figcaption>
+  </figure>
+
+  <h3>Real-world examples</h3>
+  <ul class="ex">
+    <li><strong>The Ethernet cable</strong> behind your desk — Cat 5e/6 twisted-pair copper</li>
+    <li><strong>Undersea fiber optic cables</strong> — ~99% of intercontinental internet traffic rides on light</li>
+    <li><strong>Wi-Fi radio</strong> at 2.4 GHz / 5 GHz / 6 GHz — bits as electromagnetic waves</li>
+    <li><strong>The blinking link light</strong> on a switch port — literal Layer 1 status</li>
+    <li><strong>"Have you tried a different cable?"</strong> — the oldest and most effective fix in IT</li>
+  </ul>
+
+  <div class="chips">
+    <span class="chip-p" style="color:var(--l1);border-color:var(--l1);background:var(--l1bg)">Copper (Cat6)</span>
+    <span class="chip-p" style="color:var(--l1);border-color:var(--l1);background:var(--l1bg)">Fiber optic</span>
+    <span class="chip-p" style="color:var(--l1);border-color:var(--l1);background:var(--l1bg)">Radio (Wi-Fi, 5G)</span>
+    <span class="chip-p" style="color:var(--l1);border-color:var(--l1);background:var(--l1bg)">USB / Bluetooth</span>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="k">Data unit</div><div class="v">Bits (1s and 0s)</div></div>
+    <div class="m"><div class="k">Concerns</div><div class="v">Voltage, frequency, connectors, distance</div></div>
+    <div class="m"><div class="k">Devices here</div><div class="v">Cables, hubs, repeaters, transceivers</div></div>
+  </div>
+  <div class="breaks"><div class="k">When it breaks, it looks like…</div>
+    <p>No link light, "network cable unplugged", weak Wi-Fi signal through walls, intermittent drops from a damaged cable, port dead on a switch.</p>
+  </div>
+</section>
+
+<!-- ================= END TO END ================= -->
+<section id="journey">
+  <h2>Putting it together: one click, all seven layers</h2>
+  <p>You type <code>workday.com</code> and hit Enter. In a few hundred milliseconds:</p>
+  <table>
+    <tr><th style="width:110px">Layer</th><th>What actually happens</th></tr>
+    <tr><td style="color:var(--l7)">7 · Application</td><td>Browser resolves the name via DNS, then builds an <code>HTTP GET</code> request.</td></tr>
+    <tr><td style="color:var(--l6)">6 · Presentation</td><td>TLS handshake completes; the request is encrypted. 🔒 appears.</td></tr>
+    <tr><td style="color:var(--l5)">5 · Session</td><td>A session is established — your login cookie ties this to <em>you</em>.</td></tr>
+    <tr><td style="color:var(--l4)">4 · Transport</td><td>TCP splits the data into segments, addressed to port <code>443</code>, tracking each one.</td></tr>
+    <tr><td style="color:var(--l3)">3 · Network</td><td>Each segment becomes a packet with your IP and the server's IP; routers hop it across the internet.</td></tr>
+    <tr><td style="color:var(--l2)">2 · Data link</td><td>Each hop wraps the packet in a fresh frame with local MAC addresses.</td></tr>
+    <tr><td style="color:var(--l1)">1 · Physical</td><td>Frames become radio waves to your router, then light in fiber under the ocean.</td></tr>
+  </table>
+  <p>The server's stack runs the whole thing <strong>in reverse, bottom to top</strong> — and then sends the page back down its own stack. Every click, every API call, every file drop: the full round trip.</p>
+</section>
+
+<!-- ================= OSI vs TCP/IP ================= -->
+<section id="tcpip">
+  <h2>Reality check: OSI vs TCP/IP</h2>
+  <p>Here's the honest truth: <strong>the internet doesn't run on OSI.</strong> It runs on the simpler TCP/IP model, which collapses layers 5–7 into one "Application" layer — because in practice, apps handle sessions and presentation themselves. OSI survives because it's a superb <em>vocabulary</em> for teaching and troubleshooting.</p>
+  <figure>
+    <svg viewBox="0 0 600 330" role="img" aria-label="OSI seven layers mapped to the four TCP/IP layers">
+      <g font-family="ui-monospace,monospace" font-size="12" font-weight="700">
+        <text x="150" y="28" text-anchor="middle" fill="#4B505C">OSI (7 layers)</text>
+        <text x="450" y="28" text-anchor="middle" fill="#4B505C">TCP/IP (4 layers)</text>
+        <rect x="60" y="40"  width="180" height="30" rx="6" fill="#F3EEFD" stroke="#7C3AED" stroke-width="1.2"/><text x="150" y="60" text-anchor="middle" fill="#7C3AED">7 Application</text>
+        <rect x="60" y="76"  width="180" height="30" rx="6" fill="#EAF1FD" stroke="#2563EB" stroke-width="1.2"/><text x="150" y="96" text-anchor="middle" fill="#2563EB">6 Presentation</text>
+        <rect x="60" y="112" width="180" height="30" rx="6" fill="#E6F6FA" stroke="#0891B2" stroke-width="1.2"/><text x="150" y="132" text-anchor="middle" fill="#0891B2">5 Session</text>
+        <rect x="60" y="148" width="180" height="30" rx="6" fill="#E7F6F0" stroke="#059669" stroke-width="1.2"/><text x="150" y="168" text-anchor="middle" fill="#059669">4 Transport</text>
+        <rect x="60" y="184" width="180" height="30" rx="6" fill="#FBF1E1" stroke="#D97706" stroke-width="1.2"/><text x="150" y="204" text-anchor="middle" fill="#D97706">3 Network</text>
+        <rect x="60" y="220" width="180" height="30" rx="6" fill="#FCEEE5" stroke="#EA580C" stroke-width="1.2"/><text x="150" y="240" text-anchor="middle" fill="#EA580C">2 Data link</text>
+        <rect x="60" y="256" width="180" height="30" rx="6" fill="#FBE9E9" stroke="#DC2626" stroke-width="1.2"/><text x="150" y="276" text-anchor="middle" fill="#DC2626">1 Physical</text>
+        <rect x="360" y="40"  width="180" height="102" rx="6" fill="#F3EEFD" stroke="#7C3AED" stroke-width="1.2"/><text x="450" y="96" text-anchor="middle" fill="#7C3AED">Application</text>
+        <rect x="360" y="148" width="180" height="30" rx="6" fill="#E7F6F0" stroke="#059669" stroke-width="1.2"/><text x="450" y="168" text-anchor="middle" fill="#059669">Transport</text>
+        <rect x="360" y="184" width="180" height="30" rx="6" fill="#FBF1E1" stroke="#D97706" stroke-width="1.2"/><text x="450" y="204" text-anchor="middle" fill="#D97706">Internet</text>
+        <rect x="360" y="220" width="180" height="66" rx="6" fill="#FCEEE5" stroke="#EA580C" stroke-width="1.2"/><text x="450" y="257" text-anchor="middle" fill="#EA580C">Network access</text>
+      </g>
+      <g stroke="#CFCCC2" stroke-width="1.2" stroke-dasharray="4 4">
+        <line x1="248" y1="55"  x2="352" y2="70"/>
+        <line x1="248" y1="91"  x2="352" y2="91"/>
+        <line x1="248" y1="127" x2="352" y2="112"/>
+        <line x1="248" y1="163" x2="352" y2="163"/>
+        <line x1="248" y1="199" x2="352" y2="199"/>
+        <line x1="248" y1="235" x2="352" y2="243"/>
+        <line x1="248" y1="271" x2="352" y2="263"/>
+      </g>
+      <text x="300" y="318" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7A8090">OSI = the teaching model · TCP/IP = what actually ships</text>
+    </svg>
+    <figcaption>Layers 5–7 collapse into "Application"; layers 1–2 into "Network access"</figcaption>
+  </figure>
+</section>
+
+<!-- ================= TROUBLESHOOTING ================= -->
+<section id="troubleshoot">
+  <h2>The troubleshooting ladder</h2>
+  <p>The model's biggest practical payoff: debug <strong>bottom-up</strong>, ruling out one layer at a time. Each question isolates a layer — the first "no" tells you where the problem lives.</p>
+  <table>
+    <tr><th style="width:70px">Check</th><th>Question</th><th>Tool / signal</th></tr>
+    <tr><td style="color:var(--l1)">L1</td><td>Is there a physical connection at all?</td><td>Link light, cable, Wi-Fi signal bars</td></tr>
+    <tr><td style="color:var(--l2)">L2</td><td>Am I on the local network?</td><td><code>ip addr</code> — do I have a MAC and a link? Right VLAN/SSID?</td></tr>
+    <tr><td style="color:var(--l3)">L3</td><td>Can I reach other machines?</td><td><code>ping</code> the gateway, then <code>8.8.8.8</code>; <code>traceroute</code> to see where hops die</td></tr>
+    <tr><td style="color:var(--l4)">L4</td><td>Is the specific service reachable?</td><td><code>telnet host 443</code> / <code>nc -zv host 22</code> — port open or refused?</td></tr>
+    <tr><td style="color:var(--l5)">L5–6</td><td>Do sessions and TLS work?</td><td>Cert errors, handshake failures, instant logouts</td></tr>
+    <tr><td style="color:var(--l7)">L7</td><td>Is the app itself behaving?</td><td>HTTP status codes, API error bodies, server logs</td></tr>
+  </table>
+  <div class="card">
+    <p style="margin:0"><strong>Integration-world translation:</strong> when a Studio integration fails — <em>connection timeout</em> is usually L3/L4 (routing, firewall, port). <em>Certificate error</em> is L6. <em>401/403</em> is L7 auth. <em>Garbled file content</em> is L6 encoding. Naming the layer tells you which team to call.</p>
+  </div>
+</section>
+
+<!-- ================= MEMORY ================= -->
+<section id="memory">
+  <h2>Remembering the order</h2>
+  <table>
+    <tr><th>Direction</th><th>Mnemonic</th><th>Layers</th></tr>
+    <tr><td>Top → down (7→1)</td><td><strong>A</strong>ll <strong>P</strong>eople <strong>S</strong>eem <strong>T</strong>o <strong>N</strong>eed <strong>D</strong>ata <strong>P</strong>rocessing</td><td>App · Pres · Sess · Trans · Net · DataLink · Phys</td></tr>
+    <tr><td>Bottom → up (1→7)</td><td><strong>P</strong>lease <strong>D</strong>o <strong>N</strong>ot <strong>T</strong>hrow <strong>S</strong>ausage <strong>P</strong>izza <strong>A</strong>way</td><td>Phys · DataLink · Net · Trans · Sess · Pres · App</td></tr>
+  </table>
+
+  <h3>Quick reference card</h3>
+  <table>
+    <tr><th>#</th><th>Layer</th><th>One job</th><th>Data unit</th><th>Address</th><th>Key devices</th></tr>
+    <tr><td style="color:var(--l7)">7</td><td>Application</td><td>App-to-app conversation</td><td>Data</td><td>URL / hostname</td><td>API gateway, L7 firewall</td></tr>
+    <tr><td style="color:var(--l6)">6</td><td>Presentation</td><td>Translate · encrypt · compress</td><td>Data</td><td>—</td><td>(in software)</td></tr>
+    <tr><td style="color:var(--l5)">5</td><td>Session</td><td>Open, hold, close dialogues</td><td>Data</td><td>Session ID</td><td>(in software)</td></tr>
+    <tr><td style="color:var(--l4)">4</td><td>Transport</td><td>Reliable (TCP) or fast (UDP) delivery</td><td>Segment</td><td>Port</td><td>Load balancer, firewall</td></tr>
+    <tr><td style="color:var(--l3)">3</td><td>Network</td><td>Route across networks</td><td>Packet</td><td>IP address</td><td>Router</td></tr>
+    <tr><td style="color:var(--l2)">2</td><td>Data link</td><td>Deliver one local hop</td><td>Frame</td><td>MAC address</td><td>Switch, access point</td></tr>
+    <tr><td style="color:var(--l1)">1</td><td>Physical</td><td>Bits as signals</td><td>Bits</td><td>—</td><td>Cables, hubs, repeaters</td></tr>
+  </table>
+</section>
+
+<div class="footer">OSI Model Field Guide · self-contained · works offline · print-friendly</div>
+</div>
+
+<script>
+/* ---------- encapsulation stepper ---------- */
+const steps=[
+ {t:"Start: your data",d:"An email, a web request, a payroll file. At Layers 7–6–5 it's shaped, encrypted, and tied to a session — but it's still just 'data'.",
+  seg:[["DATA","#191B21","#F1F0EA"]]},
+ {t:"Layer 4 wraps it → segment",d:"TCP adds a header: source & destination ports, a sequence number for reassembly, and flags for reliability tracking.",
+  seg:[["TCP","#059669","#E7F6F0"],["DATA","#191B21","#F1F0EA"]]},
+ {t:"Layer 3 wraps that → packet",d:"IP adds its header: your IP address and the destination's. This is what routers read to move it across the world.",
+  seg:[["IP","#D97706","#FBF1E1"],["TCP","#059669","#E7F6F0"],["DATA","#191B21","#F1F0EA"]]},
+ {t:"Layer 2 wraps that → frame",d:"Ethernet/Wi-Fi adds MAC addresses for the next local hop, plus a trailing checksum to catch corruption. Re-done at every hop.",
+  seg:[["ETH","#EA580C","#FCEEE5"],["IP","#D97706","#FBF1E1"],["TCP","#059669","#E7F6F0"],["DATA","#191B21","#F1F0EA"],["FCS","#EA580C","#FCEEE5"]]},
+ {t:"Layer 1 transmits → bits",d:"The whole frame becomes 1s and 0s as voltage, light, or radio. On the receiving side, every wrapper is removed in reverse — until only your data remains.",
+  seg:[["1 0 1 1 0 1 0 0 1 1 1 0 1 0 0 1 0 1 1 0","#DC2626","#FBE9E9"]]}
+];
+let cur=0;
+const pkt=document.getElementById('pkt'),tt=document.getElementById('stepTitle'),
+      dd=document.getElementById('stepDesc'),dots=document.getElementById('dots'),
+      pb=document.getElementById('prevBtn'),nb=document.getElementById('nextBtn');
+steps.forEach(()=>{const i=document.createElement('i');dots.appendChild(i)});
+function render(){
+  tt.textContent=steps[cur].t; dd.textContent=steps[cur].d;
+  pkt.innerHTML='';
+  steps[cur].seg.forEach(s=>{
+    const el=document.createElement('span');el.className='hdr';el.textContent=s[0];
+    el.style.color=s[1];el.style.borderColor=s[1];el.style.background=s[2];
+    pkt.appendChild(el);
+  });
+  [...dots.children].forEach((d,i)=>d.className=i===cur?'on':'');
+  pb.disabled=cur===0; nb.disabled=cur===steps.length-1;
+}
+function step(n){cur=Math.max(0,Math.min(steps.length-1,cur+n));render()}
+render();
+
+/* ---------- rail scroll-spy ---------- */
+const ids=['l7','l6','l5','l4','l3','l2','l1'];
+const links=[...document.querySelectorAll('#rail a')];
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      const i=ids.indexOf(e.target.id);
+      links.forEach((l,j)=>l.classList.toggle('on',j===i));
+    }
+  });
+},{rootMargin:'-40% 0px -50% 0px'});
+ids.forEach(id=>obs.observe(document.getElementById(id)));
+</script>
+</body>
+</html>

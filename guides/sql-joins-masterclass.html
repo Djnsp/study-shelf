@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL JOINS — A Visual Masterclass</title>
+<style>
+  :root{
+    --bg:#eef1f8;
+    --panel:#ffffff;
+    --panel-2:#f4f6fc;
+    --line:#dde2ee;
+    --line-soft:#e9edf5;
+    --ink:#1b2435;
+    --muted:#5c6880;
+    --muted-2:#8b95aa;
+    --teal:#0e9c8e;       /* matched / the join key */
+    --teal-dim:#d2efeb;
+    --amber:#bf7710;      /* kept-from-left (outer) */
+    --amber-dim:#f7e7c9;
+    --violet:#6557e6;     /* kept-from-right (outer) */
+    --violet-dim:#e3e0fb;
+    --rose:#d23a5b;       /* warnings / null */
+    --grid:#f5f7fd;
+    --code-ink:#2b3347;
+    --mono:ui-monospace,"SF Mono",Menlo,Monaco,"Cascadia Code",Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(900px 500px at 85% -8%, #dfe7f7 0%, transparent 60%),
+      radial-gradient(700px 600px at 5% 0%, #e4ecf6 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--teal)}
+  ::selection{background:var(--teal);color:#ffffff}
+  :not(pre) > code{background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:var(--mono);font-size:.88em;color:var(--ink)}
+
+  /* ---------- header ---------- */
+  header.top{
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(238,241,248,.78));
+    backdrop-filter:blur(8px);
+    position:sticky;top:0;z-index:50;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  .brandbar{display:flex;align-items:center;gap:16px;padding:14px 0;flex-wrap:wrap}
+  .logo{
+    font-family:var(--mono);font-weight:700;letter-spacing:.5px;
+    font-size:15px;color:var(--ink);display:flex;align-items:center;gap:10px;
+  }
+  .logo .dot{width:9px;height:9px;border-radius:2px;background:var(--teal);box-shadow:0 0 14px var(--teal)}
+  .logo b{color:var(--teal)}
+  .tabs{margin-left:auto;display:flex;gap:6px;background:var(--panel);padding:5px;border-radius:11px;border:1px solid var(--line)}
+  .tabs button{
+    font-family:var(--mono);font-size:12.5px;letter-spacing:.4px;color:var(--muted);
+    background:transparent;border:0;padding:8px 16px;border-radius:8px;cursor:pointer;transition:.18s;
+  }
+  .tabs button:hover{color:var(--ink)}
+  .tabs button.active{background:var(--teal);color:#ffffff;font-weight:700}
+
+  /* ---------- hero ---------- */
+  .hero{padding:54px 0 30px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+  h1{font-size:clamp(32px,6vw,54px);line-height:1.04;margin:0 0 16px;font-weight:800;letter-spacing:-1.2px}
+  h1 .key{color:var(--teal)}
+  .lede{font-size:17px;color:var(--muted);max-width:640px}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:26px;font-family:var(--mono);font-size:12px}
+  .legend span{display:inline-flex;align-items:center;gap:8px;color:var(--muted)}
+  .swatch{width:13px;height:13px;border-radius:3px;display:inline-block}
+  .sw-teal{background:var(--teal)} .sw-amber{background:var(--amber)} .sw-violet{background:var(--violet)}
+
+  /* ---------- sections ---------- */
+  section{padding:30px 0}
+  .seclabel{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  h2{font-size:26px;margin:0 0 8px;letter-spacing:-.5px}
+  h3{font-size:19px;margin:0 0 6px;letter-spacing:-.3px}
+  p.note{color:var(--muted)}
+
+  /* ---------- sample data tables ---------- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(27,36,53,.04),0 8px 24px rgba(27,36,53,.04)}
+  .panel h4{margin:0 0 10px;font-family:var(--mono);font-size:13px;letter-spacing:.5px;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .pill{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  table.data{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px}
+  table.data th{
+    text-align:left;color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.6px;
+    text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--line);
+  }
+  table.data td{padding:8px 10px;border-bottom:1px solid var(--line-soft)}
+  table.data tr:last-child td{border-bottom:0}
+  .nullv{color:var(--rose);opacity:.85;font-style:italic}
+  .rowtag{font-family:var(--mono);font-size:9.5px;letter-spacing:.5px;padding:1px 6px;border-radius:4px;margin-left:4px;vertical-align:middle}
+  .tag-orphan{background:var(--amber-dim);color:var(--amber)}
+  .tag-empty{background:var(--violet-dim);color:var(--violet)}
+
+  /* result row coloring */
+  tr.r-match td:first-child{box-shadow:inset 3px 0 0 var(--teal)}
+  tr.r-left  td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
+  tr.r-right td:first-child{box-shadow:inset 3px 0 0 var(--violet)}
+  tr.r-cross td:first-child{box-shadow:inset 3px 0 0 var(--muted)}
+
+  /* ---------- playground ---------- */
+  .pg{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:14px}
+  .joinbtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .joinbtns button{
+    font-family:var(--mono);font-size:12px;letter-spacing:.5px;padding:9px 14px;border-radius:9px;
+    border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;transition:.16s;
+  }
+  .joinbtns button:hover{color:var(--ink);border-color:var(--teal)}
+  .joinbtns button.active{background:var(--teal);color:#ffffff;border-color:var(--teal);font-weight:700}
+  .pg-grid{display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:start}
+  @media(max-width:680px){.pg-grid{grid-template-columns:1fr}}
+  .venn-wrap{text-align:center}
+  .venn-cap{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px}
+  .pg-sql{
+    font-family:var(--mono);font-size:13px;background:var(--grid);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;color:var(--code-ink);overflow-x:auto;white-space:pre;margin-bottom:14px;
+  }
+  .pg-sql .kw{color:var(--teal);font-weight:600}
+  .pg-sql .cm{color:var(--muted)}
+  .resmeta{font-family:var(--mono);font-size:12px;color:var(--muted);margin:14px 0 8px;display:flex;gap:14px;flex-wrap:wrap}
+  .resmeta b{color:var(--teal)}
+  .explain{color:var(--muted);font-size:14.5px;margin-top:14px;border-top:1px solid var(--line-soft);padding-top:14px}
+
+  /* ---------- detail cards ---------- */
+  .jcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px;scroll-margin-top:80px;box-shadow:0 1px 2px rgba(27,36,53,.04),0 10px 30px rgba(27,36,53,.05)}
+  .jcard .head{display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}
+  .jcard .head .venn-wrap{flex:0 0 130px}
+  .jcard .head .meta{flex:1;min-width:240px}
+  .jcard h3 .syn{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+  .codeblock{
+    font-family:var(--mono);font-size:13px;background:var(--grid);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;color:var(--code-ink);overflow-x:auto;white-space:pre;margin:14px 0;
+  }
+  .codeblock .kw{color:var(--teal);font-weight:600}
+  .codeblock .cm{color:var(--muted)}
+  .codeblock .st{color:var(--amber)}
+  .keynote{display:flex;gap:10px;align-items:flex-start;background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--muted);margin-top:10px}
+  .keynote.warn{border-left-color:var(--rose)}
+  .keynote b{color:var(--ink)}
+  .subgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:680px){.subgrid{grid-template-columns:1fr}}
+
+  /* ---------- quiz ---------- */
+  .quizhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+  .modeswitch{display:flex;gap:5px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px}
+  .modeswitch button{font-family:var(--mono);font-size:11.5px;letter-spacing:.4px;padding:7px 13px;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer}
+  .modeswitch button.active{background:var(--teal);color:#ffffff;font-weight:700}
+  .scorebox{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .scorebox b{color:var(--teal);font-size:18px}
+  .q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(27,36,53,.04),0 8px 24px rgba(27,36,53,.04)}
+  .q .qnum{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--teal);text-transform:uppercase}
+  .q .qtext{font-size:16px;margin:8px 0 4px;font-weight:600}
+  .q .qcode{font-family:var(--mono);font-size:12.5px;background:var(--grid);border:1px solid var(--line);border-radius:8px;padding:10px 12px;white-space:pre;overflow-x:auto;color:var(--code-ink);margin:10px 0}
+  .q .qcode .kw{color:var(--teal)}
+  .opts{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+  .opt{
+    text-align:left;font-family:var(--sans);font-size:14.5px;padding:12px 14px;border-radius:10px;
+    border:1px solid var(--line);background:var(--panel-2);color:var(--ink);cursor:pointer;transition:.14s;
+    display:flex;gap:11px;align-items:flex-start;
+  }
+  .opt:hover{border-color:var(--teal)}
+  .opt .mark{font-family:var(--mono);font-size:12px;color:var(--muted);flex:0 0 auto;width:18px}
+  .opt.correct{border-color:var(--teal);background:var(--teal-dim)}
+  .opt.correct .mark{color:var(--teal)}
+  .opt.wrong{border-color:var(--rose);background:#fae0e6}
+  .opt.wrong .mark{color:var(--rose)}
+  .opt:disabled{cursor:default}
+  .feedback{margin-top:12px;font-size:14px;color:var(--muted);border-top:1px solid var(--line-soft);padding-top:11px;display:none}
+  .feedback.show{display:block}
+  .feedback b{color:var(--teal)}
+  .quizfoot{display:flex;justify-content:center;margin-top:8px}
+  .btn{font-family:var(--mono);font-size:13px;letter-spacing:.5px;padding:12px 26px;border-radius:10px;border:1px solid var(--teal);background:var(--teal);color:#ffffff;font-weight:700;cursor:pointer;transition:.16s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:transparent;color:var(--teal)}
+  .resultcard{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--teal);border-radius:16px;padding:30px;text-align:center;display:none}
+  .resultcard.show{display:block}
+  .resultcard .big{font-size:46px;font-weight:800;color:var(--teal);font-family:var(--mono)}
+
+  .hidden{display:none}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 0;color:var(--muted-2);font-family:var(--mono);font-size:11.5px;text-align:center}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap brandbar">
+    <div class="logo"><span class="dot"></span>JOIN<b>::</b>LAB</div>
+    <nav class="tabs" role="tablist">
+      <button id="tab-learn" class="active" onclick="showTab('learn')">LEARN</button>
+      <button id="tab-quiz" onclick="showTab('quiz')">QUIZ</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ LEARN ============ -->
+<main id="view-learn">
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Relational Databases · SQL</div>
+    <h1>Every <span class="key">JOIN</span>,<br>made visible.</h1>
+    <p class="lede">A join stitches rows from two tables together using a matching condition. The only thing that ever changes between join types is <em>what happens to the rows that don't match</em>. Learn it once with two tiny tables, then test yourself.</p>
+    <div class="legend">
+      <span><i class="swatch sw-teal"></i> Matched on both sides</span>
+      <span><i class="swatch sw-amber"></i> Kept from the LEFT (no match)</span>
+      <span><i class="swatch sw-violet"></i> Kept from the RIGHT (no match)</span>
+    </div>
+  </div>
+
+  <!-- sample data -->
+  <section>
+    <div class="seclabel">01 · The sample data</div>
+    <h2>Two tables, three deliberate edge cases</h2>
+    <p class="note">We join <b>Employees</b> to <b>Departments</b> on <code>dept_id</code>. The edge cases below are what make each join type behave differently — watch them appear and disappear.</p>
+    <div class="grid2" style="margin-top:16px">
+      <div class="panel">
+        <h4>Employees <span class="pill">5 rows</span></h4>
+        <table class="data">
+          <thead><tr><th>emp_id</th><th>name</th><th>dept_id</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Alice</td><td>10</td></tr>
+            <tr><td>2</td><td>Bob</td><td>20</td></tr>
+            <tr><td>3</td><td>Carol</td><td>10</td></tr>
+            <tr><td>4</td><td>David</td><td>50 <span class="rowtag tag-orphan">no such dept</span></td></tr>
+            <tr><td>5</td><td>Eve</td><td><span class="nullv">NULL</span> <span class="rowtag tag-orphan">no dept</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h4>Departments <span class="pill">3 rows</span></h4>
+        <table class="data">
+          <thead><tr><th>dept_id</th><th>dept_name</th></tr></thead>
+          <tbody>
+            <tr><td>10</td><td>Engineering</td></tr>
+            <tr><td>20</td><td>Sales</td></tr>
+            <tr><td>30</td><td>Marketing <span class="rowtag tag-empty">no employees</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="keynote" style="margin-top:16px">
+      <span>💡</span><div><b>David</b> sits in a department that doesn't exist, <b>Eve</b> has no department at all, and <b>Marketing</b> has nobody in it. These three "orphans" are the entire reason different joins return different results.</div>
+    </div>
+  </section>
+
+  <!-- playground -->
+  <section>
+    <div class="seclabel">02 · Interactive playground</div>
+    <h2>Pick a join — watch the rows decide their fate</h2>
+    <p class="note">Same query, same data. Only the join keyword changes. The Venn shows the set logic; the table shows the actual rows, color-coded by where they came from.</p>
+
+    <div class="pg">
+      <div class="joinbtns" id="joinbtns">
+        <button data-j="inner" class="active">INNER</button>
+        <button data-j="left">LEFT</button>
+        <button data-j="right">RIGHT</button>
+        <button data-j="full">FULL OUTER</button>
+        <button data-j="cross">CROSS</button>
+      </div>
+
+      <div class="pg-grid">
+        <div class="venn-wrap">
+          <div id="pg-venn"></div>
+          <div class="venn-cap" id="pg-venn-cap"></div>
+        </div>
+        <div>
+          <div class="pg-sql" id="pg-sql"></div>
+          <div class="resmeta" id="pg-meta"></div>
+          <div id="pg-result"></div>
+          <div class="explain" id="pg-explain"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- detailed cards -->
+  <section>
+    <div class="seclabel">03 · The reference</div>
+    <h2>Each join, in detail</h2>
+    <p class="note">Syntax, result, mental model, and the gotcha for every join type. <code>e</code> = Employees, <code>d</code> = Departments.</p>
+    <div id="cards" style="margin-top:18px"></div>
+  </section>
+
+  <!-- comparison -->
+  <section>
+    <div class="seclabel">04 · At a glance</div>
+    <h2>The whole family on one line</h2>
+    <div class="panel" style="overflow-x:auto;margin-top:14px">
+      <table class="data" style="min-width:560px">
+        <thead><tr><th>Join</th><th>Keeps matched</th><th>Keeps left orphans</th><th>Keeps right orphans</th><th>Rows here</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--teal)">INNER</td><td>✓</td><td>—</td><td>—</td><td>3</td></tr>
+          <tr><td style="color:var(--amber)">LEFT</td><td>✓</td><td>✓</td><td>—</td><td>5</td></tr>
+          <tr><td style="color:var(--violet)">RIGHT</td><td>✓</td><td>—</td><td>✓</td><td>4</td></tr>
+          <tr><td style="color:var(--ink)">FULL OUTER</td><td>✓</td><td>✓</td><td>✓</td><td>6</td></tr>
+          <tr><td style="color:var(--muted)">CROSS</td><td colspan="3">every left row × every right row (no condition)</td><td>15</td></tr>
+          <tr><td style="color:var(--muted)">SELF</td><td colspan="3">a table joined to itself (any join type, aliased twice)</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- ============ QUIZ ============ -->
+<main id="view-quiz" class="hidden">
+<div class="wrap">
+  <section>
+    <div class="seclabel">Test yourself</div>
+    <h2>Join Quiz</h2>
+    <p class="note">Uses the same Employees / Departments tables from the Learn tab. In <b>Learning</b> mode you get instant feedback; in <b>Exam</b> mode answers are revealed at the end.</p>
+
+    <div class="quizhead">
+      <div class="modeswitch">
+        <button id="m-learn" class="active" onclick="setMode('learning')">LEARNING</button>
+        <button id="m-exam" onclick="setMode('exam')">EXAM</button>
+      </div>
+      <div class="scorebox">SCORE <b id="score">0</b> / <span id="total">0</span></div>
+    </div>
+
+    <div id="quiz"></div>
+
+    <div class="quizfoot" id="quizfoot"></div>
+
+    <div class="resultcard" id="resultcard">
+      <div class="seclabel" style="text-align:center">Results</div>
+      <div class="big" id="finalscore"></div>
+      <p class="note" id="finalmsg"></p>
+      <button class="btn" onclick="resetQuiz()">Retake quiz</button>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer>JOIN::LAB — a self-contained, offline SQL joins masterclass. No tracking, no dependencies.</footer>
+
+<script>
+/* ============================================================
+   SAMPLE DATA
+   ============================================================ */
+const employees = [
+  {emp_id:1, name:'Alice', dept_id:10},
+  {emp_id:2, name:'Bob',   dept_id:20},
+  {emp_id:3, name:'Carol', dept_id:10},
+  {emp_id:4, name:'David', dept_id:50},  // orphan: dept 50 doesn't exist
+  {emp_id:5, name:'Eve',   dept_id:null} // orphan: no dept
+];
+const departments = [
+  {dept_id:10, dept_name:'Engineering'},
+  {dept_id:20, dept_name:'Sales'},
+  {dept_id:30, dept_name:'Marketing'}    // orphan: no employees
+];
+
+const NULLC = '<span class="nullv">NULL</span>';
+const cell = v => (v===null||v===undefined) ? NULLC : v;
+
+/* ============================================================
+   JOIN ENGINE  -> returns {rows:[{cells, kind}], cols}
+   cols are: emp_id | name | e.dept_id | d.dept_id | dept_name
+   ============================================================ */
+function makeRow(e, d, kind){
+  return {
+    kind,
+    cells:[
+      e ? e.emp_id : null,
+      e ? e.name : null,
+      e ? e.dept_id : null,
+      d ? d.dept_id : null,
+      d ? d.dept_name : null
+    ]
+  };
+}
+function computeJoin(type){
+  const rows = [];
+  if(type==='cross'){
+    employees.forEach(e=>departments.forEach(d=>rows.push(makeRow(e,d,'cross'))));
+    return rows;
+  }
+  // matched + left side
+  const matchedDeptIds = new Set();
+  employees.forEach(e=>{
+    const matches = departments.filter(d=>e.dept_id!==null && e.dept_id===d.dept_id);
+    if(matches.length){
+      matches.forEach(d=>{ rows.push(makeRow(e,d,'match')); matchedDeptIds.add(d.dept_id); });
+    } else if(type==='left'||type==='full'){
+      rows.push(makeRow(e,null,'left'));
+    }
+  });
+  // right orphans
+  if(type==='right'||type==='full'){
+    departments.forEach(d=>{
+      const hasMatch = employees.some(e=>e.dept_id===d.dept_id);
+      if(!hasMatch) rows.push(makeRow(null,d,'right'));
+    });
+  }
+  return rows;
+}
+
+/* ============================================================
+   RESULT TABLE RENDERER
+   ============================================================ */
+function renderResult(rows){
+  let h = '<div class="panel" style="overflow-x:auto"><table class="data" style="min-width:480px"><thead><tr>'+
+    '<th>emp_id</th><th>name</th><th>e.dept_id</th><th>d.dept_id</th><th>dept_name</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    h += `<tr class="r-${r.kind}">` + r.cells.map(c=>`<td>${cell(c)}</td>`).join('') + '</tr>';
+  });
+  h += '</tbody></table></div>';
+  return h;
+}
+
+/* ============================================================
+   VENN DIAGRAMS  (SVG strings)
+   ============================================================ */
+function venn(type, size=130){
+  const T='var(--teal)', A='var(--amber)', V='var(--violet)', M='var(--muted)';
+  const stroke='var(--line)';
+  // base circles
+  const L = c => `<circle cx="50" cy="50" r="34" fill="${c}" />`;
+  const R = c => `<circle cx="80" cy="50" r="34" fill="${c}" />`;
+  let body='';
+  const open = `<svg viewBox="0 0 130 100" width="${size}" height="${size*100/130}" xmlns="http://www.w3.org/2000/svg" role="img">`;
+  // clip for intersection
+  const defs = `<defs><clipPath id="cl-${type}"><circle cx="50" cy="50" r="34"/></clipPath></defs>`;
+  const ring = `<circle cx="50" cy="50" r="34" fill="none" stroke="${stroke}" stroke-width="1.4"/>
+                <circle cx="80" cy="50" r="34" fill="none" stroke="${stroke}" stroke-width="1.4"/>`;
+  const labelL = `<text x="34" y="92" fill="${M}" font-size="9" font-family="monospace" text-anchor="middle">EMP</text>`;
+  const labelR = `<text x="96" y="92" fill="${M}" font-size="9" font-family="monospace" text-anchor="middle">DEPT</text>`;
+  const inter = c => `<g clip-path="url(#cl-${type})"><circle cx="80" cy="50" r="34" fill="${c}"/></g>`;
+
+  if(type==='inner'){
+    body = inter(T);
+  } else if(type==='left'){
+    body = L(A) + inter(T);
+  } else if(type==='right'){
+    body = R(V) + inter(T);
+  } else if(type==='full'){
+    body = L(A) + R(V) + inter(T);
+  } else if(type==='cross'){
+    body = `<circle cx="50" cy="50" r="34" fill="${T}" opacity=".55"/><circle cx="80" cy="50" r="34" fill="${T}" opacity=".55"/>`;
+  } else if(type==='self'){
+    body = `<circle cx="65" cy="50" r="34" fill="${T}" opacity=".4" stroke="${stroke}"/>
+            <text x="65" y="54" fill="var(--ink)" font-size="11" font-family="monospace" text-anchor="middle">A=A</text>`;
+    return open+defs+body+'</svg>';
+  }
+  return open + defs + body + ring + labelL + labelR + '</svg>';
+}
+
+/* ============================================================
+   PLAYGROUND
+   ============================================================ */
+const PG = {
+  inner:{
+    name:'INNER JOIN',
+    cap:'intersection only',
+    sql:`<span class="kw">SELECT</span> *\n<span class="kw">FROM</span> employees e\n<span class="kw">INNER JOIN</span> departments d\n  <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    explain:'Only rows where the key matches on <b>both</b> sides survive. David (dept 50), Eve (NULL), and Marketing (no staff) are all dropped. This is the default — writing just <code>JOIN</code> means <code>INNER JOIN</code>.'
+  },
+  left:{
+    name:'LEFT JOIN',
+    cap:'all left + matches',
+    sql:`<span class="kw">SELECT</span> *\n<span class="kw">FROM</span> employees e\n<span class="kw">LEFT JOIN</span> departments d\n  <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    explain:'Keeps <b>every employee</b>. Matches fill in department columns; non-matches (David, Eve) get NULLs on the right. Marketing still vanishes — it lives only on the right. This is the most-used outer join in practice.'
+  },
+  right:{
+    name:'RIGHT JOIN',
+    cap:'all right + matches',
+    sql:`<span class="kw">SELECT</span> *\n<span class="kw">FROM</span> employees e\n<span class="kw">RIGHT JOIN</span> departments d\n  <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    explain:'Mirror image of LEFT: keeps <b>every department</b>. Marketing appears with NULL employee columns. David and Eve disappear because they match no department. Any RIGHT JOIN can be rewritten as a LEFT JOIN by swapping table order.'
+  },
+  full:{
+    name:'FULL OUTER JOIN',
+    cap:'everything from both',
+    sql:`<span class="kw">SELECT</span> *\n<span class="kw">FROM</span> employees e\n<span class="kw">FULL OUTER JOIN</span> departments d\n  <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    explain:'Keeps <b>all rows from both tables</b>. Matched rows join up; unmatched rows from either side appear padded with NULLs. You see all three orphans at once. Not supported in MySQL — emulate with <code>LEFT UNION RIGHT</code>.'
+  },
+  cross:{
+    name:'CROSS JOIN',
+    cap:'every combination',
+    sql:`<span class="kw">SELECT</span> *\n<span class="kw">FROM</span> employees e\n<span class="kw">CROSS JOIN</span> departments d;\n<span class="cm">-- no ON clause</span>`,
+    explain:'The Cartesian product: <b>every employee paired with every department</b> — 5 × 3 = 15 rows. No condition. Useful for generating grids/combinations, dangerous when written by accident (a missing join condition).'
+  }
+};
+let pgCurrent='inner';
+function paintPG(type){
+  pgCurrent=type;
+  const cfg=PG[type];
+  const rows=computeJoin(type);
+  document.getElementById('pg-venn').innerHTML=venn(type);
+  document.getElementById('pg-venn-cap').textContent=cfg.cap;
+  document.getElementById('pg-sql').innerHTML=cfg.sql;
+  document.getElementById('pg-result').innerHTML=renderResult(rows);
+  document.getElementById('pg-explain').innerHTML=cfg.explain;
+  const m=rows.filter(r=>r.kind==='match').length;
+  const l=rows.filter(r=>r.kind==='left').length;
+  const ri=rows.filter(r=>r.kind==='right').length;
+  let meta=`<span>Result: <b>${rows.length}</b> rows</span>`;
+  if(type!=='cross'){
+    meta+=`<span>matched: ${m}</span>`;
+    if(l) meta+=`<span style="color:var(--amber)">left-only: ${l}</span>`;
+    if(ri) meta+=`<span style="color:var(--violet)">right-only: ${ri}</span>`;
+  } else { meta+=`<span>5 × 3 = 15</span>`; }
+  document.getElementById('pg-meta').innerHTML=meta;
+  document.querySelectorAll('#joinbtns button').forEach(b=>b.classList.toggle('active',b.dataset.j===type));
+}
+document.getElementById('joinbtns').addEventListener('click',e=>{
+  if(e.target.dataset.j) paintPG(e.target.dataset.j);
+});
+
+/* ============================================================
+   DETAIL CARDS
+   ============================================================ */
+const selfData = [
+  {emp_id:1,name:'Alice',mgr:null},
+  {emp_id:2,name:'Bob',mgr:1},
+  {emp_id:3,name:'Carol',mgr:1},
+  {emp_id:4,name:'David',mgr:2},
+  {emp_id:5,name:'Eve',mgr:2}
+];
+function selfTable(){
+  let s='<div class="panel" style="overflow-x:auto"><h4>Result <span class="pill">INNER self-join</span></h4>'+
+    '<table class="data"><thead><tr><th>employee</th><th>reports to</th></tr></thead><tbody>';
+  selfData.forEach(e=>{
+    const m=selfData.find(x=>x.emp_id===e.mgr);
+    if(m) s+=`<tr class="r-match"><td>${e.name}</td><td>${m.name}</td></tr>`;
+  });
+  s+='</tbody></table></div>';
+  return s;
+}
+
+const cards = [
+  {
+    id:'inner', title:'INNER JOIN', syn:'JOIN', type:'inner',
+    blurb:'Returns only rows that have a match in both tables. The intersection.',
+    sql:`<span class="kw">SELECT</span> e.name, d.dept_name\n<span class="kw">FROM</span> employees e\n<span class="kw">JOIN</span> departments d <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    note:'<b>Mental model:</b> "Show me employees <em>and</em> their department — skip anyone without one." The most common join.',
+    warn:null
+  },
+  {
+    id:'left', title:'LEFT OUTER JOIN', syn:'LEFT JOIN', type:'left',
+    blurb:'Returns all rows from the left table, plus matched data from the right. Unmatched right side becomes NULL.',
+    sql:`<span class="kw">SELECT</span> e.name, d.dept_name\n<span class="kw">FROM</span> employees e\n<span class="kw">LEFT JOIN</span> departments d <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    note:'<b>Mental model:</b> "Show me <em>all</em> employees, and their department <em>if they have one</em>." The word OUTER is optional.',
+    warn:'<b>Anti-join trick:</b> add <code>WHERE d.dept_id IS NULL</code> to find left rows with <em>no</em> match — here that returns David and Eve.'
+  },
+  {
+    id:'right', title:'RIGHT OUTER JOIN', syn:'RIGHT JOIN', type:'right',
+    blurb:'Returns all rows from the right table, plus matched data from the left. Unmatched left side becomes NULL.',
+    sql:`<span class="kw">SELECT</span> e.name, d.dept_name\n<span class="kw">FROM</span> employees e\n<span class="kw">RIGHT JOIN</span> departments d <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    note:'<b>Mental model:</b> "Show me <em>all</em> departments, and who works there <em>if anyone does</em>." Marketing shows up empty.',
+    warn:'<b>Rarely used:</b> most teams standardize on LEFT JOIN and reorder tables, since <code>A RIGHT JOIN B</code> ≡ <code>B LEFT JOIN A</code>.'
+  },
+  {
+    id:'full', title:'FULL OUTER JOIN', syn:'FULL JOIN', type:'full',
+    blurb:'Returns all rows from both tables. Matched rows combine; unmatched rows from either side are padded with NULLs.',
+    sql:`<span class="kw">SELECT</span> e.name, d.dept_name\n<span class="kw">FROM</span> employees e\n<span class="kw">FULL OUTER JOIN</span> departments d <span class="kw">ON</span> e.dept_id = d.dept_id;`,
+    note:'<b>Mental model:</b> "Show me everything from both sides; line them up where you can." Great for reconciliation / diff reports.',
+    warn:'<b>MySQL has no FULL JOIN.</b> Emulate it: <code>(LEFT JOIN) UNION (RIGHT JOIN)</code>.'
+  },
+  {
+    id:'cross', title:'CROSS JOIN', syn:'Cartesian product', type:'cross',
+    blurb:'Pairs every row of the left table with every row of the right table. No ON condition.',
+    sql:`<span class="kw">SELECT</span> e.name, d.dept_name\n<span class="kw">FROM</span> employees e\n<span class="kw">CROSS JOIN</span> departments d;`,
+    note:'<b>Mental model:</b> "Every possible pairing." Row count = left × right (5 × 3 = 15). Handy for building calendars, size/color grids, test matrices.',
+    warn:'<b>Accidental cross joins</b> are a classic bug — forget the ON clause (or use comma syntax <code>FROM a, b</code>) and you explode row counts.'
+  },
+  {
+    id:'self', title:'SELF JOIN', syn:'a table joined to itself', type:'self',
+    blurb:'Not a separate keyword — any join where a table is joined to itself using two aliases. Perfect for hierarchies.',
+    sql:`<span class="cm">-- employees(emp_id, name, manager_id)</span>\n<span class="kw">SELECT</span> e.name <span class="st">AS</span> employee,\n       m.name <span class="st">AS</span> manager\n<span class="kw">FROM</span> employees e\n<span class="kw">JOIN</span> employees m <span class="kw">ON</span> e.manager_id = m.emp_id;`,
+    note:'<b>Mental model:</b> treat one alias as "the row" and the other as "the related row." Used for manager→report, parent→child, prev→next comparisons.',
+    warn:'<b>Aliases are mandatory.</b> Without <code>e</code> and <code>m</code> the engine can\'t tell the two copies apart.',
+    extra:'self'
+  },
+  {
+    id:'natural', title:'NATURAL JOIN', syn:'auto-match same-named columns', type:'inner',
+    blurb:'Automatically joins on every column that shares a name in both tables — no ON clause. Here that\'s dept_id.',
+    sql:`<span class="kw">SELECT</span> name, dept_name\n<span class="kw">FROM</span> employees\n<span class="kw">NATURAL JOIN</span> departments;\n<span class="cm">-- implicitly: ON employees.dept_id = departments.dept_id</span>`,
+    note:'<b>Mental model:</b> "Join on whatever columns happen to share a name." Gives the same 3 rows as INNER here.',
+    warn:'<b>Avoid in production.</b> It silently breaks the moment someone adds a same-named column (e.g. <code>created_at</code>) to either table. Be explicit with ON instead.'
+  }
+];
+
+function renderCards(){
+  const host=document.getElementById('cards');
+  host.innerHTML = cards.map(c=>{
+    let resultBlock='';
+    if(c.extra==='self'){
+      resultBlock = selfTable();
+    } else if(c.type!=='self'){
+      resultBlock = renderResult(computeJoin(c.type)).replace('class="panel"','class="panel" data-r');
+    }
+    const warnBlock = c.warn ? `<div class="keynote warn"><span>⚠️</span><div>${c.warn}</div></div>` : '';
+    return `<div class="jcard" id="card-${c.id}">
+      <div class="head">
+        <div class="venn-wrap"><div>${venn(c.type,120)}</div></div>
+        <div class="meta">
+          <h3>${c.title}<span class="syn">${c.syn}</span></h3>
+          <p class="note" style="margin:.2em 0 0">${c.blurb}</p>
+        </div>
+      </div>
+      <div class="codeblock">${c.sql}</div>
+      <div class="keynote"><span>🧠</span><div>${c.note}</div></div>
+      ${warnBlock}
+      <div style="margin-top:16px">${resultBlock}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+const QUESTIONS = [
+  {
+    q:'Using our sample tables, how many rows does an <b>INNER JOIN</b> on dept_id return?',
+    code:null,
+    opts:['2','3','5','6'], correct:1,
+    why:'Only Alice, Bob, and Carol have a department that actually exists. David (50), Eve (NULL) and Marketing (no staff) are all excluded.'
+  },
+  {
+    q:'Which join keeps <b>every employee</b>, filling NULLs where no department matches?',
+    code:null,
+    opts:['INNER JOIN','LEFT JOIN','RIGHT JOIN','CROSS JOIN'], correct:1,
+    why:'LEFT JOIN preserves all rows from the left (employees) table and pads the right side with NULL when there is no match — so David and Eve are kept.'
+  },
+  {
+    q:'How many rows does this query return?',
+    code:`SELECT * FROM employees e\nCROSS JOIN departments d;`,
+    opts:['8','12','15','0'], correct:2,
+    why:'CROSS JOIN is the Cartesian product: 5 employees × 3 departments = 15 rows.'
+  },
+  {
+    q:'Which row appears in a <b>RIGHT JOIN</b> (employees ⟕ departments) but NOT in a LEFT JOIN?',
+    code:null,
+    opts:['David with NULL department','Marketing with NULL employee','Eve with NULL department','Alice / Engineering'], correct:1,
+    why:'RIGHT JOIN keeps all departments. Marketing has no employees, so it appears once with NULL employee columns — something a LEFT JOIN would drop.'
+  },
+  {
+    q:'A <b>FULL OUTER JOIN</b> on our tables returns how many rows?',
+    code:null,
+    opts:['3','4','5','6'], correct:3,
+    why:'3 matched rows + David + Eve (left orphans) + Marketing (right orphan) = 6 rows.'
+  },
+  {
+    q:'You want to find employees who belong to <b>no valid department</b>. What completes the query?',
+    code:`SELECT e.name\nFROM employees e\nLEFT JOIN departments d ON e.dept_id = d.dept_id\nWHERE ______ ;`,
+    opts:['d.dept_id IS NULL','d.dept_id IS NOT NULL','e.dept_id = 0','d.dept_name = ""'], correct:0,
+    why:'This is the anti-join pattern: a LEFT JOIN keeps non-matching left rows with NULL right columns, so filtering for d.dept_id IS NULL returns exactly David and Eve.'
+  },
+  {
+    q:'Writing just <code>JOIN</code> (with no prefix) is equivalent to which join?',
+    code:null,
+    opts:['CROSS JOIN','FULL JOIN','INNER JOIN','LEFT JOIN'], correct:2,
+    why:'Plain JOIN defaults to INNER JOIN in standard SQL.'
+  },
+  {
+    q:'Which statement about <b>SELF JOIN</b> is true?',
+    code:null,
+    opts:[
+      'It is a dedicated SQL keyword',
+      'It joins a table to itself using two aliases',
+      'It always returns the Cartesian product',
+      'It can only be an OUTER join'
+    ], correct:1,
+    why:'SELF JOIN isn\'t a keyword — it\'s any join (INNER/LEFT/etc.) where the same table is referenced twice with different aliases, e.g. matching employees to their managers.'
+  },
+  {
+    q:'Why is <b>NATURAL JOIN</b> discouraged in production code?',
+    code:null,
+    opts:[
+      'It is slower than INNER JOIN',
+      'It silently changes behavior if a same-named column is added',
+      'It is not valid SQL',
+      'It only works in MySQL'
+    ], correct:1,
+    why:'It joins on all identically-named columns automatically. Adding a column like created_at to both tables silently alters the join condition — explicit ON clauses are safer.'
+  },
+  {
+    q:'Which database does <b>not</b> support FULL OUTER JOIN natively (requiring a UNION workaround)?',
+    code:null,
+    opts:['PostgreSQL','SQL Server','Oracle','MySQL'], correct:3,
+    why:'MySQL lacks FULL OUTER JOIN; you emulate it by UNION-ing a LEFT JOIN and a RIGHT JOIN.'
+  },
+  {
+    q:'<code>A RIGHT JOIN B</code> is logically equivalent to:',
+    code:null,
+    opts:['A LEFT JOIN B','B LEFT JOIN A','A INNER JOIN B','A CROSS JOIN B'], correct:1,
+    why:'Swapping the table order flips left/right: A RIGHT JOIN B ≡ B LEFT JOIN A. That\'s why many teams only ever write LEFT JOINs.'
+  },
+  {
+    q:'In a LEFT JOIN, Eve has <code>dept_id = NULL</code>. What appears in her dept_name column?',
+    code:null,
+    opts:['Empty string','0','NULL','An error'], correct:2,
+    why:'NULL never equals anything (not even NULL) in a join condition, so Eve matches no department and her right-side columns are NULL.'
+  }
+];
+
+let mode='learning';
+let answered={}; let score=0;
+function setMode(m){
+  mode=m;
+  document.getElementById('m-learn').classList.toggle('active',m==='learning');
+  document.getElementById('m-exam').classList.toggle('active',m==='exam');
+  resetQuiz();
+}
+function buildQuiz(){
+  const host=document.getElementById('quiz');
+  document.getElementById('total').textContent=QUESTIONS.length;
+  host.innerHTML=QUESTIONS.map((item,i)=>{
+    const codeHtml=item.code?`<div class="qcode">${item.code.replace(/\b(SELECT|FROM|LEFT|RIGHT|INNER|FULL|OUTER|CROSS|JOIN|ON|WHERE|IS|NULL|NOT|AS)\b/g,'<span class="kw">$1</span>')}</div>`:'';
+    const opts=item.opts.map((o,j)=>
+      `<button class="opt" data-q="${i}" data-o="${j}" onclick="answer(${i},${j})">
+        <span class="mark">${String.fromCharCode(65+j)}</span><span>${o}</span></button>`).join('');
+    return `<div class="q" id="q-${i}">
+      <div class="qnum">Question ${i+1}</div>
+      <div class="qtext">${item.q}</div>
+      ${codeHtml}
+      <div class="opts">${opts}</div>
+      <div class="feedback" id="fb-${i}"></div>
+    </div>`;
+  }).join('');
+  // exam mode submit button
+  document.getElementById('quizfoot').innerHTML = mode==='exam'
+    ? `<button class="btn" onclick="submitExam()">Submit exam</button>` : '';
+}
+function answer(qi,oi){
+  if(answered[qi]!==undefined) return;
+  answered[qi]=oi;
+  const item=QUESTIONS[qi];
+  const correct=oi===item.correct;
+  if(correct) score++;
+  if(mode==='learning'){
+    revealQuestion(qi);
+    document.getElementById('score').textContent=score;
+    if(Object.keys(answered).length===QUESTIONS.length) finish();
+  } else {
+    // exam: just mark selection, no reveal
+    const btn=document.querySelector(`.opt[data-q="${qi}"][data-o="${oi}"]`);
+    document.querySelectorAll(`.opt[data-q="${qi}"]`).forEach(b=>b.style.borderColor='var(--line)');
+    btn.style.borderColor='var(--teal)';
+  }
+}
+function revealQuestion(qi){
+  const item=QUESTIONS[qi];
+  const chosen=answered[qi];
+  document.querySelectorAll(`.opt[data-q="${qi}"]`).forEach(b=>{
+    const o=+b.dataset.o; b.disabled=true; b.style.borderColor='';
+    if(o===item.correct) b.classList.add('correct');
+    else if(o===chosen) b.classList.add('wrong');
+  });
+  const fb=document.getElementById('fb-'+qi);
+  const ok=chosen===item.correct;
+  fb.innerHTML=`<b>${ok?'✓ Correct.':'✗ Not quite.'}</b> ${item.why}`;
+  fb.classList.add('show');
+}
+function submitExam(){
+  QUESTIONS.forEach((_,i)=>{ if(answered[i]!==undefined) revealQuestion(i); });
+  document.getElementById('score').textContent=score;
+  document.getElementById('quizfoot').innerHTML='';
+  finish();
+}
+function finish(){
+  const card=document.getElementById('resultcard');
+  document.getElementById('finalscore').textContent=score+' / '+QUESTIONS.length;
+  const pct=Math.round(score/QUESTIONS.length*100);
+  let msg;
+  if(pct===100) msg='Flawless. You could write the join chapter yourself.';
+  else if(pct>=80) msg='Strong — outer joins and NULL semantics are clearly clicking.';
+  else if(pct>=60) msg='Solid foundation. Revisit FULL OUTER and the anti-join pattern.';
+  else msg='Worth another pass through the playground — focus on what happens to orphan rows.';
+  document.getElementById('finalmsg').textContent=msg+` (${pct}%)`;
+  card.classList.add('show');
+  card.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function resetQuiz(){
+  answered={}; score=0;
+  document.getElementById('score').textContent=0;
+  document.getElementById('resultcard').classList.remove('show');
+  buildQuiz();
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function showTab(t){
+  document.getElementById('view-learn').classList.toggle('hidden',t!=='learn');
+  document.getElementById('view-quiz').classList.toggle('hidden',t!=='quiz');
+  document.getElementById('tab-learn').classList.toggle('active',t==='learn');
+  document.getElementById('tab-quiz').classList.toggle('active',t==='quiz');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+paintPG('inner');
+renderCards();
+buildQuiz();
+</script>
+</body>
+</html>

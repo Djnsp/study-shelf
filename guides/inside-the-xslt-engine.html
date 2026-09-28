@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inside the XSLT Engine — How XML Gets Transformed</title>
+<style>
+  :root{
+    --bg:#0E1116;
+    --surface:#161B22;
+    --surface2:#1C232C;
+    --line:#2A3340;
+    --ink:#E6EDF3;
+    --muted:#93A1B0;
+    --src:#4FD1C5;      /* teal  = source XML  */
+    --xsl:#B794F4;      /* violet = XSLT stylesheet */
+    --eng:#F6AD55;      /* amber = the engine  */
+    --out:#9AE66E;      /* green = output      */
+    --codebg:#0A0D12;
+    --maxw:940px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;line-height:1.7;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  /* ---------- typography ---------- */
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:600;line-height:1.25;letter-spacing:.2px}
+  h1{font-size:clamp(2rem,5vw,3.1rem);margin-bottom:14px}
+  h2{font-size:clamp(1.5rem,3vw,2rem);margin:0 0 16px}
+  h3{font-size:1.2rem;margin:28px 0 10px;color:var(--ink)}
+  p{margin:0 0 16px;color:var(--ink)}
+  p.lead{font-size:1.15rem;color:var(--muted)}
+  .eyebrow{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--eng);margin-bottom:10px;display:block;
+  }
+  a{color:var(--src)}
+  strong{color:#fff}
+  /* ---------- layout blocks ---------- */
+  header.hero{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+  section{padding:56px 0;border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:none}
+  .stepnum{
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;
+    color:var(--muted);letter-spacing:.15em;
+  }
+  /* ---------- callouts ---------- */
+  .analogy{
+    background:var(--surface);border-left:3px solid var(--eng);
+    border-radius:0 10px 10px 0;padding:18px 20px;margin:22px 0;
+  }
+  .analogy .tag{
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.7rem;
+    letter-spacing:.15em;text-transform:uppercase;color:var(--eng);
+    display:block;margin-bottom:6px;
+  }
+  .analogy p{margin:0;color:var(--ink)}
+  .note{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:10px;padding:16px 20px;margin:22px 0;color:var(--muted);
+    font-size:.95rem;
+  }
+  .note b{color:var(--ink)}
+  /* ---------- code ---------- */
+  pre{
+    background:var(--codebg);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;overflow-x:auto;margin:18px 0;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.85rem;line-height:1.6;
+  }
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.86em;background:var(--surface2);border:1px solid var(--line);
+    padding:1px 6px;border-radius:5px;color:var(--src);
+  }
+  pre code{background:none;border:none;padding:0;color:var(--ink)}
+  .c-tag{color:var(--src)}       /* xml tags */
+  .c-xtag{color:var(--xsl)}      /* xslt tags */
+  .c-attr{color:var(--eng)}      /* attribute names */
+  .c-val{color:#E9C46A}          /* attribute values */
+  .c-txt{color:var(--ink)}
+  .c-out{color:var(--out)}
+  .c-com{color:#5C6773;font-style:italic}
+  .codelabel{
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.7rem;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    margin:20px 0 -12px;display:block;
+  }
+  /* ---------- figures ---------- */
+  figure{margin:28px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px}
+  figure svg{width:100%;height:auto;display:block}
+  figcaption{
+    margin-top:12px;font-size:.85rem;color:var(--muted);
+    border-top:1px dashed var(--line);padding-top:10px;
+  }
+  /* ---------- legend ---------- */
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 4px;font-size:.8rem;
+    font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  /* ---------- tables ---------- */
+  table{width:100%;border-collapse:collapse;margin:20px 0;font-size:.92rem}
+  th{
+    text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);border-bottom:2px solid var(--line);padding:10px 12px;
+  }
+  td{border-bottom:1px solid var(--line);padding:10px 12px;vertical-align:top}
+  td:first-child{white-space:nowrap}
+  td code{white-space:nowrap}
+  /* ---------- table of contents ---------- */
+  nav.toc{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:22px 26px;margin:34px 0 0;
+  }
+  nav.toc ol{list-style:none;counter-reset:toc;columns:2;column-gap:36px}
+  nav.toc li{counter-increment:toc;margin:7px 0;break-inside:avoid}
+  nav.toc a{
+    color:var(--ink);text-decoration:none;font-size:.95rem;
+  }
+  nav.toc a:hover{color:var(--src)}
+  nav.toc li::before{
+    content:counter(toc,decimal-leading-zero);
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.72rem;
+    color:var(--eng);margin-right:10px;
+  }
+  /* ---------- pipeline animation ---------- */
+  .flow{stroke-dasharray:6 7;animation:flow 1.4s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-13}}
+  @media (prefers-reduced-motion:reduce){.flow{animation:none}}
+  @media (max-width:640px){
+    nav.toc ol{columns:1}
+    body{font-size:16px}
+  }
+  footer{padding:40px 0 60px;color:var(--muted);font-size:.85rem}
+  .kv{color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Field Guide · XML Transformation</span>
+    <h1>Inside the XSLT Engine</h1>
+    <p class="lead">What actually happens between the moment you feed an XML file and a stylesheet
+    into an XSLT processor, and the moment a finished document comes out the other side —
+    explained in plain language, one stage at a time.</p>
+
+    <div class="legend">
+      <span><i class="dot" style="background:var(--src)"></i>Source XML</span>
+      <span><i class="dot" style="background:var(--xsl)"></i>XSLT stylesheet</span>
+      <span><i class="dot" style="background:var(--eng)"></i>Engine / processor</span>
+      <span><i class="dot" style="background:var(--out)"></i>Output</span>
+    </div>
+
+    <figure aria-label="High level XSLT pipeline">
+      <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" role="img">
+        <!-- Source XML doc -->
+        <g>
+          <rect x="20" y="30" width="150" height="100" rx="10" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+          <text x="95" y="60" fill="#4FD1C5" font-size="15" text-anchor="middle" font-family="Georgia,serif">Source XML</text>
+          <text x="95" y="84" fill="#93A1B0" font-size="11" text-anchor="middle" font-family="monospace">&lt;orders&gt;…&lt;/orders&gt;</text>
+          <text x="95" y="106" fill="#5C6773" font-size="10" text-anchor="middle">the data</text>
+        </g>
+        <!-- XSLT stylesheet -->
+        <g>
+          <rect x="20" y="170" width="150" height="100" rx="10" fill="none" stroke="#B794F4" stroke-width="2"/>
+          <text x="95" y="200" fill="#B794F4" font-size="15" text-anchor="middle" font-family="Georgia,serif">XSLT Stylesheet</text>
+          <text x="95" y="224" fill="#93A1B0" font-size="11" text-anchor="middle" font-family="monospace">&lt;xsl:template&gt;</text>
+          <text x="95" y="246" fill="#5C6773" font-size="10" text-anchor="middle">the recipe</text>
+        </g>
+        <!-- pipes into engine -->
+        <path class="flow" d="M170 80 C 240 80, 250 120, 310 135" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+        <path class="flow" d="M170 220 C 240 220, 250 180, 310 165" fill="none" stroke="#B794F4" stroke-width="2"/>
+        <!-- Engine -->
+        <g>
+          <rect x="315" y="75" width="290" height="150" rx="14" fill="#161B22" stroke="#F6AD55" stroke-width="2.5"/>
+          <text x="460" y="105" fill="#F6AD55" font-size="17" text-anchor="middle" font-family="Georgia,serif">XSLT Engine</text>
+          <text x="460" y="132" fill="#93A1B0" font-size="11" text-anchor="middle">1. Parse both files into trees</text>
+          <text x="460" y="152" fill="#93A1B0" font-size="11" text-anchor="middle">2. Compile &amp; index templates</text>
+          <text x="460" y="172" fill="#93A1B0" font-size="11" text-anchor="middle">3. Walk source, match templates</text>
+          <text x="460" y="192" fill="#93A1B0" font-size="11" text-anchor="middle">4. Build result tree</text>
+          <text x="460" y="212" fill="#93A1B0" font-size="11" text-anchor="middle">5. Serialize to text</text>
+        </g>
+        <!-- pipe out -->
+        <path class="flow" d="M605 150 C 670 150, 680 150, 730 150" fill="none" stroke="#9AE66E" stroke-width="2"/>
+        <polygon points="730,144 742,150 730,156" fill="#9AE66E"/>
+        <!-- Output -->
+        <g>
+          <rect x="745" y="100" width="140" height="100" rx="10" fill="none" stroke="#9AE66E" stroke-width="2"/>
+          <text x="815" y="132" fill="#9AE66E" font-size="15" text-anchor="middle" font-family="Georgia,serif">Result</text>
+          <text x="815" y="156" fill="#93A1B0" font-size="11" text-anchor="middle" font-family="monospace">HTML / XML / CSV</text>
+          <text x="815" y="178" fill="#5C6773" font-size="10" text-anchor="middle">the dish</text>
+        </g>
+      </svg>
+      <figcaption>The whole journey at a glance. Two inputs go in — the data and the recipe — and one transformed document comes out. Everything on this page zooms into what happens inside the amber box.</figcaption>
+    </figure>
+
+    <nav class="toc" aria-label="Table of contents">
+      <ol>
+        <li><a href="#idea">The Big Idea</a></li>
+        <li><a href="#parsing">Parsing: Text Becomes a Tree</a></li>
+        <li><a href="#nodes">The Seven Node Types</a></li>
+        <li><a href="#compile">Compiling the Stylesheet</a></li>
+        <li><a href="#loop">The Transformation Loop</a></li>
+        <li><a href="#matching">Template Matching &amp; Conflicts</a></li>
+        <li><a href="#builtin">Built-in Rules: The Safety Net</a></li>
+        <li><a href="#xpath">The XPath Evaluator</a></li>
+        <li><a href="#functions">The Function Library</a></li>
+        <li><a href="#serialize">Result Tree &amp; Serialization</a></li>
+        <li><a href="#worked">A Full Worked Example</a></li>
+        <li><a href="#versions">XSLT 1.0 vs 2.0 vs 3.0</a></li>
+        <li><a href="#glossary">Glossary</a></li>
+      </ol>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= 1. BIG IDEA ================= -->
+<section id="idea">
+  <div class="wrap">
+    <span class="stepnum">SECTION 01</span>
+    <h2>The Big Idea: Transformation, Not Editing</h2>
+    <p>XSLT (<strong>eXtensible Stylesheet Language Transformations</strong>) never changes your
+    original XML file. It reads it, and following the instructions in a second file — the
+    <strong>stylesheet</strong> — it manufactures a brand-new document from scratch. The source is
+    read-only raw material; the output is a completely separate product.</p>
+
+    <div class="analogy">
+      <span class="tag">Kitchen analogy</span>
+      <p>Think of the XML file as a <strong>basket of ingredients</strong>, the XSLT stylesheet as a
+      <strong>recipe card</strong>, and the XSLT engine as the <strong>chef</strong>. The chef never
+      alters the ingredients in the basket — she picks what the recipe asks for, prepares it the way
+      the recipe says, and plates an entirely new dish. Same basket + different recipe = different
+      dish. Same recipe + different basket = the same style of dish made from new ingredients.</p>
+    </div>
+
+    <p>The second big idea is that XSLT is <strong>declarative and rule-based</strong>, not a
+    step-by-step script. You don't tell the engine <em>"loop over line 4, then print line 7."</em>
+    You hand it a set of rules of the form <em>"whenever you encounter a thing that looks like X, produce Y."</em>
+    The engine decides when and in what order each rule fires as it walks through your data. This is
+    the single biggest mental shift for people coming from procedural languages like Java or Python.</p>
+
+    <p>The third idea: the engine never works on raw text. Both files are first converted into
+    <strong>trees</strong> — in-memory structures of connected nodes — and every operation
+    (matching, selecting, copying) happens on trees. Text only reappears at the very last step.</p>
+  </div>
+</section>
+
+<!-- ================= 2. PARSING ================= -->
+<section id="parsing">
+  <div class="wrap">
+    <span class="stepnum">SECTION 02 · ENGINE STAGE 1</span>
+    <h2>Parsing: Text Becomes a Tree</h2>
+    <p>Your XML file is, physically, just a long string of characters on disk. The first component
+    of the engine — the <strong>XML parser</strong> — reads that string character by character and
+    breaks it up in two passes:</p>
+
+    <h3>Pass A — Tokenizing (the lexer)</h3>
+    <p>The lexer slices the character stream into meaningful chunks called <strong>tokens</strong>:
+    <em>"here is an opening tag", "here is an attribute name", "here is a quoted value",
+    "here is plain text", "here is a closing tag."</em> It's like reading a sentence and identifying
+    which words are nouns and which are verbs before worrying about meaning.</p>
+
+    <h3>Pass B — Tree building (the parser)</h3>
+    <p>The parser consumes those tokens and assembles the <strong>document tree</strong>. Every time
+    it sees an opening tag it creates a node and steps <em>down</em> into it; every closing tag steps
+    back <em>up</em> to the parent. While doing this it enforces <strong>well-formedness</strong>:
+    every tag must close, tags must nest properly, attribute values must be quoted, there must be
+    exactly one root element. If any rule is broken, the whole transformation stops with a fatal
+    error — XML parsers are deliberately unforgiving.</p>
+
+    <figure aria-label="Text to tokens to tree">
+      <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg" role="img">
+        <!-- raw text -->
+        <rect x="15" y="55" width="240" height="140" rx="10" fill="#0A0D12" stroke="#2A3340"/>
+        <text x="135" y="42" fill="#93A1B0" font-size="12" text-anchor="middle" font-family="monospace">RAW CHARACTERS</text>
+        <text x="30" y="85" fill="#E6EDF3" font-size="12" font-family="monospace">&lt;order id="7"&gt;</text>
+        <text x="30" y="110" fill="#E6EDF3" font-size="12" font-family="monospace">  &lt;item&gt;Tea&lt;/item&gt;</text>
+        <text x="30" y="135" fill="#E6EDF3" font-size="12" font-family="monospace">&lt;/order&gt;</text>
+        <text x="30" y="172" fill="#5C6773" font-size="10" font-family="monospace">…just a string</text>
+        <!-- arrow -->
+        <path class="flow" d="M255 125 L 305 125" stroke="#F6AD55" stroke-width="2" fill="none"/>
+        <polygon points="305,119 316,125 305,131" fill="#F6AD55"/>
+        <!-- tokens -->
+        <rect x="320" y="55" width="230" height="140" rx="10" fill="#0A0D12" stroke="#2A3340"/>
+        <text x="435" y="42" fill="#93A1B0" font-size="12" text-anchor="middle" font-family="monospace">TOKENS (lexer)</text>
+        <text x="335" y="85" fill="#4FD1C5" font-size="11" font-family="monospace">START_TAG order</text>
+        <text x="335" y="107" fill="#F6AD55" font-size="11" font-family="monospace">ATTR id = "7"</text>
+        <text x="335" y="129" fill="#4FD1C5" font-size="11" font-family="monospace">START_TAG item</text>
+        <text x="335" y="151" fill="#E6EDF3" font-size="11" font-family="monospace">TEXT "Tea"</text>
+        <text x="335" y="173" fill="#4FD1C5" font-size="11" font-family="monospace">END_TAG ×2</text>
+        <!-- arrow -->
+        <path class="flow" d="M550 125 L 600 125" stroke="#F6AD55" stroke-width="2" fill="none"/>
+        <polygon points="600,119 611,125 600,131" fill="#F6AD55"/>
+        <!-- tree -->
+        <rect x="615" y="30" width="270" height="195" rx="10" fill="#0A0D12" stroke="#2A3340"/>
+        <text x="750" y="20" fill="#93A1B0" font-size="12" text-anchor="middle" font-family="monospace">TREE (parser)</text>
+        <circle cx="750" cy="65" r="17" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+        <text x="750" y="70" fill="#4FD1C5" font-size="10" text-anchor="middle" font-family="monospace">order</text>
+        <line x1="738" y1="78" x2="690" y2="115" stroke="#2A3340" stroke-width="1.5"/>
+        <line x1="762" y1="78" x2="810" y2="115" stroke="#2A3340" stroke-width="1.5"/>
+        <rect x="655" y="115" width="70" height="28" rx="6" fill="none" stroke="#F6AD55" stroke-width="1.5"/>
+        <text x="690" y="133" fill="#F6AD55" font-size="10" text-anchor="middle" font-family="monospace">@id="7"</text>
+        <circle cx="810" cy="130" r="16" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+        <text x="810" y="134" fill="#4FD1C5" font-size="10" text-anchor="middle" font-family="monospace">item</text>
+        <line x1="810" y1="146" x2="810" y2="180" stroke="#2A3340" stroke-width="1.5"/>
+        <rect x="775" y="180" width="70" height="28" rx="6" fill="none" stroke="#E6EDF3" stroke-width="1.5"/>
+        <text x="810" y="198" fill="#E6EDF3" font-size="10" text-anchor="middle" font-family="monospace">"Tea"</text>
+      </svg>
+      <figcaption>The parser's two passes: characters → labelled tokens → a linked tree of nodes. From this point on, the engine forgets the original text existed.</figcaption>
+    </figure>
+
+    <p>The tree the engine builds follows a formal specification — in XSLT 1.0 it's called the
+    <strong>XPath data model</strong>; in 2.0+ it's the <strong>XDM (XQuery and XPath Data Model)</strong>.
+    A few surprising things happen during this conversion:</p>
+    <ul style="margin:0 0 16px 24px;line-height:1.9">
+      <li><strong>Entities are resolved</strong> — <code>&amp;amp;</code> in the file becomes a plain <code>&amp;</code> character in the tree.</li>
+      <li><strong>CDATA sections disappear</strong> — their contents become ordinary text nodes.</li>
+      <li><strong>Adjacent text merges</strong> — you never get two text nodes side by side.</li>
+      <li><strong>Attribute order is not preserved</strong> — attributes hang off their element as an unordered set.</li>
+      <li><strong>Whitespace between tags becomes text nodes too</strong> — the indentation in a pretty-printed file is real data unless the engine is told to strip it (<code>&lt;xsl:strip-space&gt;</code>).</li>
+    </ul>
+
+    <div class="note"><b>Why a tree and not a search through text?</b> Because a tree gives every
+    piece of data an <em>address</em> and a <em>family</em>: each node knows its parent, its children,
+    and its siblings. That family structure is exactly what XPath expressions like
+    <code>order/item</code> navigate. String-searching raw text could never answer a question like
+    "give me the second child of this node's grandparent."</div>
+  </div>
+</section>
+
+<!-- ================= 3. NODE TYPES ================= -->
+<section id="nodes">
+  <div class="wrap">
+    <span class="stepnum">SECTION 03 · THE DATA MODEL</span>
+    <h2>The Seven Node Types</h2>
+    <p>When the document is broken up into a tree, every fragment of the file becomes one of exactly
+    <strong>seven kinds of node</strong>. Everything XSLT ever touches is one of these:</p>
+
+    <table>
+      <thead><tr><th>Node type</th><th>Comes from</th><th>Layman's description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Root (document)</strong></td><td>The file itself</td><td>An invisible node <em>above</em> the top element. XPath calls it <code>/</code>. The whole transformation starts here.</td></tr>
+        <tr><td><strong>Element</strong></td><td><code>&lt;order&gt;…&lt;/order&gt;</code></td><td>The containers. The branches of the tree — they can hold other nodes.</td></tr>
+        <tr><td><strong>Attribute</strong></td><td><code>id="7"</code></td><td>Name–value labels stuck onto an element. Oddly, an attribute's parent is its element, but the element does <em>not</em> count the attribute as a child.</td></tr>
+        <tr><td><strong>Text</strong></td><td><code>Tea</code></td><td>The actual character data. Always a leaf — text can't contain anything.</td></tr>
+        <tr><td><strong>Comment</strong></td><td><code>&lt;!-- note --&gt;</code></td><td>Notes for humans. Present in the tree, ignored by default rules.</td></tr>
+        <tr><td><strong>Processing instruction</strong></td><td><code>&lt;?target data?&gt;</code></td><td>Messages for software (e.g. linking a stylesheet in a browser).</td></tr>
+        <tr><td><strong>Namespace</strong></td><td><code>xmlns:wd="…"</code></td><td>Invisible bookkeeping nodes that record which vocabulary each prefix belongs to.</td></tr>
+      </tbody>
+    </table>
+
+    <figure aria-label="Node tree for a sample XML document">
+      <svg viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg" role="img">
+        <!-- source snippet -->
+        <rect x="15" y="40" width="300" height="200" rx="10" fill="#0A0D12" stroke="#2A3340"/>
+        <text x="165" y="28" fill="#93A1B0" font-size="12" text-anchor="middle" font-family="monospace">ORDERS.XML</text>
+        <text x="30" y="72" fill="#4FD1C5" font-size="12" font-family="monospace">&lt;orders&gt;</text>
+        <text x="30" y="97" fill="#5C6773" font-size="12" font-family="monospace">  &lt;!-- July batch --&gt;</text>
+        <text x="30" y="122" fill="#4FD1C5" font-size="12" font-family="monospace">  &lt;order <tspan fill="#F6AD55">id</tspan>=<tspan fill="#E9C46A">"7"</tspan>&gt;</text>
+        <text x="30" y="147" fill="#4FD1C5" font-size="12" font-family="monospace">    &lt;item&gt;<tspan fill="#E6EDF3">Tea</tspan>&lt;/item&gt;</text>
+        <text x="30" y="172" fill="#4FD1C5" font-size="12" font-family="monospace">    &lt;qty&gt;<tspan fill="#E6EDF3">2</tspan>&lt;/qty&gt;</text>
+        <text x="30" y="197" fill="#4FD1C5" font-size="12" font-family="monospace">  &lt;/order&gt;</text>
+        <text x="30" y="222" fill="#4FD1C5" font-size="12" font-family="monospace">&lt;/orders&gt;</text>
+        <!-- arrow -->
+        <path class="flow" d="M320 140 L 365 140" stroke="#F6AD55" stroke-width="2" fill="none"/>
+        <polygon points="365,134 376,140 365,146" fill="#F6AD55"/>
+        <!-- tree -->
+        <!-- root -->
+        <rect x="560" y="20" width="90" height="30" rx="15" fill="#161B22" stroke="#93A1B0" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="605" y="40" fill="#93A1B0" font-size="11" text-anchor="middle" font-family="monospace">/ root</text>
+        <line x1="605" y1="50" x2="605" y2="80" stroke="#2A3340" stroke-width="1.5"/>
+        <!-- orders -->
+        <rect x="555" y="80" width="100" height="32" rx="8" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+        <text x="605" y="101" fill="#4FD1C5" font-size="12" text-anchor="middle" font-family="monospace">orders</text>
+        <line x1="570" y1="112" x2="480" y2="155" stroke="#2A3340" stroke-width="1.5"/>
+        <line x1="640" y1="112" x2="720" y2="155" stroke="#2A3340" stroke-width="1.5"/>
+        <!-- comment -->
+        <rect x="400" y="155" width="150" height="30" rx="8" fill="none" stroke="#5C6773" stroke-width="1.5"/>
+        <text x="475" y="175" fill="#5C6773" font-size="11" text-anchor="middle" font-family="monospace"># July batch</text>
+        <!-- order -->
+        <rect x="672" y="155" width="90" height="32" rx="8" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+        <text x="717" y="176" fill="#4FD1C5" font-size="12" text-anchor="middle" font-family="monospace">order</text>
+        <!-- attribute (dashed side link) -->
+        <line x1="762" y1="171" x2="820" y2="171" stroke="#F6AD55" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <rect x="820" y="156" width="72" height="30" rx="8" fill="none" stroke="#F6AD55" stroke-width="1.5"/>
+        <text x="856" y="176" fill="#F6AD55" font-size="11" text-anchor="middle" font-family="monospace">@id=7</text>
+        <line x1="695" y1="187" x2="630" y2="235" stroke="#2A3340" stroke-width="1.5"/>
+        <line x1="740" y1="187" x2="800" y2="235" stroke="#2A3340" stroke-width="1.5"/>
+        <!-- item -->
+        <rect x="588" y="235" width="84" height="30" rx="8" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+        <text x="630" y="255" fill="#4FD1C5" font-size="12" text-anchor="middle" font-family="monospace">item</text>
+        <line x1="630" y1="265" x2="630" y2="300" stroke="#2A3340" stroke-width="1.5"/>
+        <rect x="595" y="300" width="70" height="28" rx="8" fill="none" stroke="#E6EDF3" stroke-width="1.5"/>
+        <text x="630" y="318" fill="#E6EDF3" font-size="11" text-anchor="middle" font-family="monospace">"Tea"</text>
+        <!-- qty -->
+        <rect x="760" y="235" width="80" height="30" rx="8" fill="none" stroke="#4FD1C5" stroke-width="2"/>
+        <text x="800" y="255" fill="#4FD1C5" font-size="12" text-anchor="middle" font-family="monospace">qty</text>
+        <line x1="800" y1="265" x2="800" y2="300" stroke="#2A3340" stroke-width="1.5"/>
+        <rect x="768" y="300" width="64" height="28" rx="8" fill="none" stroke="#E6EDF3" stroke-width="1.5"/>
+        <text x="800" y="318" fill="#E6EDF3" font-size="11" text-anchor="middle" font-family="monospace">"2"</text>
+        <!-- annotations -->
+        <text x="605" y="370" fill="#5C6773" font-size="11" text-anchor="middle" font-family="monospace">solid lines = parent/child · dashed = attribute attachment</text>
+      </svg>
+      <figcaption>The same small file as text (left) and as the tree the engine actually works with (right). Note the invisible root node sitting above &lt;orders&gt;, the comment appearing as a real node, and the attribute hanging off to the side rather than as a child.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= 4. COMPILE STYLESHEET ================= -->
+<section id="compile">
+  <div class="wrap">
+    <span class="stepnum">SECTION 04 · ENGINE STAGE 2</span>
+    <h2>Compiling the Stylesheet</h2>
+    <p>Here's a fact many people miss: <strong>the XSLT stylesheet is itself an XML file</strong>,
+    so it goes through the exact same parser and becomes a tree too. But the engine doesn't stop
+    there — it <strong>compiles</strong> that tree into an efficient internal program:</p>
+
+    <ul style="margin:0 0 16px 24px;line-height:1.9">
+      <li><strong>Template rules are extracted.</strong> Every <code>&lt;xsl:template match="…"&gt;</code>
+      becomes a rule: a compiled <em>pattern</em> (the condition) plus a <em>body</em> (what to produce).</li>
+      <li><strong>Rules are indexed.</strong> Templates get sorted into fast lookup buckets — typically
+      by the node name they match — so the engine doesn't have to test every rule against every node.
+      Saxon, for instance, builds a hash table keyed on element names.</li>
+      <li><strong>XPath expressions are pre-compiled.</strong> Every <code>select="…"</code> and
+      <code>match="…"</code> string is parsed once, up front, into an expression tree — never re-parsed
+      during the run.</li>
+      <li><strong>Includes and imports are resolved.</strong> <code>&lt;xsl:include&gt;</code> pastes rules
+      in as equals; <code>&lt;xsl:import&gt;</code> pulls rules in at a <em>lower precedence</em>, like a
+      base class that can be overridden.</li>
+      <li><strong>Global variables, parameters, keys and output settings</strong>
+      (<code>&lt;xsl:output&gt;</code>, <code>&lt;xsl:key&gt;</code>) are registered.</li>
+    </ul>
+
+    <div class="analogy">
+      <span class="tag">Analogy</span>
+      <p>Compilation is the chef reading the whole recipe card <strong>before</strong> touching any
+      ingredients — memorizing the steps, laying out the tools, and putting sticky-tabs on the pages
+      so she can flip to "how to handle onions" instantly the moment an onion shows up.</p>
+    </div>
+
+    <div class="note"><b>Performance tip that falls out of this:</b> because compilation is separate
+    from execution, good processors let you compile once and run many times. In Workday Studio or
+    Saxon, transforming 10,000 documents with one stylesheet costs one compilation, not 10,000.</div>
+  </div>
+</section>
+
+<!-- ================= 5. TRANSFORMATION LOOP ================= -->
+<section id="loop">
+  <div class="wrap">
+    <span class="stepnum">SECTION 05 · ENGINE STAGE 3</span>
+    <h2>The Transformation Loop: How the Engine Walks the Tree</h2>
+    <p>Now the real work. The engine runs one beautifully simple loop, over and over, until there's
+    nothing left to process. It works from a to-do list of nodes (formally the
+    <strong>current node list</strong>):</p>
+
+    <figure aria-label="The apply-templates cycle">
+      <svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" role="img">
+        <!-- cycle boxes -->
+        <rect x="330" y="15" width="240" height="58" rx="12" fill="#161B22" stroke="#F6AD55" stroke-width="2"/>
+        <text x="450" y="39" fill="#F6AD55" font-size="13" text-anchor="middle" font-family="Georgia,serif">1 · Take next node</text>
+        <text x="450" y="59" fill="#93A1B0" font-size="11" text-anchor="middle">from the to-do list (starts with root /)</text>
+
+        <rect x="620" y="130" width="250" height="58" rx="12" fill="#161B22" stroke="#B794F4" stroke-width="2"/>
+        <text x="745" y="154" fill="#B794F4" font-size="13" text-anchor="middle" font-family="Georgia,serif">2 · Find best template</text>
+        <text x="745" y="174" fill="#93A1B0" font-size="11" text-anchor="middle">whose match pattern fits this node</text>
+
+        <rect x="330" y="250" width="240" height="58" rx="12" fill="#161B22" stroke="#9AE66E" stroke-width="2"/>
+        <text x="450" y="274" fill="#9AE66E" font-size="13" text-anchor="middle" font-family="Georgia,serif">3 · Run its body</text>
+        <text x="450" y="294" fill="#93A1B0" font-size="11" text-anchor="middle">writing nodes into the result tree</text>
+
+        <rect x="30" y="130" width="250" height="58" rx="12" fill="#161B22" stroke="#4FD1C5" stroke-width="2"/>
+        <text x="155" y="154" fill="#4FD1C5" font-size="13" text-anchor="middle" font-family="Georgia,serif">4 · apply-templates?</text>
+        <text x="155" y="174" fill="#93A1B0" font-size="11" text-anchor="middle">selected children join the to-do list</text>
+
+        <!-- cycle arrows -->
+        <path class="flow" d="M572 60 C 680 75, 730 90, 745 128" fill="none" stroke="#93A1B0" stroke-width="1.8"/>
+        <polygon points="740,120 747,131 750,118" fill="#93A1B0"/>
+        <path class="flow" d="M740 190 C 720 240, 640 265, 574 273" fill="none" stroke="#93A1B0" stroke-width="1.8"/>
+        <polygon points="580,267 571,274 582,279" fill="#93A1B0"/>
+        <path class="flow" d="M328 273 C 230 265, 165 240, 152 191" fill="none" stroke="#93A1B0" stroke-width="1.8"/>
+        <polygon points="147,200 151,188 158,199" fill="#93A1B0"/>
+        <path class="flow" d="M160 128 C 180 80, 250 58, 326 47" fill="none" stroke="#93A1B0" stroke-width="1.8"/>
+        <polygon points="319,42 329,46 320,53" fill="#93A1B0"/>
+        <text x="450" y="168" fill="#5C6773" font-size="12" text-anchor="middle" font-family="monospace">repeat until</text>
+        <text x="450" y="186" fill="#5C6773" font-size="12" text-anchor="middle" font-family="monospace">to-do list is empty</text>
+      </svg>
+      <figcaption>The heartbeat of every XSLT processor. Recursion is built in: step 4 feeds new nodes back into step 1. The transformation ends naturally when no template adds anything more to the list.</figcaption>
+    </figure>
+
+    <p>In plain words:</p>
+    <ol style="margin:0 0 16px 24px;line-height:1.9">
+      <li>The engine puts a single node on its to-do list: the <strong>root node</strong> <code>/</code>.</li>
+      <li>It asks, <em>"which template rule matches this node best?"</em> and runs that rule's body.</li>
+      <li>Inside the body, the instruction <code>&lt;xsl:apply-templates/&gt;</code> means
+      <em>"now go do the same thing for my children"</em> — those children get queued, and the loop continues.</li>
+      <li>Anything a template body produces — literal tags, copied values, computed text — is stitched
+      into the growing <strong>result tree</strong>.</li>
+    </ol>
+
+    <div class="analogy">
+      <span class="tag">Analogy</span>
+      <p>Imagine a mail-sorting office. Envelopes (nodes) arrive on a conveyor. Each envelope is held
+      up against a wall of pigeonhole rules ("addressed to Finance → do this", "marked Urgent → do
+      that"). Handling one envelope often shakes more envelopes out of it — the ones inside — and
+      they go back on the conveyor. The office closes when the conveyor is empty.</p>
+    </div>
+
+    <h3>Context: the engine's "you are here" marker</h3>
+    <p>At every moment inside the loop, the engine maintains a <strong>context</strong> — three
+    pieces of situational awareness that every XPath expression silently depends on:</p>
+    <table>
+      <thead><tr><th>Context part</th><th>Meaning</th><th>How you see it</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Context node</strong></td><td>The node being processed right now</td><td>Relative paths like <code>item</code> or <code>.</code> start from it</td></tr>
+        <tr><td><strong>Context position</strong></td><td>Where this node sits in the current batch (1-based)</td><td><code>position()</code></td></tr>
+        <tr><td><strong>Context size</strong></td><td>How many nodes are in the batch</td><td><code>last()</code></td></tr>
+      </tbody>
+    </table>
+    <p>Every <code>&lt;xsl:apply-templates&gt;</code> and <code>&lt;xsl:for-each&gt;</code> swaps in a fresh
+    context, which is why the same expression can mean different things in different templates —
+    it's always answered <em>relative to where the engine is standing</em>.</p>
+  </div>
+</section>
+
+<!-- ================= 6. MATCHING ================= -->
+<section id="matching">
+  <div class="wrap">
+    <span class="stepnum">SECTION 06 · THE PATTERN MATCHER</span>
+    <h2>Template Matching &amp; Conflict Resolution</h2>
+    <p>Step 2 of the loop — <em>"find the best template"</em> — deserves its own section, because
+    several templates can legitimately match the same node. The engine breaks ties with a strict,
+    deterministic ladder:</p>
+
+    <figure aria-label="Conflict resolution ladder">
+      <svg viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg" role="img">
+        <rect x="40" y="30" width="250" height="70" rx="10" fill="#161B22" stroke="#B794F4" stroke-width="2"/>
+        <text x="165" y="58" fill="#B794F4" font-size="13" text-anchor="middle" font-family="Georgia,serif">1 · Import precedence</text>
+        <text x="165" y="80" fill="#93A1B0" font-size="11" text-anchor="middle">your rules beat imported rules</text>
+        <path class="flow" d="M290 65 L 330 65" stroke="#93A1B0" stroke-width="1.8" fill="none"/>
+        <polygon points="330,59 341,65 330,71" fill="#93A1B0"/>
+        <rect x="345" y="30" width="230" height="70" rx="10" fill="#161B22" stroke="#B794F4" stroke-width="2"/>
+        <text x="460" y="58" fill="#B794F4" font-size="13" text-anchor="middle" font-family="Georgia,serif">2 · Priority</text>
+        <text x="460" y="80" fill="#93A1B0" font-size="11" text-anchor="middle">explicit, or computed from pattern</text>
+        <path class="flow" d="M575 65 L 615 65" stroke="#93A1B0" stroke-width="1.8" fill="none"/>
+        <polygon points="615,59 626,65 615,71" fill="#93A1B0"/>
+        <rect x="630" y="30" width="230" height="70" rx="10" fill="#161B22" stroke="#B794F4" stroke-width="2"/>
+        <text x="745" y="58" fill="#B794F4" font-size="13" text-anchor="middle" font-family="Georgia,serif">3 · Last one wins</text>
+        <text x="745" y="80" fill="#93A1B0" font-size="11" text-anchor="middle">still tied? later in file wins*</text>
+        <text x="450" y="150" fill="#5C6773" font-size="12" text-anchor="middle" font-family="monospace">* technically a "recoverable error" — processors may warn, then pick the last</text>
+        <text x="450" y="200" fill="#93A1B0" font-size="13" text-anchor="middle" font-family="Georgia,serif">More specific patterns naturally get higher default priority</text>
+      </svg>
+      <figcaption>The tie-breaking ladder the pattern matcher climbs when several templates claim the same node.</figcaption>
+    </figure>
+
+    <p>The clever part is <strong>default priority</strong>: if you don't write a
+    <code>priority</code> attribute, the engine assigns one from how specific the pattern looks.
+    The rule of thumb — <em>the more you had to type, the more you meant it</em>:</p>
+
+    <table>
+      <thead><tr><th>Pattern</th><th>Default priority</th><th>Reads as</th></tr></thead>
+      <tbody>
+        <tr><td><code>node()</code> / <code>*</code></td><td>−0.5 / −0.25</td><td>"anything at all" — weakest claim</td></tr>
+        <tr><td><code>order</code></td><td>0</td><td>"any element named order"</td></tr>
+        <tr><td><code>order[@status='open']</code></td><td>0.5</td><td>"an order with a condition" — strongest claim</td></tr>
+      </tbody>
+    </table>
+
+    <p>So if a node is an open order, all three templates above match it — but the engine picks the
+    conditional one, because it's the most specific promise the stylesheet author made.</p>
+
+    <h3>Modes: parallel sets of rules</h3>
+    <p>A template can carry a <code>mode</code> (e.g. <code>mode="summary"</code>). Think of modes
+    as <strong>separate rule books</strong> for the same data: the engine only consults rules from
+    the book named in <code>&lt;xsl:apply-templates mode="summary"&gt;</code>. This is how one stylesheet
+    can render the same nodes twice — once as a table of contents, once as full detail.</p>
+  </div>
+</section>
+
+<!-- ================= 7. BUILT-IN RULES ================= -->
+<section id="builtin">
+  <div class="wrap">
+    <span class="stepnum">SECTION 07 · THE SAFETY NET</span>
+    <h2>Built-in Rules: Why Text "Leaks" Through</h2>
+    <p>What if a node reaches step 2 and <strong>no template in your stylesheet matches it</strong>?
+    The engine never shrugs — it falls back on invisible <strong>built-in template rules</strong>
+    baked into every processor:</p>
+
+    <table>
+      <thead><tr><th>Node with no match</th><th>Built-in behaviour</th></tr></thead>
+      <tbody>
+        <tr><td>Root, elements</td><td><strong>Keep walking</strong> — silently apply templates to the children. Produces no output itself.</td></tr>
+        <tr><td>Text, attributes</td><td><strong>Copy the value</strong> into the output.</td></tr>
+        <tr><td>Comments, processing instructions</td><td><strong>Do nothing</strong> — dropped.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Combined, these two behaviours explain the classic beginner mystery: run an empty stylesheet
+    against any XML file and you get <em>all the text content, concatenated, with every tag stripped</em>.
+    The built-ins tunneled down through every element (rule 1) and copied out every text node
+    (rule 2). That "leaking text" isn't a bug — it's the safety net firing.</p>
+
+    <div class="note"><b>Debugging heuristic:</b> unexpected stray text in your output almost always
+    means a node you forgot to write a template for, and the built-in rules carried its text through.
+    Adding <code>&lt;xsl:template match="text()"/&gt;</code> (an empty rule) silences the net.</div>
+  </div>
+</section>
+
+<!-- ================= 8. XPATH ================= -->
+<section id="xpath">
+  <div class="wrap">
+    <span class="stepnum">SECTION 08 · THE NAVIGATOR</span>
+    <h2>The XPath Evaluator: How the Engine Finds Things</h2>
+    <p>Every <code>match</code> and <code>select</code> attribute contains an <strong>XPath
+    expression</strong> — a little address written in its own mini-language. Inside the engine, a
+    dedicated component (the <strong>XPath evaluator</strong>) executes these addresses against the
+    tree. An expression is built from <strong>steps</strong>, each with three parts:</p>
+
+    <pre><code><span class="c-attr">axis</span> :: <span class="c-tag">node-test</span> [ <span class="c-attr">predicate</span> ]
+
+<span class="c-com">e.g.   child::order[@status='open']
+       "from where I stand, look at my CHILDREN,
+        keep only ones named ORDER,
+        keep only those whose status attribute says open"</span></code></pre>
+
+    <p>The <strong>axis</strong> is the direction of travel from the context node. Thirteen exist;
+    these cover 95% of real work:</p>
+
+    <figure aria-label="XPath axes around a context node">
+      <svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" role="img">
+        <!-- ancestor chain -->
+        <circle cx="450" cy="50" r="20" fill="none" stroke="#B794F4" stroke-width="1.5"/>
+        <text x="450" y="55" fill="#B794F4" font-size="10" text-anchor="middle" font-family="monospace">gp</text>
+        <line x1="450" y1="70" x2="450" y2="105" stroke="#2A3340" stroke-width="1.5"/>
+        <circle cx="450" cy="125" r="20" fill="none" stroke="#B794F4" stroke-width="1.5"/>
+        <text x="450" y="130" fill="#B794F4" font-size="10" text-anchor="middle" font-family="monospace">par</text>
+        <text x="560" y="90" fill="#B794F4" font-size="12" font-family="monospace">ancestor:: / parent::</text>
+        <text x="560" y="108" fill="#5C6773" font-size="10" font-family="monospace">up the family line</text>
+        <line x1="450" y1="145" x2="450" y2="185" stroke="#2A3340" stroke-width="1.5"/>
+        <!-- siblings -->
+        <circle cx="230" cy="215" r="24" fill="none" stroke="#4FD1C5" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="230" y="220" fill="#4FD1C5" font-size="9" text-anchor="middle" font-family="monospace">sibling</text>
+        <text x="230" y="265" fill="#4FD1C5" font-size="11" text-anchor="middle" font-family="monospace">preceding-sibling::</text>
+        <circle cx="670" cy="215" r="24" fill="none" stroke="#4FD1C5" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="670" y="220" fill="#4FD1C5" font-size="9" text-anchor="middle" font-family="monospace">sibling</text>
+        <text x="670" y="265" fill="#4FD1C5" font-size="11" text-anchor="middle" font-family="monospace">following-sibling::</text>
+        <line x1="254" y1="215" x2="416" y2="212" stroke="#2A3340" stroke-width="1" stroke-dasharray="3 4"/>
+        <line x1="646" y1="215" x2="484" y2="212" stroke="#2A3340" stroke-width="1" stroke-dasharray="3 4"/>
+        <!-- context node -->
+        <circle cx="450" cy="212" r="27" fill="#F6AD55" opacity="0.15"/>
+        <circle cx="450" cy="212" r="27" fill="none" stroke="#F6AD55" stroke-width="2.5"/>
+        <text x="450" y="209" fill="#F6AD55" font-size="10" text-anchor="middle" font-family="monospace">context</text>
+        <text x="450" y="222" fill="#F6AD55" font-size="10" text-anchor="middle" font-family="monospace">node (.)</text>
+        <!-- attribute -->
+        <line x1="477" y1="200" x2="545" y2="178" stroke="#F6AD55" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <rect x="545" y="163" width="90" height="26" rx="7" fill="none" stroke="#F6AD55" stroke-width="1.2"/>
+        <text x="590" y="180" fill="#F6AD55" font-size="10" text-anchor="middle" font-family="monospace">attribute::@</text>
+        <!-- children -->
+        <line x1="430" y1="232" x2="360" y2="290" stroke="#2A3340" stroke-width="1.5"/>
+        <line x1="470" y1="232" x2="540" y2="290" stroke="#2A3340" stroke-width="1.5"/>
+        <circle cx="355" cy="310" r="20" fill="none" stroke="#9AE66E" stroke-width="1.5"/>
+        <circle cx="545" cy="310" r="20" fill="none" stroke="#9AE66E" stroke-width="1.5"/>
+        <text x="450" y="315" fill="#9AE66E" font-size="12" text-anchor="middle" font-family="monospace">child::</text>
+        <line x1="355" y1="330" x2="355" y2="365" stroke="#2A3340" stroke-width="1.5"/>
+        <line x1="545" y1="330" x2="545" y2="365" stroke="#2A3340" stroke-width="1.5"/>
+        <circle cx="355" cy="382" r="16" fill="none" stroke="#9AE66E" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <circle cx="545" cy="382" r="16" fill="none" stroke="#9AE66E" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="450" y="388" fill="#9AE66E" font-size="12" text-anchor="middle" font-family="monospace">descendant:: (//)</text>
+        <!-- self label -->
+        <text x="330" y="180" fill="#5C6773" font-size="11" text-anchor="end" font-family="monospace">self:: (.)</text>
+        <line x1="338" y1="185" x2="422" y2="205" stroke="#5C6773" stroke-width="1" stroke-dasharray="2 4"/>
+      </svg>
+      <figcaption>The compass the XPath evaluator navigates by. Every expression is a walk starting from the amber "you are here" node. Shorthand: child:: is the default axis, // means descendant-or-self, @ means attribute, .. means parent.</figcaption>
+    </figure>
+
+    <h3>How the evaluator executes a path</h3>
+    <p>A path like <code>/orders/order[qty &gt; 1]/item</code> runs left to right, and each step
+    <strong>filters and re-feeds</strong> the next:</p>
+    <ol style="margin:0 0 16px 24px;line-height:1.9">
+      <li><code>/</code> — start at the root node. Working set: {root}.</li>
+      <li><code>orders</code> — from each node in the set, collect children named orders. Set: {&lt;orders&gt;}.</li>
+      <li><code>order[qty &gt; 1]</code> — collect order children, then run the <strong>predicate</strong>
+      on each one: momentarily make it the context node, evaluate <code>qty &gt; 1</code>, keep it only
+      if the test is true.</li>
+      <li><code>item</code> — from the survivors, collect item children. That final set is the answer.</li>
+    </ol>
+    <p>The result of an XPath expression is always one of four value types (1.0 model):
+    a <strong>node-set</strong>, a <strong>string</strong>, a <strong>number</strong>, or a
+    <strong>boolean</strong> — and the evaluator freely converts between them (a node-set used where
+    a boolean is needed becomes "true if non-empty," which is exactly how predicates like
+    <code>order[note]</code> work).</p>
+  </div>
+</section>
+
+<!-- ================= 9. FUNCTION LIBRARY ================= -->
+<section id="functions">
+  <div class="wrap">
+    <span class="stepnum">SECTION 09 · THE TOOLBOX</span>
+    <h2>The Function Library</h2>
+    <p>Bolted onto the XPath evaluator is a <strong>function library</strong> — the built-in tools
+    an expression can call. These are the ones an engine reaches for constantly:</p>
+
+    <h3>Asking "where am I?"</h3>
+    <table>
+      <tbody>
+        <tr><td><code>position()</code></td><td>My number in the current batch (great for striping table rows, or "add a comma unless last").</td></tr>
+        <tr><td><code>last()</code></td><td>The batch size.</td></tr>
+        <tr><td><code>current()</code></td><td>The node the template is processing — useful inside predicates where <code>.</code> has temporarily moved.</td></tr>
+        <tr><td><code>name()</code> / <code>local-name()</code></td><td>The node's tag name, with / without its namespace prefix.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Working with text</h3>
+    <table>
+      <tbody>
+        <tr><td><code>string(x)</code></td><td>Convert anything to text. For an element: all its descendant text glued together.</td></tr>
+        <tr><td><code>concat(a,b,…)</code></td><td>Glue strings together.</td></tr>
+        <tr><td><code>substring(s,start,len)</code></td><td>Slice a string (1-based, not 0-based!).</td></tr>
+        <tr><td><code>substring-before / -after</code></td><td>Split around a separator — the classic way to peel apart "2026-07-05".</td></tr>
+        <tr><td><code>contains(s, t)</code></td><td>Is t anywhere inside s?</td></tr>
+        <tr><td><code>normalize-space(s)</code></td><td>Trim ends and collapse inner runs of whitespace to single spaces — the #1 data-cleaning tool.</td></tr>
+        <tr><td><code>translate(s, from, to)</code></td><td>Character-by-character swap; the 1.0 trick for case conversion and stripping characters.</td></tr>
+        <tr><td><code>string-length(s)</code></td><td>Count characters.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Numbers and node-sets</h3>
+    <table>
+      <tbody>
+        <tr><td><code>number(x)</code>, <code>sum(set)</code></td><td>Convert to a number; total a node-set (e.g. <code>sum(order/qty)</code>).</td></tr>
+        <tr><td><code>count(set)</code></td><td>How many nodes matched.</td></tr>
+        <tr><td><code>round / floor / ceiling</code></td><td>The usual rounding family.</td></tr>
+        <tr><td><code>format-number(n, '#,##0.00')</code></td><td>XSLT's number formatter for money and reports.</td></tr>
+        <tr><td><code>id(x)</code> / <code>key(name, val)</code></td><td>Fast lookups. <code>key()</code> reads a pre-built index declared with <code>&lt;xsl:key&gt;</code> — the engine builds a hash table on first use, turning slow cross-file searches into instant lookups.</td></tr>
+        <tr><td><code>boolean / not / true / false</code></td><td>Logic helpers, mostly inside predicates and <code>&lt;xsl:if test="…"&gt;</code>.</td></tr>
+        <tr><td><code>generate-id(node)</code></td><td>A unique, stable ID the engine invents for any node — handy for building anchors and links.</td></tr>
+        <tr><td><code>document(uri)</code></td><td>Pull in a <em>second</em> XML file mid-transform; it gets parsed into its own tree.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note"><b>XSLT 2.0/3.0 grew this toolbox enormously</b> — regular expressions
+    (<code>matches()</code>, <code>replace()</code>, <code>tokenize()</code>), real date/time arithmetic
+    (<code>format-date()</code>, <code>current-dateTime()</code>), proper case functions
+    (<code>upper-case()</code>, <code>lower-case()</code>), sequences, and user-defined
+    <code>&lt;xsl:function&gt;</code>s callable from any XPath expression.</div>
+  </div>
+</section>
+
+<!-- ================= 10. SERIALIZATION ================= -->
+<section id="serialize">
+  <div class="wrap">
+    <span class="stepnum">SECTION 10 · ENGINE STAGES 4–5</span>
+    <h2>The Result Tree &amp; Serialization</h2>
+    <p>Notice what templates have been doing all along: they don't print text — they <strong>emit
+    nodes</strong>. Literal tags in a template body, <code>&lt;xsl:element&gt;</code>,
+    <code>&lt;xsl:attribute&gt;</code>, <code>&lt;xsl:value-of&gt;</code>, <code>&lt;xsl:copy-of&gt;</code>… all of
+    them add branches to a third tree growing in memory: the <strong>result tree</strong>.</p>
+
+    <p>Only when the last template finishes does the final component — the
+    <strong>serializer</strong> — walk that result tree top to bottom and write it out as actual
+    characters. The <code>&lt;xsl:output&gt;</code> declaration is its instruction sheet:</p>
+
+    <table>
+      <thead><tr><th>Setting</th><th>What the serializer does</th></tr></thead>
+      <tbody>
+        <tr><td><code>method="xml"</code></td><td>Writes strict XML: every tag closed, special characters escaped (<code>&amp;</code> → <code>&amp;amp;</code>), optional XML declaration.</td></tr>
+        <tr><td><code>method="html"</code></td><td>Writes browser-friendly HTML: knows <code>&lt;br&gt;</code> has no closing tag, doesn't escape inside <code>&lt;script&gt;</code>.</td></tr>
+        <tr><td><code>method="text"</code></td><td>Writes <em>only text node values</em> — no tags, no escaping. This is how XSLT produces CSVs, fixed-width payroll files, and EDI documents.</td></tr>
+        <tr><td><code>indent="yes"</code></td><td>Pretty-prints with line breaks and indentation.</td></tr>
+        <tr><td><code>encoding="UTF-8"</code></td><td>Chooses the byte encoding of the file.</td></tr>
+        <tr><td><code>omit-xml-declaration</code></td><td>Suppresses the <code>&lt;?xml …?&gt;</code> first line.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="analogy">
+      <span class="tag">Analogy</span>
+      <p>The result tree is the finished dish being assembled on the plate; serialization is the
+      waiter carrying it out and describing it in the language the diner speaks — formal French
+      (XML), casual English (HTML), or just the bare list of ingredients (text).</p>
+    </div>
+
+    <div class="note"><b>Why the escaping "just works":</b> because output goes through a tree, you
+    physically cannot produce malformed XML by accident — if your data contains <code>&lt;</code>, the
+    serializer escapes it, since in the tree it was only ever a character inside a text node, never
+    a tag. The tree model is the safety mechanism.</div>
+  </div>
+</section>
+
+<!-- ================= 11. WORKED EXAMPLE ================= -->
+<section id="worked">
+  <div class="wrap">
+    <span class="stepnum">SECTION 11 · END TO END</span>
+    <h2>A Full Worked Example, Traced Step by Step</h2>
+    <p>Let's watch the engine run a real transformation from first byte to last, using the loop
+    from Section 05. Here are the two inputs:</p>
+
+    <span class="codelabel" style="color:var(--src)">Input · orders.xml</span>
+    <pre><code><span class="c-tag">&lt;orders&gt;</span>
+  <span class="c-tag">&lt;order</span> <span class="c-attr">id</span>=<span class="c-val">"7"</span><span class="c-tag">&gt;</span><span class="c-tag">&lt;item&gt;</span><span class="c-txt">Tea</span><span class="c-tag">&lt;/item&gt;</span><span class="c-tag">&lt;qty&gt;</span><span class="c-txt">2</span><span class="c-tag">&lt;/qty&gt;</span><span class="c-tag">&lt;/order&gt;</span>
+  <span class="c-tag">&lt;order</span> <span class="c-attr">id</span>=<span class="c-val">"8"</span><span class="c-tag">&gt;</span><span class="c-tag">&lt;item&gt;</span><span class="c-txt">Coffee</span><span class="c-tag">&lt;/item&gt;</span><span class="c-tag">&lt;qty&gt;</span><span class="c-txt">1</span><span class="c-tag">&lt;/qty&gt;</span><span class="c-tag">&lt;/order&gt;</span>
+<span class="c-tag">&lt;/orders&gt;</span></code></pre>
+
+    <span class="codelabel" style="color:var(--xsl)">Input · report.xsl</span>
+    <pre><code><span class="c-xtag">&lt;xsl:stylesheet</span> <span class="c-attr">version</span>=<span class="c-val">"1.0"</span>
+    <span class="c-attr">xmlns:xsl</span>=<span class="c-val">"http://www.w3.org/1999/XSL/Transform"</span><span class="c-xtag">&gt;</span>
+  <span class="c-xtag">&lt;xsl:output</span> <span class="c-attr">method</span>=<span class="c-val">"html"</span> <span class="c-attr">indent</span>=<span class="c-val">"yes"</span><span class="c-xtag">/&gt;</span>
+
+  <span class="c-com">&lt;!-- Rule A : the whole document --&gt;</span>
+  <span class="c-xtag">&lt;xsl:template</span> <span class="c-attr">match</span>=<span class="c-val">"/"</span><span class="c-xtag">&gt;</span>
+    <span class="c-out">&lt;html&gt;&lt;body&gt;&lt;h1&gt;</span><span class="c-txt">Order Report</span><span class="c-out">&lt;/h1&gt;</span>
+      <span class="c-xtag">&lt;xsl:apply-templates</span> <span class="c-attr">select</span>=<span class="c-val">"orders/order"</span><span class="c-xtag">/&gt;</span>
+    <span class="c-out">&lt;/body&gt;&lt;/html&gt;</span>
+  <span class="c-xtag">&lt;/xsl:template&gt;</span>
+
+  <span class="c-com">&lt;!-- Rule B : each order --&gt;</span>
+  <span class="c-xtag">&lt;xsl:template</span> <span class="c-attr">match</span>=<span class="c-val">"order"</span><span class="c-xtag">&gt;</span>
+    <span class="c-out">&lt;p&gt;</span>
+      <span class="c-xtag">&lt;xsl:value-of</span> <span class="c-attr">select</span>=<span class="c-val">"position()"</span><span class="c-xtag">/&gt;</span><span class="c-txt">. </span>
+      <span class="c-xtag">&lt;xsl:value-of</span> <span class="c-attr">select</span>=<span class="c-val">"item"</span><span class="c-xtag">/&gt;</span><span class="c-txt"> × </span>
+      <span class="c-xtag">&lt;xsl:value-of</span> <span class="c-attr">select</span>=<span class="c-val">"qty"</span><span class="c-xtag">/&gt;</span>
+    <span class="c-out">&lt;/p&gt;</span>
+  <span class="c-xtag">&lt;/xsl:template&gt;</span>
+<span class="c-xtag">&lt;/xsl:stylesheet&gt;</span></code></pre>
+
+    <h3>The engine's diary</h3>
+    <table>
+      <thead><tr><th>Tick</th><th>To-do list</th><th>What the engine does</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>—</td><td>Parses both files into trees. Compiles Rule A and Rule B; indexes B under the name "order". Reads <code>&lt;xsl:output&gt;</code>: serializer will speak HTML.</td></tr>
+        <tr><td>1</td><td><code>{ / }</code></td><td>Takes the root node. Pattern matcher: Rule A (<code>match="/"</code>) fits. Runs its body: writes <code>&lt;html&gt;&lt;body&gt;&lt;h1&gt;Order Report&lt;/h1&gt;</code> into the result tree, then hits <code>apply-templates select="orders/order"</code>. XPath evaluator walks the tree and returns both <code>&lt;order&gt;</code> nodes → they join the to-do list <em>as one batch of 2</em>.</td></tr>
+        <tr><td>2</td><td><code>{ order#7, order#8 }</code></td><td>Takes order id=7. Context: node = order#7, position = 1, size = 2. Matcher: Rule B fits (name index makes this instant). Body writes <code>&lt;p&gt;1. Tea × 2&lt;/p&gt;</code> — <code>position()</code> answered 1, <code>item</code> and <code>qty</code> selected the children and <code>value-of</code> took their text.</td></tr>
+        <tr><td>3</td><td><code>{ order#8 }</code></td><td>Takes order id=8. Same rule, new context (position = 2). Writes <code>&lt;p&gt;2. Coffee × 1&lt;/p&gt;</code>. Rule B contains no apply-templates, so nothing new is queued.</td></tr>
+        <tr><td>4</td><td><code>{ }</code></td><td>List empty → transformation over. Serializer walks the result tree and prints the HTML below.</td></tr>
+      </tbody>
+    </table>
+
+    <span class="codelabel" style="color:var(--out)">Output · report.html</span>
+    <pre><code><span class="c-out">&lt;html&gt;
+  &lt;body&gt;
+    &lt;h1&gt;</span><span class="c-txt">Order Report</span><span class="c-out">&lt;/h1&gt;
+    &lt;p&gt;</span><span class="c-txt">1. Tea × 2</span><span class="c-out">&lt;/p&gt;
+    &lt;p&gt;</span><span class="c-txt">2. Coffee × 1</span><span class="c-out">&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</span></code></pre>
+
+    <p>Notice what <em>didn't</em> get any special code: the <code>id</code> attributes and the fact
+    that there were exactly two orders. The stylesheet never says "loop twice" — it says "here is
+    what an order looks like when plated," and the engine's loop applied it as many times as the
+    data demanded. Ten thousand orders would need zero changes.</p>
+
+    <h3>Push vs pull: two ways to drive the same engine</h3>
+    <p>The example above is <strong>push style</strong> — small templates, and
+    <code>apply-templates</code> pushes nodes at them; the <em>data's shape drives the output</em>.
+    The alternative is <strong>pull style</strong>: one big template that uses
+    <code>&lt;xsl:for-each&gt;</code> and <code>&lt;xsl:value-of&gt;</code> to reach in and pull exactly the
+    values it wants; the <em>output's shape drives the walk</em>. Pull suits rigid, predictable
+    documents (an integration file with a fixed layout); push shines when data is variable, deeply
+    nested, or document-like. Under the hood both use the same loop, matcher, and evaluator.</p>
+  </div>
+</section>
+
+<!-- ================= 12. VERSIONS ================= -->
+<section id="versions">
+  <div class="wrap">
+    <span class="stepnum">SECTION 12 · EVOLUTION</span>
+    <h2>XSLT 1.0 vs 2.0 vs 3.0 — What Changed in the Engine</h2>
+    <table>
+      <thead><tr><th>Version</th><th>Engine-level changes, in plain terms</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1.0</strong> (1999)</td><td>The model described on this page. Four value types, one output file per run, no regex, no real dates. Ubiquitous — it's what browsers and many embedded processors (including Workday Studio's XSLT steps at 1.0 level via Xalan-type engines) support.</td></tr>
+        <tr><td><strong>2.0</strong> (2007)</td><td>The data model is rebuilt on <strong>sequences</strong> (ordered lists of nodes <em>and</em> plain values) with optional schema-aware typing. Adds regex, date/time math, grouping (<code>xsl:for-each-group</code>), multiple output files (<code>xsl:result-document</code>), and user-defined functions. Saxon is the reference engine.</td></tr>
+        <tr><td><strong>3.0</strong> (2017)</td><td>The headline is <strong>streaming</strong>: with <code>&lt;xsl:mode streamable="yes"&gt;</code> the engine can transform a file <em>without building the full source tree</em> — it processes nodes as they fly past the parser, in one forward pass, using constant memory. Gigabyte files become feasible. Also adds <code>xsl:try/catch</code>, maps and arrays, JSON support, and packages.</td></tr>
+      </tbody>
+    </table>
+    <div class="note"><b>Streaming is the one change that breaks the mental model on this page:</b>
+    a streaming transform gives up the freedom to look backwards or sideways (no
+    <code>preceding-sibling::</code>, no revisiting), because the tree behind the read head no longer
+    exists. It's the difference between studying a printed map and navigating from a moving train
+    window.</div>
+  </div>
+</section>
+
+<!-- ================= 13. GLOSSARY ================= -->
+<section id="glossary">
+  <div class="wrap">
+    <span class="stepnum">SECTION 13 · REFERENCE</span>
+    <h2>Glossary</h2>
+    <table>
+      <tbody>
+        <tr><td><strong>Parser / lexer</strong></td><td>The component that turns raw XML text into tokens, then into a node tree, while checking well-formedness.</td></tr>
+        <tr><td><strong>Well-formed</strong></td><td>Obeys XML's grammar rules (matching tags, one root, quoted attributes). Distinct from <em>valid</em>, which means "also matches a schema/DTD."</td></tr>
+        <tr><td><strong>Node</strong></td><td>One unit of the tree — root, element, attribute, text, comment, processing instruction, or namespace.</td></tr>
+        <tr><td><strong>Template rule</strong></td><td>A pattern ("when you see this…") plus a body ("…produce this").</td></tr>
+        <tr><td><strong>Pattern matcher</strong></td><td>The component that picks the single best template for a node, using import precedence → priority → document order.</td></tr>
+        <tr><td><strong>Context (node / position / size)</strong></td><td>The engine's "you are here" marker; the silent starting point of every relative XPath expression.</td></tr>
+        <tr><td><strong>XPath evaluator</strong></td><td>The component that executes address expressions (axes, node-tests, predicates) against a tree.</td></tr>
+        <tr><td><strong>Predicate</strong></td><td>The filter in square brackets: <code>order[qty &gt; 1]</code>.</td></tr>
+        <tr><td><strong>Built-in template rules</strong></td><td>Invisible fallback rules that walk through unmatched elements and copy out unmatched text.</td></tr>
+        <tr><td><strong>Result tree</strong></td><td>The output document under construction, in memory, as nodes.</td></tr>
+        <tr><td><strong>Serializer</strong></td><td>The component that converts the result tree into characters, per <code>&lt;xsl:output&gt;</code>.</td></tr>
+        <tr><td><strong>Push / pull</strong></td><td>Two authoring styles: data drives templates via apply-templates (push) vs one template pulls values with for-each/value-of (pull).</td></tr>
+        <tr><td><strong>Streaming (3.0)</strong></td><td>Transforming during a single forward pass of the parser, without materializing the whole source tree.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="kv">Inside the XSLT Engine — a plain-language field guide. Self-contained HTML, no external dependencies; works fully offline.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Detailed Guide to Concrete Mathematics</title>
+<style>
+  /* ── Workday Canvas Design System color tokens (@workday/canvas-colors-web) ── */
+  :root {
+    color-scheme: light;
+    --surface-1: #ffffff;   /* frenchVanilla100 · common-background */
+    --page: #f0f1f2;        /* soap200 · common-background-alt */
+    --ink: #333333;         /* blackPepper400 · type-heading */
+    --ink-2: #494949;       /* blackPepper300 · type-body */
+    --muted: #5e6a75;       /* licorice300 · type-hint */
+    --grid: #dfe2e6;        /* soap400 · common-divider */
+    --baseline: #ced3d9;    /* soap500 */
+    --accent: #0875e1;      /* blueberry400 · primary / type-link */
+    --accent-deep: #005cb9; /* blueberry500 · status-active */
+    --accent-soft: #d7eafc; /* blueberry100 */
+    --good: #217a37;        /* greenApple600 (text-safe success) */
+    --border: #dfe2e6;      /* soap400 */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-1: #1f262e; /* licorice600 */
+      --page: #1e1e1e;      /* blackPepper500 */
+      --ink: #ffffff;       /* frenchVanilla100 */
+      --ink-2: #ced3d9;     /* soap500 */
+      --muted: #a1aab3;     /* licorice100 */
+      --grid: #333d47;      /* licorice500 */
+      --baseline: #4a5561;  /* licorice400 */
+      --accent: #40a0ff;    /* blueberry300 */
+      --accent-deep: #a6d2ff; /* blueberry200 */
+      --accent-soft: #004387; /* blueberry600 */
+      --good: #5fe380;      /* greenApple300 */
+      --border: #333d47;    /* licorice500 */
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Roboto", "Helvetica Neue", Helvetica, system-ui, -apple-system, "Segoe UI", sans-serif; /* Canvas type stack */
+    background: var(--page); color: var(--ink); line-height: 1.6; font-size: 15px;
+  }
+  .layout { display: flex; max-width: 1180px; margin: 0 auto; gap: 24px; padding: 24px 16px 80px; }
+  nav.side {
+    flex: 0 0 230px; position: sticky; top: 20px; align-self: flex-start;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 14px; max-height: calc(100vh - 40px); overflow-y: auto;
+  }
+  nav.side .nt { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 10px 0 4px; }
+  nav.side a { display: block; font-size: 13px; color: var(--ink-2); text-decoration: none; padding: 3px 8px; border-radius: 6px; }
+  nav.side a:hover { background: var(--accent-soft); color: var(--ink); }
+  main { flex: 1; min-width: 0; }
+  @media (max-width: 800px) { nav.side { display: none; } }
+
+  .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 26px 30px; margin-bottom: 18px; }
+  h1 { font-size: 28px; letter-spacing: -0.02em; line-height: 1.2; }
+  .sub { color: var(--ink-2); margin-top: 6px; }
+  h2 { font-size: 20px; margin-bottom: 4px; letter-spacing: -0.01em; }
+  h3 { font-size: 15px; margin: 18px 0 6px; }
+  h4 { font-size: 13.5px; margin: 14px 0 4px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; }
+  p { margin: 8px 0; color: var(--ink); }
+  p.dim, li.dim { color: var(--ink-2); }
+  .meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+  .meta b { color: var(--ink-2); font-weight: 600; }
+  .pages { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .diff { color: var(--accent); letter-spacing: 2px; }
+
+  ul, ol { margin: 8px 0 8px 22px; }
+  li { margin: 4px 0; }
+  .formula {
+    background: var(--page); border: 1px solid var(--grid); border-radius: 8px;
+    padding: 10px 14px; margin: 10px 0; font-family: Georgia, "Times New Roman", serif;
+    font-size: 15.5px; overflow-x: auto;
+  }
+  .formula .fname { display:block; font-family: system-ui, sans-serif; font-size: 11.5px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .05em; }
+  var { font-style: italic; }
+  .frac { display: inline-block; vertical-align: middle; text-align: center; }
+  .frac > span { display: block; padding: 0 4px; }
+  .frac > span:first-child { border-bottom: 1px solid var(--ink); }
+  .binom { display: inline-block; vertical-align: middle; text-align: center; padding: 0 2px; }
+  .binom > span { display: block; line-height: 1.15; }
+  .paren { display: inline-block; vertical-align: middle; font-size: 1.9em; font-weight: 200; line-height: 0.9; }
+
+  .pitfall { border-left: 3px solid #de2e21; background: color-mix(in srgb, #de2e21 5%, var(--surface-1)); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .tip { border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--surface-1)); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .taocp { border-left: 3px solid var(--good); background: color-mix(in srgb, var(--good) 5%, var(--surface-1)); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 14px; }
+  .pitfall b, .tip b, .taocp b { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+  .pitfall b { color: #de2e21; } .tip b { color: var(--accent); } .taocp b { color: var(--good); }
+
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 14px; }
+  th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; padding: 6px 10px; border-bottom: 1px solid var(--baseline); }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  td.sym { font-family: Georgia, serif; font-size: 15px; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; background: var(--page); border: 1px solid var(--grid); border-radius: 4px; padding: 1px 5px; }
+
+  .plain { background: color-mix(in srgb, var(--accent) 4%, var(--surface-1)); border: 1px solid var(--grid); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-size: 14.5px; }
+  .plain > b.t { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-bottom: 4px; }
+  .plain p { margin: 6px 0; }
+
+  details.ex { border: 1px solid var(--grid); border-radius: 8px; margin: 8px 0; background: var(--page); overflow: hidden; }
+  details.ex summary { cursor: pointer; padding: 10px 14px; font-size: 14px; list-style-position: inside; }
+  details.ex summary b { color: var(--ink); }
+  details.ex summary:hover { background: color-mix(in srgb, var(--accent) 5%, var(--page)); }
+  details.ex .sol { padding: 8px 16px 14px; border-top: 1px dashed var(--grid); font-size: 14px; }
+  details.ex .sol p { margin: 6px 0; }
+  .sol .steplbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--good); font-weight: 700; }
+
+  .fig { margin: 16px 0; text-align: center; }
+  .fig svg { max-width: 100%; height: auto; }
+  .fig .cap { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .svgtxt { font-family: system-ui, sans-serif; fill: var(--ink-2); }
+  .svgtxt2 { font-family: system-ui, sans-serif; fill: var(--muted); }
+  .toplink { font-size: 12px; }
+  a { color: var(--accent); }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="side">
+  <div class="nt">Guide</div>
+  <a href="#about">About the book</a>
+  <a href="#howto">How to study it</a>
+  <a href="#exercises">The exercise system</a>
+  <a href="#notation">Notation cheat sheet</a>
+  <a href="#ch0">0 · Absolute basics</a>
+  <div class="nt">Chapters</div>
+  <a href="#ch1">1 · Recurrent Problems</a>
+  <a href="#ch2">2 · Sums</a>
+  <a href="#ch3">3 · Integer Functions</a>
+  <a href="#ch4">4 · Number Theory</a>
+  <a href="#ch5">5 · Binomial Coefficients</a>
+  <a href="#ch6">6 · Special Numbers</a>
+  <a href="#ch7">7 · Generating Functions</a>
+  <a href="#ch8">8 · Discrete Probability</a>
+  <a href="#ch9">9 · Asymptotics</a>
+  <div class="nt">After</div>
+  <a href="#next">The road to TAOCP</a>
+</nav>
+<main>
+
+<div class="card" id="top">
+  <h1>A Detailed Guide to <em>Concrete Mathematics</em></h1>
+  <div class="sub">Graham · Knuth · Patashnik, 2nd edition (1994) — a beginner-friendly, chapter-by-chapter companion for the self-studier heading toward <em>The Art of Computer Programming</em>. Every chapter includes plain-English explanations, real-world examples, diagrams, and practice problems with full solutions (click a problem to reveal its solution).</div>
+</div>
+
+<div class="card" id="about">
+  <h2>About the book</h2>
+  <p><em>Concrete Mathematics</em> grew out of the Stanford course Knuth created in 1970, after discovering while writing TAOCP Volume 1 that the math he needed wasn't what he'd been taught as a math major. The book is an expanded, gentler version of TAOCP's famously terse "Mathematical Preliminaries" section — the authors say so explicitly in the preface. "Concrete" is a pun: it's a blend of <b>CON</b>tinuous and dis<b>CRETE</b> mathematics, and also a manifesto against over-abstraction — math you can compute with.</p>
+  <p>The subject, in one sentence: <em>the controlled manipulation of mathematical formulas</em> — evaluating horrendous-looking sums, solving recurrences, and discovering patterns in data, until you're as fluent with discrete operations (floors, finite sums) as a calculus student is with continuous ones (absolute values, integrals).</p>
+  <p class="dim">Quirks to know before you start: the <b>margin graffiti</b> are real comments from Stanford students — some are jokes, but many flag genuinely confusing spots, so read them; marginal quotations from Euler, Gauss, and others mark where ideas were born; and the math is typeset in AMS Euler, a font designed to look handwritten, because "people create mathematics with pen, pencil, or chalk."</p>
+</div>
+
+<div class="card" id="howto">
+  <h2>How to study it</h2>
+  <h3>The three-pass reading loop</h3>
+  <ol>
+    <li><b>Survey the section</b> (10 min): read headings, displayed equations, and margin notes to see where it's going.</li>
+    <li><b>Work through it with pencil and paper</b>: every time the text says "it follows that" or skips from one displayed equation to the next, <em>you</em> supply the missing steps. In this book a single line can hide twenty minutes of honest work — that's normal and it's where the learning happens.</li>
+    <li><b>Close the book and rederive</b> the section's main result. If you can't, you read it but didn't learn it yet.</li>
+  </ol>
+  <h3>Habits that separate finishers from stallers</h3>
+  <ul>
+    <li><b>Try small cases first.</b> This is the book's own method (it opens Chapter 1 with it): compute n = 1, 2, 3, 4 by hand, guess the pattern, then prove it.</li>
+    <li><b>Keep a growing formula sheet.</b> One page per chapter, rewritten (not copied) at each phase checkpoint.</li>
+    <li><b>Program the math.</b> A ten-line script that brute-force checks an identity for n up to 1000 catches your algebra mistakes and builds real belief in the formulas.</li>
+    <li><b>Two-day rule.</b> Stuck longer than two days on one section: do its warmups anyway, flag it, and move on. Chapters 2's finite calculus and Chapter 7's generating functions almost always need a second pass — the book itself gets easier retroactively.</li>
+  </ul>
+</div>
+
+<div class="card" id="exercises">
+  <h2>The exercise system</h2>
+  <p>Each chapter ends with exercises in six ascending categories. The book states plainly that <b>every reader should try every warmup</b>, and that answers to <em>all</em> exercises are in Appendix A (p. 497) — to be consulted only after a serious attempt.</p>
+  <table>
+    <tr><th>Category</th><th>What it is</th><th>Self-study policy</th></tr>
+    <tr><td><b>Warmups</b></td><td>Immediate checks that you absorbed the reading</td><td>Do all of them, always</td></tr>
+    <tr><td><b>Basics</b></td><td>Facts best learned by deriving them yourself</td><td>Do at least half</td></tr>
+    <tr><td><b>Homework</b></td><td>Deeper problems on the current chapter</td><td>Pick 2–3 per chapter</td></tr>
+    <tr><td><b>Exam problems</b></td><td>Span two or more chapters; take-home difficulty</td><td>Save for checkpoint/review weeks</td></tr>
+    <tr><td><b>Bonus</b></td><td>Beyond the scope of a course</td><td>Optional, second pass</td></tr>
+    <tr><td><b>Research</b></td><td>Possibly unsolved</td><td>Read for fun; don't attempt seriously</td></tr>
+  </table>
+  <div class="tip"><b>Tip</b>The preface's margin says it best: readers who copy answers "are only cheating themselves." But do read the answers <em>after</em> solving — Appendix A often contains extra results and slicker methods than the one you found.</div>
+</div>
+
+<div class="card" id="notation">
+  <h2>Notation cheat sheet</h2>
+  <p>The book warns that some of its notation "has not (yet?) become standard." These are the symbols that trip up new readers; bookmark this table. (Page numbers = where each is defined.)</p>
+  <table>
+    <tr><th>Notation</th><th>Name / meaning</th><th>Page</th></tr>
+    <tr><td class="sym">[P]</td><td><b>Iverson bracket</b>: 1 if statement P is true, else 0. Used constantly to move conditions in and out of sums.</td><td>24</td></tr>
+    <tr><td class="sym">⌊x⌋ , ⌈x⌉</td><td>Floor (greatest integer ≤ x), ceiling (least integer ≥ x)</td><td>67</td></tr>
+    <tr><td class="sym">{x}</td><td>Fractional part: x mod 1 = x − ⌊x⌋</td><td>70</td></tr>
+    <tr><td class="sym">x mod y</td><td>Remainder: x − y⌊x/y⌋ (defined for real x, y!)</td><td>82</td></tr>
+    <tr><td class="sym">x<sup><u>n</u></sup></td><td><b>Falling factorial power</b>: x(x−1)⋯(x−n+1) — the discrete analog of xⁿ</td><td>47</td></tr>
+    <tr><td class="sym">x<sup>n̄</sup></td><td><b>Rising factorial power</b>: x(x+1)⋯(x+n−1)</td><td>48</td></tr>
+    <tr><td class="sym">Σ f(x) δx</td><td>Indefinite (finite) summation — the discrete ∫ f(x) dx</td><td>48</td></tr>
+    <tr><td class="sym">H<sub>n</sub></td><td>Harmonic number 1 + 1/2 + ⋯ + 1/n — the discrete ln</td><td>29</td></tr>
+    <tr><td class="sym">lg x , ln x</td><td>lg = log base 2; ln = natural log; log = base 10</td><td>70, 276</td></tr>
+    <tr><td class="sym">[ⁿₘ] , {ⁿₘ}</td><td>Stirling <b>cycle</b> numbers (brackets, "first kind") and <b>subset</b> numbers (braces, "second kind")</td><td>259, 258</td></tr>
+    <tr><td class="sym">⟨ⁿₘ⟩</td><td>Eulerian numbers (permutations with m ascents)</td><td>267</td></tr>
+    <tr><td class="sym">m ⊥ n</td><td>m is relatively prime to n (gcd = 1)</td><td>115</td></tr>
+    <tr><td class="sym">m \ n</td><td>m divides n; m \\ n means m divides n exactly</td><td>102, 146</td></tr>
+    <tr><td class="sym">[zⁿ] f(z)</td><td>"Coefficient of zⁿ in the power series f(z)" — the key generating-function operator</td><td>197</td></tr>
+  </table>
+  <div class="pitfall"><b>Pitfall</b>The single most disorienting habit for new readers: the book writes conditions <em>inside</em> sums with Iverson brackets, e.g. Σ<sub>k</sub> k·[1 ≤ k ≤ n, k odd], instead of decorating the Σ. Learn this on page 24 and the rest of the book opens up.</div>
+</div>
+
+<div class="card" id="ch0">
+  <h2>Chapter 0 · The absolute basics <span class="pages">not in the book — read this first</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●○○○○</span></span><span><b>Who it's for:</b> anyone starting from high-school math</span></div>
+  <p>The book assumes you can already read three "dialects" of math without slowing down: summation notation, factorials-and-choices, and induction proofs. Here is each one, explained from zero.</p>
+
+  <h3>1. Reading a Σ (sum) out loud</h3>
+  <div class="plain"><b class="t">In plain English</b>
+    <p>Σ is just a <b>for-loop from math class</b>. The letter under the Σ is the loop variable and its starting value; the number on top is where the loop stops; the expression after the Σ is what gets added up each time around.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 560 190" width="560" height="190" role="img" aria-label="Anatomy of summation notation">
+      <text x="150" y="110" font-family="Georgia, serif" font-size="72" fill="var(--accent)">Σ</text>
+      <text x="152" y="140" font-family="Georgia, serif" font-size="20" fill="var(--ink)">k = 1</text>
+      <text x="168" y="45" font-family="Georgia, serif" font-size="20" fill="var(--ink)">5</text>
+      <text x="230" y="100" font-family="Georgia, serif" font-size="30" fill="var(--ink)">k²</text>
+      <line x1="140" y1="132" x2="60" y2="152" stroke="var(--baseline)" stroke-width="1.5"/>
+      <text x="8" y="168" class="svgtxt" font-size="13">start: k begins at 1</text>
+      <line x1="176" y1="38" x2="90" y2="24" stroke="var(--baseline)" stroke-width="1.5"/>
+      <text x="8" y="20" class="svgtxt" font-size="13">stop: k ends at 5</text>
+      <line x1="252" y1="88" x2="330" y2="60" stroke="var(--baseline)" stroke-width="1.5"/>
+      <text x="336" y="56" class="svgtxt" font-size="13">the thing being added each round</text>
+      <text x="336" y="105" class="svgtxt" font-size="14">= 1² + 2² + 3² + 4² + 5²</text>
+      <text x="336" y="128" class="svgtxt" font-size="14">= 1 + 4 + 9 + 16 + 25 = <tspan fill="var(--accent)" font-weight="700">55</tspan></text>
+    </svg>
+    <div class="cap">Anatomy of a sum: Σ is a for-loop. In code: <code>total = 0; for k in 1..5: total += k*k</code></div>
+  </div>
+
+  <h3>2. Factorials and "choices"</h3>
+  <div class="plain"><b class="t">In plain English</b>
+    <p><b>n! (factorial)</b> counts the ways to <em>line up</em> n different things. Five friends in a movie row: the first seat has 5 candidates, the next 4, then 3, 2, 1 — so 5! = 5·4·3·2·1 = 120 arrangements.</p>
+    <p><b>"n choose k"</b> counts ways to <em>pick a group</em> where order doesn't matter. Choosing 2 pizza toppings out of 5: pick-in-order gives 5·4 = 20, but "mushroom then olive" and "olive then mushroom" are the same pizza, so divide by the 2! = 2 orderings: 20/2 = <b>10 pizzas</b>.</p>
+  </div>
+
+  <h3>3. Induction — the domino proof</h3>
+  <div class="plain"><b class="t">In plain English</b>
+    <p>To prove a statement for <em>every</em> n, you don't check infinitely many cases. You check two things: <b>(1)</b> the first domino falls (the statement is true for n = 1), and <b>(2)</b> each falling domino knocks over the next (IF it's true for some n, THEN it's true for n+1). Those two facts together topple the whole infinite line.</p>
+  </div>
+  <p><b>Worked example.</b> Claim: 1 + 2 + ⋯ + n = n(n+1)/2.</p>
+  <ul>
+    <li><b>First domino (n = 1):</b> left side is 1; right side is 1·2/2 = 1. ✓</li>
+    <li><b>Domino n knocks over domino n+1:</b> assume 1+⋯+n = n(n+1)/2 (this assumption is the "induction hypothesis"). Add (n+1) to both sides: 1+⋯+n+(n+1) = n(n+1)/2 + (n+1) = (n+1)(n/2 + 1) = (n+1)(n+2)/2 — which is exactly the formula with n replaced by n+1. ✓</li>
+  </ul>
+
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>0.1</b> — Write out Σ<sub>k=2</sub><sup>4</sup> (2k+1) term by term and evaluate it.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>The loop variable k takes the values 2, 3, 4. Plug each in: (2·2+1) + (2·3+1) + (2·4+1) = 5 + 7 + 9 = <b>21</b>.</p>
+      <p class="dim">Common beginner slip: starting at k = 1. The bottom of the Σ tells you where to start — here it's 2.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>0.2</b> — A team of 4 is chosen from 6 people. How many different teams are possible?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>"6 choose 4" = 6!/(4!·2!) = 720/(24·2) = <b>15</b>.</p>
+      <p>Sanity check by the shortcut: choosing the 4 who play is the same as choosing the 2 who sit out, and "6 choose 2" = (6·5)/2 = 15. ✓ (That's the <em>symmetry identity</em> you'll meet formally in Chapter 5.)</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>0.3</b> — Prove by induction: 1 + 3 + 5 + ⋯ + (2n−1) = n². (The first n odd numbers sum to a perfect square.)</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p><b>Base:</b> n = 1: left side 1, right side 1² = 1. ✓</p>
+      <p><b>Step:</b> assume 1+3+⋯+(2n−1) = n². The next odd number is 2n+1. Add it to both sides: n² + (2n+1) = (n+1)². That's the claim for n+1. ✓</p>
+      <p class="dim">Picture: an n×n square of dots becomes (n+1)×(n+1) by adding an L-shaped border of exactly 2n+1 dots.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch1">
+  <h2>Chapter 1 · Recurrent Problems <span class="pages">pp. 1–20</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●○○○</span></span><span><b>Budget:</b> ~2 weeks</span><span><b>Depends on:</b> induction</span></div>
+  <p>Three famous puzzles, one lesson: the way to understand a quantity is to find the <b>recurrence</b> it satisfies, then hunt for a <b>closed form</b>. The chapter's real content is its method — <em>look at small cases → guess → prove by induction</em> — which the whole book then industrializes.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p>A <b>recurrence</b> answers "what does step n cost, if I already know step n−1?" — like knowing your bank balance today from yesterday's balance plus today's transactions. A <b>closed form</b> is the shortcut that jumps straight to day n without replaying every day in between. Example: "each month my savings double and I add $1" is a recurrence; "after n months I have 2ⁿ−1 dollars" (starting from 0) is its closed form — and that's literally the Tower of Hanoi formula.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 560 170" width="560" height="170" role="img" aria-label="Tower of Hanoi with three pegs">
+      <rect x="20" y="140" width="520" height="8" rx="3" fill="var(--baseline)"/>
+      <rect x="96" y="55" width="6" height="85" rx="2" fill="var(--baseline)"/>
+      <rect x="276" y="55" width="6" height="85" rx="2" fill="var(--baseline)"/>
+      <rect x="456" y="55" width="6" height="85" rx="2" fill="var(--baseline)"/>
+      <rect x="49" y="122" width="100" height="15" rx="4" fill="var(--accent)"/>
+      <rect x="61" y="104" width="76" height="15" rx="4" fill="var(--accent)" opacity="0.75"/>
+      <rect x="73" y="86" width="52" height="15" rx="4" fill="var(--accent)" opacity="0.5"/>
+      <text x="99" y="35" class="svgtxt" font-size="13" text-anchor="middle">move n−1 disks aside</text>
+      <path d="M 130 62 Q 190 20 250 55" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="none"/>
+      <text x="279" y="120" class="svgtxt2" font-size="12" text-anchor="middle">Tₙ₋₁ moves</text>
+      <text x="459" y="120" class="svgtxt2" font-size="12" text-anchor="middle">…then again</text>
+      <text x="280" y="163" class="svgtxt" font-size="13" text-anchor="middle">Tₙ = Tₙ₋₁ + 1 + Tₙ₋₁ = 2Tₙ₋₁ + 1  ⟹  Tₙ = 2ⁿ − 1</text>
+    </svg>
+    <div class="cap">Why the recurrence is 2Tₙ₋₁ + 1: park the top n−1 disks (Tₙ₋₁ moves), move the big disk (1 move), re-stack (Tₙ₋₁ again).</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§1.1 Tower of Hanoi.</b> T₀ = 0, Tₙ = 2Tₙ₋₁ + 1 ⟹ Tₙ = 2ⁿ − 1. Two proof styles shown: induction, and the lovely trick of adding 1 to both sides so the recurrence telescopes.</li>
+    <li><b>§1.2 Lines in the plane.</b> How many regions can n lines cut a pizza into? Lₙ = Lₙ₋₁ + n ⟹ Lₙ = n(n+1)/2 + 1. Introduces the triangular numbers and the "unfolding" technique.</li>
+    <li><b>§1.3 The Josephus problem.</b> People in a circle, every 2nd eliminated. J(2n) = 2J(n) − 1, J(2n+1) = 2J(n) + 1, with the stunning closed form: <em>rotate the binary representation of n left by one bit</em>. Introduces the <b>repertoire method</b> — solving a general recurrence by finding simple functions it handles exactly, then combining them.</li>
+  </ul>
+  <div class="formula"><span class="fname">The chapter in three formulas</span>
+    Tₙ = 2ⁿ − 1  ·  Lₙ = <span class="frac"><span>n(n+1)</span><span>2</span></span> + 1  ·  J((1 b<sub>m−1</sub> … b₁ b₀)₂) = (b<sub>m−1</sub> … b₁ b₀ 1)₂
+  </div>
+  <div class="pitfall"><b>Pitfall</b>The repertoire method (used on the generalized Josephus recurrence) feels like black magic on first read. It isn't — it's just linear algebra without the vocabulary: the solution space is spanned by a few basis functions, and you're finding coordinates. Work the example twice.</div>
+  <div class="taocp"><b>TAOCP connection</b>This look-guess-prove cycle is exactly how TAOCP §1.2.1 operates, and binary-representation tricks like Josephus reappear throughout Volume 1.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>1.1</b> — A 64-disk Tower of Brahma is moved at one disk per second. Roughly how long until "the world ends"?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>T₆₄ = 2⁶⁴ − 1 ≈ 1.8 × 10¹⁹ moves. At one per second that's ≈ 5.8 × 10¹¹ years — about <b>580 billion years</b>, roughly 42× the age of the universe. (This is the book's own opening legend, and your first taste of why exponential growth deserves respect.)</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>1.2</b> — Four straight cuts across a pizza: what's the maximum number of pieces? Check the formula against a drawing.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>L₄ = 4·5/2 + 1 = <b>11</b>. The recurrence view: the 4th cut can cross the 3 earlier cuts at most 3 times, so it passes through 4 regions and splits each — adding 4 pieces to L₃ = 7.</p>
+      <p class="dim">Key beginner insight: each new line adds (its number) of new regions — that's why the answer involves the triangular numbers 1+2+3+4.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>1.3</b> — Ten people stand in a circle; every 2nd person is eliminated. Use the binary trick to find the survivor J(10).</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Write 10 in binary: 1010. Rotate one bit left (move the leading 1 to the end): 0101 = <b>5</b>. So person 5 survives.</p>
+      <p>Verify by simulation — eliminate 2,4,6,8,10, then 3,7, then 1,9 — leaving <b>5</b>. ✓</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch2">
+  <h2>Chapter 2 · Sums <span class="pages">pp. 21–66</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●●○</span></span><span><b>Budget:</b> ~3 weeks — the keystone chapter</span><span><b>Depends on:</b> Ch 1, series basics</span></div>
+  <p>Running-time analysis of any loop is a sum, so Knuth builds a complete technology for sums. This is the most important chapter in the book: its tools are used in every chapter after it. Give it the most time and the most exercises.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p>A sum is a <b>grocery receipt</b>: many items, one total. This chapter is a bag of tricks for finding the total <em>without adding line by line</em>. The oldest trick is the one schoolboy Gauss used on 1+2+⋯+100: pair the first with the last (1+100), the second with the second-to-last (2+99)… every pair is 101, there are 50 pairs, total 5050. The picture below is the same idea as geometry: two staircases snap together into a rectangle.</p>
+    <p><b>Finite calculus</b> (§2.6) sounds scary but the idea is homely: instead of asking "what's the slope?" (calculus), ask "how much did it change since yesterday?" — Δf(n) = f(n+1) − f(n), like the daily change in your step count. It turns out sums undo Δ exactly the way integrals undo derivatives, so all your Σ problems become "anti-differencing."</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 520 200" width="520" height="200" role="img" aria-label="Two staircases forming a rectangle, proving the sum 1..n formula">
+      <g>
+        <rect x="30" y="150" width="24" height="24" fill="var(--accent)" rx="3"/>
+        <rect x="56" y="124" width="24" height="50" fill="var(--accent)" rx="3"/>
+        <rect x="82" y="98"  width="24" height="76" fill="var(--accent)" rx="3"/>
+        <rect x="108" y="72" width="24" height="102" fill="var(--accent)" rx="3"/>
+        <rect x="134" y="46" width="24" height="128" fill="var(--accent)" rx="3"/>
+        <text x="94" y="192" class="svgtxt" font-size="13" text-anchor="middle">1 + 2 + 3 + 4 + 5</text>
+      </g>
+      <text x="205" y="115" class="svgtxt" font-size="22">+</text>
+      <g>
+        <rect x="240" y="46" width="24" height="128" fill="var(--accent)" opacity="0.35" rx="3"/>
+        <rect x="266" y="72" width="24" height="102" fill="var(--accent)" opacity="0.35" rx="3"/>
+        <rect x="292" y="98" width="24" height="76" fill="var(--accent)" opacity="0.35" rx="3"/>
+        <rect x="318" y="124" width="24" height="50" fill="var(--accent)" opacity="0.35" rx="3"/>
+        <rect x="344" y="150" width="24" height="24" fill="var(--accent)" opacity="0.35" rx="3"/>
+        <text x="304" y="192" class="svgtxt" font-size="13" text-anchor="middle">the same staircase, flipped</text>
+      </g>
+      <text x="393" y="115" class="svgtxt" font-size="22">=</text>
+      <g>
+        <rect x="420" y="86" width="84" height="88" fill="none" stroke="var(--accent)" stroke-width="2" rx="4"/>
+        <text x="462" y="120" class="svgtxt" font-size="13" text-anchor="middle">n × (n+1)</text>
+        <text x="462" y="140" class="svgtxt" font-size="13" text-anchor="middle">rectangle</text>
+        <text x="462" y="192" class="svgtxt" font-size="13" text-anchor="middle">so Σk = n(n+1)/2</text>
+      </g>
+    </svg>
+    <div class="cap">Gauss's pairing trick as a picture: two copies of the staircase 1+2+⋯+n tile an n×(n+1) rectangle exactly.</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§2.1–2.2 Notation; sums and recurrences.</b> Sums and recurrences are two views of one thing: Sₙ = Sₙ₋₁ + aₙ. Any recurrence of the form aₙTₙ = bₙTₙ₋₁ + cₙ can be turned into a sum with a <b>summation factor</b> — the worked example is quicksort's average comparisons.</li>
+    <li><b>§2.3 Manipulation of sums.</b> The three laws (distributive, associative, commutative) plus the workhorse: the <b>perturbation method</b> — split off a term two different ways, set the results equal, and the unknown sum solves itself. Classic target: Σ k·xᵏ.</li>
+    <li><b>§2.4–2.5 Multiple sums; general methods.</b> Interchanging the order of double sums (the discrete Fubini), summing over triangles ("rocky road" identity), and a tour of eight-plus ways to evaluate Σ k².</li>
+    <li><b>§2.6 Finite and infinite calculus.</b> The chapter's crown jewel. Define Δf(x) = f(x+1) − f(x). Then falling powers behave exactly like ordinary powers do under d/dx, and sums evaluate like integrals:</li>
+  </ul>
+  <div class="formula"><span class="fname">Finite calculus — the dictionary</span>
+    Δ(x<sup><u>m</u></sup>) = m·x<sup><u>m−1</u></sup>   ⟺   <span style="white-space:nowrap">Σ<sub>a</sub><sup>b</sup> x<sup><u>m</u></sup> δx = <span class="frac"><span>x<sup><u>m+1</u></sup></span><span>m+1</span></span> <big>|</big><sub>a</sub><sup>b</sup></span>  (m ≠ −1),  and for m = −1 the "discrete ln" is H<sub>x</sub>.
+    <br>Summation by parts: Σ u Δv = uv − Σ (Ev) Δu
+  </div>
+  <ul>
+    <li><b>§2.7 Infinite sums.</b> When is rearranging legal? Absolute convergence, and why the answer matters even to a computer scientist.</li>
+  </ul>
+  <div class="pitfall"><b>Pitfall</b>In summation by parts, forgetting the shift operator E (i.e., using v(x) where v(x+1) is required) is the classic error — it silently produces answers that are off by a term. Check every result numerically for n = 1..5.</div>
+  <div class="tip"><b>Tip</b>Milestone of mastery: derive Σ₀ⁿ k² = n(n+1)(2n+1)/6 by converting k² = k<sup><u>2</u></sup> + k<sup><u>1</u></sup> and power-summing. When that takes you under five minutes, you own this chapter.</div>
+  <div class="taocp"><b>TAOCP connection</b>Every "the average number of comparisons is…" sentence in TAOCP resolves to a sum evaluated with exactly these tools; harmonic numbers (introduced here, p. 29) are the recurring characters of Volume 1 and 3's analyses.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>2.1</b> — Use Gauss's pairing idea to compute 3 + 6 + 9 + ⋯ + 300 (the multiples of 3 up to 300).</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Factor out the 3: the sum is 3·(1 + 2 + ⋯ + 100) = 3 · 100·101/2 = 3 · 5050 = <b>15,150</b>.</p>
+      <p class="dim">Lesson: the distributive law (§2.3's first law) lets you pull constants out before doing any real work.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>2.2</b> — The perturbation method, training-wheels version: find S = 1 + 2 + 4 + 8 + ⋯ + 2ⁿ.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Write S two ways by splitting off a term from each end.</p>
+      <p>S + 2ⁿ⁺¹ = (split off the <em>first</em> term) 1 + (2 + 4 + ⋯ + 2ⁿ⁺¹) = 1 + 2·(1 + 2 + ⋯ + 2ⁿ) = 1 + 2S.</p>
+      <p>So S + 2ⁿ⁺¹ = 1 + 2S ⟹ <b>S = 2ⁿ⁺¹ − 1</b>.</p>
+      <p class="dim">This "add the next term, re-express, solve for S" move is exactly the perturbation method of §2.3 — you just did it on the geometric series.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>2.3</b> — Use falling powers to find Σ<sub>k=0</sub><sup>n−1</sup> k(k−1), then check it for n = 4.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Notice k(k−1) is exactly the falling power k<sup><u>2</u></sup>. The finite-calculus power rule says Σ₀ⁿ k<sup><u>2</u></sup> δk = n<sup><u>3</u></sup>/3 = n(n−1)(n−2)/3.</p>
+      <p><b>Check n = 4:</b> direct sum: 0 + 0 + 2·1 + 3·2 = 8. Formula: 4·3·2/3 = 8. ✓</p>
+      <p class="dim">This is why falling powers are "the right" powers for sums: no messy correction terms, just the clean power rule.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch3">
+  <h2>Chapter 3 · Integer Functions <span class="pages">pp. 67–101</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●○○</span></span><span><b>Budget:</b> ~2 weeks</span><span><b>Depends on:</b> Ch 2</span></div>
+  <p>Computers live on integers; real math lives on reals. Floors and ceilings are the bridge, and this chapter teaches you to manipulate them fearlessly instead of case-splitting in a panic.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p><b>Floor</b> ⌊x⌋ rounds <em>down</em>, always — it's your <b>age</b>: at 25 years and 11 months you still say "25." <b>Ceiling</b> ⌈x⌉ rounds <em>up</em>, always — it's <b>buses needed</b>: 130 students, 50 per bus, you need ⌈2.6⌉ = 3 buses, never 2. <b>mod</b> is <b>clock arithmetic</b>: 20 o'clock is 20 mod 12 = 8 pm; "what day of the week is 100 days from Tuesday?" is 100 mod 7 = 2, so Thursday.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 520 210" width="520" height="210" role="img" aria-label="Graph of the floor function as a staircase">
+      <line x1="60" y1="175" x2="490" y2="175" stroke="var(--baseline)" stroke-width="1.5"/>
+      <line x1="60" y1="30" x2="60" y2="175" stroke="var(--baseline)" stroke-width="1.5"/>
+      <line x1="60" y1="139" x2="490" y2="139" stroke="var(--grid)" stroke-width="1"/>
+      <line x1="60" y1="103" x2="490" y2="103" stroke="var(--grid)" stroke-width="1"/>
+      <line x1="60" y1="67" x2="490" y2="67" stroke="var(--grid)" stroke-width="1"/>
+      <text x="48" y="179" class="svgtxt2" font-size="12" text-anchor="end">0</text>
+      <text x="48" y="143" class="svgtxt2" font-size="12" text-anchor="end">1</text>
+      <text x="48" y="107" class="svgtxt2" font-size="12" text-anchor="end">2</text>
+      <text x="48" y="71" class="svgtxt2" font-size="12" text-anchor="end">3</text>
+      <text x="160" y="192" class="svgtxt2" font-size="12" text-anchor="middle">1</text>
+      <text x="260" y="192" class="svgtxt2" font-size="12" text-anchor="middle">2</text>
+      <text x="360" y="192" class="svgtxt2" font-size="12" text-anchor="middle">3</text>
+      <text x="460" y="192" class="svgtxt2" font-size="12" text-anchor="middle">4</text>
+      <line x1="60" y1="175" x2="158" y2="175" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="160" y1="139" x2="258" y2="139" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="260" y1="103" x2="358" y2="103" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <line x1="360" y1="67" x2="458" y2="67" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="160" cy="139" r="4" fill="var(--accent)"/>
+      <circle cx="260" cy="103" r="4" fill="var(--accent)"/>
+      <circle cx="360" cy="67" r="4" fill="var(--accent)"/>
+      <circle cx="160" cy="175" r="4" fill="var(--surface-1)" stroke="var(--accent)" stroke-width="2"/>
+      <circle cx="260" cy="139" r="4" fill="var(--surface-1)" stroke="var(--accent)" stroke-width="2"/>
+      <circle cx="360" cy="103" r="4" fill="var(--surface-1)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="410" y="50" class="svgtxt" font-size="14">y = ⌊x⌋</text>
+      <line x1="60" y1="175" x2="200" y2="35" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <text x="205" y="32" class="svgtxt2" font-size="12">y = x for comparison</text>
+    </svg>
+    <div class="cap">The floor function is a staircase: flat between integers, jumping at each one. Filled dot = value at the jump (⌊2⌋ = 2, not 1).</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§3.1–3.2 Floors/ceilings and applications.</b> The essential identities below, plus the beautiful fact that ⌊√⌊x⌋⌋ = ⌊√x⌋ (floors pass through monotone functions with integer-valued "breakpoints"). Introduces <b>spectra</b>: Spec(α) = {⌊α⌋, ⌊2α⌋, ⌊3α⌋, …}, and the partition theorem for Spec(√2) and Spec(2+√2).</li>
+    <li><b>§3.3 Floor/ceiling recurrences.</b> Recurrences with ⌊n/2⌋ — the shape of every divide-and-conquer algorithm; includes the Knuth-numbers example.</li>
+    <li><b>§3.4 'mod': the binary operation.</b> x mod y = x − y⌊x/y⌋ for real x, y; distributive law c(x mod y) = (cx) mod (cy); the "three-in-a-row" juggling application.</li>
+    <li><b>§3.5 Floor/ceiling sums.</b> Summing ⌊√k⌋ and friends with finite calculus; ends in a first taste of hard analysis with equidistribution.</li>
+  </ul>
+  <div class="formula"><span class="fname">The identities you'll use forever</span>
+    ⌈x⌉ − ⌊x⌋ = [x is not an integer]  ·  ⌊x + n⌋ = ⌊x⌋ + n (integer n)  ·  x = ⌊x⌋ + {x}<br>
+    x &lt; n ⟺ ⌊x⌋ &lt; n  ·  n &lt; x ⟺ n &lt; ⌈x⌉  ·  <span style="white-space:nowrap">⌈<span class="frac"><span>⌈x/m⌉</span><span>n</span></span>⌉ = ⌈<span class="frac"><span>x</span><span>mn</span></span>⌉</span>
+  </div>
+  <div class="pitfall"><b>Pitfall</b>⌊−x⌋ = −⌈x⌉, not −⌊x⌋. Sign errors around floors of negative quantities are the chapter's chief exam-killer. Also: ⌊x⌋ + ⌊y⌋ ≤ ⌊x+y⌋ — floors don't distribute over +.</div>
+  <div class="taocp"><b>TAOCP connection</b>MMIX arithmetic, hashing (⌊m·{nα}⌋), binary algorithm analyses, and radix conversion in TAOCP all run on this chapter. Knuth defines mod exactly this way throughout TAOCP.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>3.1</b> — Evaluate: ⌊−3.2⌋, ⌈−3.2⌉, (−7) mod 3, and ⌊6.999⌋.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>⌊−3.2⌋ = <b>−4</b> (down means <em>more negative</em>!). ⌈−3.2⌉ = <b>−3</b>. (−7) mod 3 = −7 − 3·⌊−7/3⌋ = −7 − 3·(−3) = <b>2</b> (with Knuth's definition the result always has the sign of the divisor — handy!). ⌊6.999⌋ = <b>6</b>.</p>
+      <p class="dim">The first one is the chapter's signature trap: ⌊−x⌋ = −⌈x⌉, not −⌊x⌋.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>3.2</b> — Show that ⌊n/2⌋ + ⌈n/2⌉ = n for every integer n, by checking the two cases.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p><b>n even (n = 2m):</b> ⌊m⌋ + ⌈m⌉ = m + m = 2m = n. ✓</p>
+      <p><b>n odd (n = 2m+1):</b> ⌊m + ½⌋ + ⌈m + ½⌉ = m + (m+1) = 2m+1 = n. ✓</p>
+      <p class="dim">Interpretation: splitting n items into two halves as evenly as possible loses nothing. This identity is used constantly in divide-and-conquer analyses (mergesort splits into ⌊n/2⌋ and ⌈n/2⌉).</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>3.3</b> — A 1000-page PDF is printed 12 pages per sheet. Which sheet holds page 500, and which position on that sheet?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Number pages from 0 (so page 500 is item 499). Sheet number = ⌊499/12⌋ = 41 → the <b>42nd sheet</b>. Position on sheet = 499 mod 12 = 499 − 12·41 = 7 → the <b>8th slot</b>.</p>
+      <p class="dim">This ⌊n/m⌋-and-(n mod m) pair is the universal "convert a flat index into (row, column)" idiom of programming — the book's Chapter 3 is where it becomes second nature.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch4">
+  <h2>Chapter 4 · Number Theory <span class="pages">pp. 102–152</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●○○</span></span><span><b>Budget:</b> ~3 weeks</span><span><b>Depends on:</b> Ch 3</span></div>
+  <p>Self-contained classical number theory, selected for what computer science actually uses: gcds, primes, congruences, and the two great arithmetic functions φ and μ.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p>The <b>gcd</b> answers a tiling question: what's the largest square tile that exactly covers a 228 cm × 96 cm floor? Answer: a gcd(228,96) = 12 cm tile. <b>Euclid's algorithm</b> finds it by a beautifully lazy observation — any tile that fits both 228 and 96 must also fit their difference (and their remainder), so keep replacing the big number by the remainder until one divides the other.</p>
+    <p><b>Congruences</b> ("a ≡ b mod m") are the algebra of clock faces: statements that only care about remainders. And the <b>Chinese Remainder Theorem</b> is the observation that if you know a number's remainder mod 3 and mod 5, you've pinned it down mod 15 — like locating a point from two coordinates.</p>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§4.1 Divisibility.</b> gcd/lcm, Euclid's algorithm, and the key theorem that gcd(m,n) = am + bn for some integers a, b (extended Euclid).</li>
+    <li><b>§4.2–4.3 Primes and prime examples.</b> Fundamental theorem of arithmetic (unique factorization); Euclid numbers, Mersenne primes, and how big pₙ is.</li>
+    <li><b>§4.4 Factorial factors.</b> Legendre's formula — the exponent of prime p in n! is Σ<sub>k≥1</sub> ⌊n/pᵏ⌋; how many zeros end 100!.</li>
+    <li><b>§4.5 Relative primality.</b> m ⊥ n; the <b>Stern–Brocot tree</b>, a gorgeous construction that enumerates every positive fraction in lowest terms exactly once, and gives a number system for rationals.</li>
+    <li><b>§4.6–4.7 Congruences; independent residues.</b> mod as an equivalence relation, cancellation laws, and the Chinese Remainder Theorem as a "residue number system" for fast arithmetic.</li>
+    <li><b>§4.8 Additional applications.</b> Fermat's little theorem (n<sup>p</sup> ≡ n mod p), pseudoprimes, and 4.9's φ and μ: Euler's totient, Möbius inversion, and the Farey series.</li>
+  </ul>
+  <div class="formula"><span class="fname">Four results to internalize</span>
+    gcd(m,n) = gcd(n mod m, m)  ·  exponent of p in n! = Σ<sub>k</sub> ⌊n/pᵏ⌋<br>
+    Σ<sub>d\n</sub> φ(d) = n  ·  g(n) = Σ<sub>d\n</sub> f(d) ⟺ f(n) = Σ<sub>d\n</sub> μ(d) g(n/d)
+  </div>
+  <div class="tip"><b>Tip</b>This is the most independent chapter — if you're drowning after Chapters 2–3, it's a morale-restoring change of texture. Program everything: gcd, extended gcd, φ, a Stern–Brocot path-finder. Each is under 15 lines.</div>
+  <div class="taocp"><b>TAOCP connection</b>Knuth's analysis of Euclid's algorithm is one of TAOCP's showpieces (continued fractions, Fibonacci worst case), and all of Volume 2's arithmetic (random numbers, primality, modular multiplication) starts here.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>4.1</b> — Run Euclid's algorithm by hand on gcd(228, 96), writing every step.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>228 mod 96 = 36 → gcd(96, 36)<br>96 mod 36 = 24 → gcd(36, 24)<br>36 mod 24 = 12 → gcd(24, 12)<br>24 mod 12 = 0 → answer <b>12</b>.</p>
+      <p class="dim">Four steps for 3-digit numbers — the algorithm is astonishingly fast, and Chapter 6's Fibonacci numbers turn out to be its <em>worst possible</em> input. That's the kind of cross-connection this book lives for.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>4.2</b> — How many zeros does 25! end in?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Trailing zeros come from factors of 10 = 2·5, and 5s are scarcer than 2s. Count 5s in 25! with Legendre's formula: ⌊25/5⌋ + ⌊25/25⌋ = 5 + 1 = <b>6 zeros</b>.</p>
+      <p class="dim">The "+1" is the subtle part: 25 = 5² contributes <em>two</em> fives, and the formula's second term catches the extra one.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>4.3</b> — Find the smallest positive x with x ≡ 2 (mod 3) and x ≡ 3 (mod 5).</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Numbers ≡ 3 mod 5: 3, 8, 13, 18, 23, … Test each mod 3: 3→0, 8→2 ✓. So <b>x = 8</b>, and CRT guarantees the full solution set is 8, 23, 38, … (everything ≡ 8 mod 15).</p>
+      <p class="dim">Real-world flavor: "the parade groups by 3s with 2 left over, by 5s with 3 left over — how many marchers?" Ancient puzzle, modern use: this is how computers split big-number arithmetic across small moduli.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch5">
+  <h2>Chapter 5 · Binomial Coefficients <span class="pages">pp. 153–256</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●●○</span> (§5.5–5.8: ●●●●●)</span><span><b>Budget:</b> ~4 weeks on §5.1–5.4; skim the rest</span><span><b>Depends on:</b> Ch 2</span></div>
+  <p>The longest chapter, on what the authors consider the most important quantities in all of discrete mathematics. The goal is <em>fluency</em>: seeing a sum of binomial coefficients and knowing, by pattern-recognition, which identity crushes it.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p><span class="binom"><span class="paren">(</span></span><span class="binom"><span>n</span><span>k</span></span><span class="paren">)</span> answers one question: <b>how many ways can you pick k things from n?</b> Committees from a class, toppings on a pizza, lottery tickets. Every identity in the chapter is a clever story about counting the same collection two ways. Example — the <b>addition rule</b>: to pick k people from n, either your friend Alice is on the team (choose the other k−1 from the remaining n−1) or she isn't (choose all k from the n−1 others). Two cases, no overlap: <span class="binom"><span class="paren">(</span></span><span class="binom"><span>n</span><span>k</span></span><span class="paren">)</span> = <span class="binom"><span class="paren">(</span></span><span class="binom"><span>n−1</span><span>k−1</span></span><span class="paren">)</span> + <span class="binom"><span class="paren">(</span></span><span class="binom"><span>n−1</span><span>k</span></span><span class="paren">)</span>. That one sentence <em>is</em> Pascal's triangle.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 520 230" width="520" height="230" role="img" aria-label="Pascal's triangle with the addition rule highlighted">
+      <text x="260" y="30" class="svgtxt" font-size="15" text-anchor="middle">1</text>
+      <text x="230" y="60" class="svgtxt" font-size="15" text-anchor="middle">1</text><text x="290" y="60" class="svgtxt" font-size="15" text-anchor="middle">1</text>
+      <text x="200" y="90" class="svgtxt" font-size="15" text-anchor="middle">1</text><text x="260" y="90" class="svgtxt" font-size="15" text-anchor="middle">2</text><text x="320" y="90" class="svgtxt" font-size="15" text-anchor="middle">1</text>
+      <text x="170" y="120" class="svgtxt" font-size="15" text-anchor="middle">1</text><text x="230" y="120" class="svgtxt" font-size="15" text-anchor="middle">3</text><text x="290" y="120" class="svgtxt" font-size="15" text-anchor="middle">3</text><text x="350" y="120" class="svgtxt" font-size="15" text-anchor="middle">1</text>
+      <text x="140" y="150" class="svgtxt" font-size="15" text-anchor="middle">1</text>
+      <text x="200" y="150" font-size="15" text-anchor="middle" fill="var(--accent)" font-weight="700">4</text>
+      <text x="260" y="150" font-size="15" text-anchor="middle" fill="var(--accent)" font-weight="700">6</text>
+      <text x="320" y="150" class="svgtxt" font-size="15" text-anchor="middle">4</text><text x="380" y="150" class="svgtxt" font-size="15" text-anchor="middle">1</text>
+      <text x="110" y="180" class="svgtxt" font-size="15" text-anchor="middle">1</text><text x="170" y="180" class="svgtxt" font-size="15" text-anchor="middle">5</text>
+      <text x="230" y="180" font-size="15" text-anchor="middle" fill="var(--accent)" font-weight="700">10</text>
+      <text x="290" y="180" class="svgtxt" font-size="15" text-anchor="middle">10</text><text x="350" y="180" class="svgtxt" font-size="15" text-anchor="middle">5</text><text x="410" y="180" class="svgtxt" font-size="15" text-anchor="middle">1</text>
+      <line x1="203" y1="156" x2="224" y2="169" stroke="var(--accent)" stroke-width="1.5"/>
+      <line x1="257" y1="156" x2="236" y2="169" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="430" y="150" class="svgtxt2" font-size="12.5">row 4</text>
+      <text x="430" y="180" class="svgtxt2" font-size="12.5">row 5</text>
+      <text x="260" y="215" class="svgtxt" font-size="13.5" text-anchor="middle">4 + 6 = 10 — every entry is the sum of the two above it (the addition rule)</text>
+    </svg>
+    <div class="cap">Pascal's triangle, rows 0–5. Row n, entry k is <span style="font-family:Georgia,serif">C(n,k)</span>; each row sums to 2ⁿ (row 4: 1+4+6+4+1 = 16).</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§5.1 Basic identities.</b> The definition extended to real upper index; then the "top ten" identities of Table 174 — symmetry, absorption, addition, upper negation, trinomial revision, the binomial theorem, parallel summation, upper summation, and Vandermonde's convolution. These must become reflexes.</li>
+    <li><b>§5.2 Basic practice.</b> Worked problems showing the identities in combat. The pedagogy here is unusual and valuable: the authors show <em>false starts and dead ends</em>, not just polished solutions. Cover each solution and attempt it first.</li>
+    <li><b>§5.3 Tricks of the trade.</b> Going halves (duplication), inversion via upper negation, and the mighty technique of reading an identity as a polynomial identity in its real arguments.</li>
+    <li><b>§5.4 Generating functions.</b> First serious use: (1+z)ʳ, the generalized binomial series, and Catalan numbers make their entrance.</li>
+    <li><b>§5.5–5.7 Hypergeometric functions.</b> The grand unification — nearly every binomial identity is a special case of a few hypergeometric facts. Intellectually thrilling, but <em>not needed for TAOCP Vol 1</em>. Skim for the big idea on a first pass.</li>
+    <li><b>§5.8 Mechanical summation.</b> Gosper's and Zeilberger's algorithms — computers can now do these sums automatically. Skim; return later if the magic bothers you (it should, pleasantly).</li>
+  </ul>
+  <div class="formula"><span class="fname">Three of the top ten (Table 174)</span>
+    <span class="binom"><span class="paren">(</span></span><span class="binom"><span>n</span><span>k</span></span><span class="paren">)</span> = <span class="binom"><span class="paren">(</span></span><span class="binom"><span>n</span><span>n−k</span></span><span class="paren">)</span>  ·  <span class="binom"><span class="paren">(</span></span><span class="binom"><span>r</span><span>k</span></span><span class="paren">)</span> = <span class="binom"><span class="paren">(</span></span><span class="binom"><span>r−1</span><span>k</span></span><span class="paren">)</span> + <span class="binom"><span class="paren">(</span></span><span class="binom"><span>r−1</span><span>k−1</span></span><span class="paren">)</span>  ·  Σ<sub>k</sub> <span class="binom"><span class="paren">(</span></span><span class="binom"><span>r</span><span>k</span></span><span class="paren">)</span><span class="binom"><span class="paren">(</span></span><span class="binom"><span>s</span><span>n−k</span></span><span class="paren">)</span> = <span class="binom"><span class="paren">(</span></span><span class="binom"><span>r+s</span><span>n</span></span><span class="paren">)</span>
+    <br><span class="fname" style="margin-top:6px">symmetry · addition · Vandermonde</span>
+  </div>
+  <div class="pitfall"><b>Pitfall</b>Symmetry <span class="binom"><span class="paren">(</span></span><span class="binom"><span>n</span><span>k</span></span><span class="paren">)</span> = <span class="binom"><span class="paren">(</span></span><span class="binom"><span>n</span><span>n−k</span></span><span class="paren">)</span> requires the upper index to be a <em>nonnegative integer</em> — it fails for real or negative upper index, precisely where the book loves to work. Track which identities are polynomial-general and which aren't; the book flags this carefully.</div>
+  <div class="tip"><b>Tip</b>Make physical flashcards of Table 174 (it's reproduced inside the book's covers for a reason). Ten identities, drilled both directions, is the single best investment in the whole book.</div>
+  <div class="taocp"><b>TAOCP connection</b>TAOCP §1.2.6 is this chapter compressed to a few pages. Binomial sums appear in every combinatorial count in Volumes 1, 3, and especially 4's enumeration work.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>5.1</b> — Compute <span style="font-family:Georgia,serif">C(7,3)</span> three different ways: by formula, by Pascal's triangle, and by the symmetry shortcut.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p><b>Formula:</b> 7!/(3!·4!) = (7·6·5)/(3·2·1) = <b>35</b>.</p>
+      <p><b>Triangle:</b> extend the figure two more rows: row 6 is 1 6 15 20 15 6 1, row 7 is 1 7 21 <b>35</b> 35 21 7 1 — entry k=3 is 35. ✓</p>
+      <p><b>Symmetry:</b> C(7,3) = C(7,4) — picking 3 to include is the same as picking 4 to exclude. Same 35. ✓</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>5.2</b> — Why does row n of Pascal's triangle sum to 2ⁿ? Give the counting story, not algebra.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Both sides count the subsets of an n-person club. Right side: each person is in or out — 2 choices each, 2ⁿ subsets total. Left side: group the subsets by size — C(n,0) subsets of size 0, C(n,1) of size 1, …, C(n,n) of size n. Same collection, counted two ways, so Σₖ C(n,k) = 2ⁿ.</p>
+      <p class="dim">This "double counting" style of proof is the soul of Chapter 5 — often faster and more convincing than symbol-pushing.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>5.3</b> — A drawer has 4 red and 3 blue socks. Count ways to grab 2 socks, splitting by color, and confirm Vandermonde's identity in miniature.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Split by how many reds you grab: 2 red = C(4,2)·C(3,0) = 6; 1 each = C(4,1)·C(3,1) = 12; 2 blue = C(4,0)·C(3,2) = 3. Total 6+12+3 = <b>21</b>.</p>
+      <p>Directly: C(7,2) = 21. ✓ That's Vandermonde — Σₖ C(4,k)·C(3,2−k) = C(7,2) — with the sock drawer as the proof.</p>
+    </div>
+  </details>
+</div>
+<div class="card" id="ch6">
+  <h2>Chapter 6 · Special Numbers <span class="pages">pp. 257–319</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●●○</span></span><span><b>Budget:</b> ~3 weeks</span><span><b>Depends on:</b> Ch 5</span></div>
+  <p>A portrait gallery of the number sequences that keep showing up in computer science. Each gets a triangle (or table), a recurrence, identities, and applications. The through-line: <em>the same conversion machinery links them all to the falling powers of Chapter 2.</em></p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p><b>Stirling subset numbers</b> {ⁿₖ}: ways to split n people into k <em>teams</em> (teams have no names, no order). <b>Stirling cycle numbers</b> [ⁿₖ]: ways to seat n people around k <em>round tables</em> (rotations of a table don't count as different). <b>Harmonic numbers</b> Hₙ = 1 + ½ + ⅓ + ⋯ + 1/n grow like a tired hiker — forever upward but ever slower (H₁₀₀₀₀₀₀ is still only ≈ 14.4); they are, precisely, the discrete version of ln n. <b>Fibonacci numbers</b> you know from rabbit-breeding and sunflower spirals; the surprise is how much exact algebra they support.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 540 230" width="540" height="230" role="img" aria-label="Harmonic numbers versus natural log plus gamma">
+      <line x1="55" y1="195" x2="515" y2="195" stroke="var(--baseline)" stroke-width="1.5"/>
+      <line x1="55" y1="25" x2="55" y2="195" stroke="var(--baseline)" stroke-width="1.5"/>
+      <line x1="55" y1="145" x2="515" y2="145" stroke="var(--grid)"/>
+      <line x1="55" y1="95" x2="515" y2="95" stroke="var(--grid)"/>
+      <line x1="55" y1="45" x2="515" y2="45" stroke="var(--grid)"/>
+      <text x="45" y="199" class="svgtxt2" font-size="12" text-anchor="end">0</text>
+      <text x="45" y="149" class="svgtxt2" font-size="12" text-anchor="end">1</text>
+      <text x="45" y="99" class="svgtxt2" font-size="12" text-anchor="end">2</text>
+      <text x="45" y="49" class="svgtxt2" font-size="12" text-anchor="end">3</text>
+      <text x="78" y="212" class="svgtxt2" font-size="12" text-anchor="middle">1</text>
+      <text x="193" y="212" class="svgtxt2" font-size="12" text-anchor="middle">6</text>
+      <text x="331" y="212" class="svgtxt2" font-size="12" text-anchor="middle">12</text>
+      <text x="469" y="212" class="svgtxt2" font-size="12" text-anchor="middle">18</text>
+      <polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"
+        points="78,145 101,120 124,103.3 147,90.8 170,80.8 193,72.5 216,65.4 239,59.1 262,53.6 285,48.6 308,44 331,39.9 354,36 377,32.4 400,29.1 423,26 446,23 469,20.3 492,17.6"/>
+      <polyline fill="none" stroke="#319c4c" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round"
+        points="78,166.1 101,131.5 124,111.2 147,96.9 170,85.7 193,76.7 216,69 239,62.4 262,56.5 285,51.2 308,46.5 331,42.1 354,38.1 377,34.4 400,30.9 423,27.7 446,24.6 469,21.7 492,19"/>
+      <text x="300" y="35" font-size="13" fill="var(--accent)" font-family="system-ui">Hₙ (exact)</text>
+      <text x="330" y="72" font-size="13" fill="#319c4c" font-family="system-ui">ln n + γ (approximation)</text>
+      <text x="285" y="228" class="svgtxt2" font-size="12" text-anchor="middle">n →</text>
+    </svg>
+    <div class="cap">By n = 6 the two curves are nearly indistinguishable — the error of Hₙ ≈ ln n + γ shrinks like 1/(2n). This one approximation powers half of TAOCP's average-case results.</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§6.1 Stirling numbers.</b> Subset numbers {ⁿₖ} count ways to partition n things into k nonempty blocks; cycle numbers [ⁿₖ] count permutations with k cycles. Their triangles, recurrences, and the crucial power-conversion identities: xⁿ = Σₖ {ⁿₖ} x<sup><u>k</u></sup> and x<sup>n̄</sup> = Σₖ [ⁿₖ] xᵏ.</li>
+    <li><b>§6.2 Eulerian numbers.</b> ⟨ⁿₖ⟩ counts permutations with k ascents; Worpitzky's identity connects them to binomials.</li>
+    <li><b>§6.3–6.4 Harmonic numbers and harmonic summation.</b> Hₙ diverges but glacially; the card-stacking and worm-on-a-rubber-band stories; summation-by-parts drills that produce Σ Hₖ = (n+1)(H<sub>n+1</sub> − 1).</li>
+    <li><b>§6.5 Bernoulli numbers.</b> The coefficients behind the closed form of Σ kᵐ; their generating function z/(eᶻ−1). A lighter pass is fine — they return in Chapter 9.</li>
+    <li><b>§6.6 Fibonacci numbers.</b> The serious treatment: Binet's formula, Cassini's identity, gcd(F<sub>m</sub>, F<sub>n</sub>) = F<sub>gcd(m,n)</sub>, the Fibonacci number system (Zeckendorf), and the golden ratio φ.</li>
+    <li><b>§6.7 Continuants.</b> The polynomials of continued fractions — the bridge to Euclid's algorithm analysis. Skim on first pass.</li>
+  </ul>
+  <div class="formula"><span class="fname">Anchors</span>
+    H<sub>n</sub> = ln n + γ + O(1/n), γ ≈ 0.5772  ·  F<sub>n</sub> = <span class="frac"><span>φⁿ − φ̂ⁿ</span><span>√5</span></span>, φ = <span class="frac"><span>1+√5</span><span>2</span></span>  ·  xⁿ = Σ<sub>k</sub> <span style="white-space:nowrap">{ⁿₖ}</span> x<sup><u>k</u></sup>
+  </div>
+  <div class="pitfall"><b>Pitfall</b>Brackets vs braces: [ⁿₖ] (cycles) and {ⁿₖ} (subsets) are easy to swap under exam pressure. Mnemonic the book encourages: braces { } look like set braces → subsets/partitions.</div>
+  <div class="taocp"><b>TAOCP connection</b>Harmonic numbers are <em>the</em> constant companion of TAOCP's average-case analyses; Fibonacci runs the worst case of Euclid and Fibonacci heaps; Stirling numbers appear in TAOCP §1.2.6 and sorting theory.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>6.1</b> — Compute {4 ⁠2} (Stirling subset number) by listing every way to split {A, B, C, D} into 2 teams.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Splits of sizes 1+3: {A}{BCD}, {B}{ACD}, {C}{ABD}, {D}{ABC} — 4 ways. Splits of sizes 2+2: {AB}{CD}, {AC}{BD}, {AD}{BC} — 3 ways (note {AB}{CD} and {CD}{AB} are the <em>same</em> split). Total {4 2} = <b>7</b>.</p>
+      <p class="dim">Check with the recurrence {ⁿₖ} = k·{ⁿ⁻¹ₖ} + {ⁿ⁻¹ₖ₋₁}: {4 2} = 2·{3 2} + {3 1} = 2·3 + 1 = 7. ✓</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>6.2</b> — Compute H₄ exactly, then compare with ln 4 + γ.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>H₄ = 1 + 1/2 + 1/3 + 1/4 = <b>25/12 ≈ 2.0833</b>. Approximation: ln 4 + γ ≈ 1.3863 + 0.5772 = 1.9635. Off by ≈ 0.12 — and the next correction term, 1/(2·4) = 0.125, explains almost all of it. The asymptotic series really works.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>6.3</b> — Cassini's identity says Fₙ₊₁Fₙ₋₁ − Fₙ² = (−1)ⁿ. Verify it for n = 6, and connect it to a famous puzzle.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Fibonacci: 1, 1, 2, 3, 5, 8, 13, … With F₅ = 5, F₆ = 8, F₇ = 13: 13·5 − 8² = 65 − 64 = 1 = (−1)⁶. ✓</p>
+      <p class="dim">That stubborn off-by-one is the engine of the classic "cut an 8×8 square into 4 pieces, reassemble into a 5×13 rectangle" paradox — 64 ≠ 65, and the missing unit hides in a sliver along the diagonal. The book loves this connection (§6.6).</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch7">
+  <h2>Chapter 7 · Generating Functions <span class="pages">pp. 320–380</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●●●</span></span><span><b>Budget:</b> ~3 weeks</span><span><b>Depends on:</b> Ch 2, Ch 5; partial fractions from algebra</span></div>
+  <p>The most powerful idea in the book: encode a whole sequence ⟨g₀, g₁, g₂, …⟩ as a single object G(z) = Σ gₙzⁿ, and hard questions about the sequence become routine algebra on the function. Recurrences dissolve; convolutions become products.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p>A generating function is a <b>clothesline</b>: an infinite sequence of numbers pinned, in order, as the coefficients of a power series. Why bother? Because operations you care about become trivial on the clothesline. The killer example is <b>counting coins</b>: the ways to make n cents from pennies and nickels is the coefficient of zⁿ in (1+z+z²+⋯)(1+z⁵+z¹⁰+⋯) — multiply the polynomials and the answer for every n appears at once. Multiplication of series <em>automatically</em> tries every combination for you. That's the whole trick, and Chapter 7 turns it into a machine for solving recurrences.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 560 120" width="560" height="120" role="img" aria-label="The generating function method as a pipeline">
+      <g font-family="system-ui" font-size="12.5">
+        <rect x="10" y="35" width="110" height="50" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="65" y="56" text-anchor="middle" fill="var(--ink)">recurrence</text>
+        <text x="65" y="72" text-anchor="middle" fill="var(--muted)">gₙ = gₙ₋₁ + gₙ₋₂</text>
+        <line x1="120" y1="60" x2="150" y2="60" stroke="var(--baseline)" stroke-width="1.5"/>
+        <rect x="150" y="35" width="120" height="50" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="210" y="56" text-anchor="middle" fill="var(--ink)">one equation</text>
+        <text x="210" y="72" text-anchor="middle" fill="var(--muted)">·zⁿ, sum over n</text>
+        <line x1="270" y1="60" x2="300" y2="60" stroke="var(--baseline)" stroke-width="1.5"/>
+        <rect x="300" y="35" width="110" height="50" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="355" y="56" text-anchor="middle" fill="var(--ink)">solve for G(z)</text>
+        <text x="355" y="72" text-anchor="middle" fill="var(--muted)">z/(1−z−z²)</text>
+        <line x1="410" y1="60" x2="440" y2="60" stroke="var(--baseline)" stroke-width="1.5"/>
+        <rect x="440" y="35" width="110" height="50" rx="8" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="495" y="56" text-anchor="middle" fill="var(--ink)">read off gₙ</text>
+        <text x="495" y="72" text-anchor="middle" fill="var(--muted)">partial fractions</text>
+      </g>
+    </svg>
+    <div class="cap">The §7.3 assembly line. Fibonacci in, Binet's closed form out — no guessing anywhere.</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§7.1 Domino theory and change.</b> Two extended concrete examples — tiling 2×n boards and counting ways to make change — where the generating function is <em>seen</em> before it's defined. Don't skip this; it's what makes the abstraction land.</li>
+    <li><b>§7.2 Basic maneuvers.</b> The operations dictionary: shifting, scaling, differentiation (brings down a factor of n), integration, and multiplication = convolution.</li>
+    <li><b>§7.3 Solving recurrences.</b> The four-step method: (1) write one equation valid for all n; (2) multiply by zⁿ and sum; (3) solve for G(z); (4) expand into coefficients — usually via partial fractions. Star example: Fibonacci ⟹ Binet's formula, derived rather than conjured.</li>
+    <li><b>§7.4–7.5 Special generating functions; convolutions.</b> The reference table of known series; Catalan numbers via the convolution recurrence; the "rational expansion theorem" for quick partial-fraction results.</li>
+    <li><b>§7.6 Exponential generating functions.</b> When order matters (labeled structures), use Σ gₙzⁿ/n!; products now encode binomial convolutions.</li>
+    <li><b>§7.7 Dirichlet generating functions.</b> Σ gₙ/nˢ — the number-theory flavor, connecting to ζ(s) and Möbius. Skim.</li>
+  </ul>
+  <div class="formula"><span class="fname">The method in one line</span>
+    recurrence on ⟨gₙ⟩ ⟶ algebra on G(z) = Σₙ gₙ zⁿ ⟶ coefficients: gₙ = [zⁿ] G(z)<br>
+    e.g. G(z) = <span class="frac"><span>z</span><span>1 − z − z²</span></span> ⟹ gₙ = F<sub>n</sub>
+  </div>
+  <div class="pitfall"><b>Pitfall</b>Weak partial fractions is the #1 reason this chapter stalls. Spend a half-day reviewing them <em>before</em> §7.3, not during. Also: keep convergence anxiety out — these are <em>formal</em> power series; the algebra is legal without worrying where the series converges.</div>
+  <div class="tip"><b>Tip</b>Milestone of mastery: given the recurrence gₙ = 2gₙ₋₁ + gₙ₋₂ with g₀=0, g₁=1 (the Pell numbers), produce the closed form end-to-end without notes. That's the whole chapter in one exercise.</div>
+  <div class="taocp"><b>TAOCP connection</b>TAOCP §1.2.9 is generating functions; Knuth uses them constantly for enumerating trees, permutations, and for average-case analysis via probability generating functions (next chapter).</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>7.1</b> — What sequence does G(z) = 1/(1−z) carry? What about 1/(1−2z)?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>1/(1−z) = 1 + z + z² + ⋯ (the geometric series), so it carries <b>⟨1, 1, 1, 1, …⟩</b>. Substituting 2z: 1/(1−2z) = 1 + 2z + 4z² + 8z³ + ⋯, the powers of two <b>⟨1, 2, 4, 8, …⟩</b>.</p>
+      <p class="dim">These two expansions are the "times tables" of Chapter 7 — nearly every answer is assembled from them.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>7.2</b> — Solve gₙ = 3gₙ₋₁ (n ≥ 1), g₀ = 2 with the four-step GF method — overkill on purpose, to see the machine run.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p><b>1.</b> Single equation valid for all n ≥ 0: gₙ = 3gₙ₋₁ + 2·[n = 0] (the Iverson bracket injects the initial condition!).</p>
+      <p><b>2.</b> Multiply by zⁿ, sum: G(z) = 3z·G(z) + 2.</p>
+      <p><b>3.</b> Solve: G(z) = 2/(1−3z).</p>
+      <p><b>4.</b> Expand (using 7.1's pattern): gₙ = <b>2·3ⁿ</b>. ✓ (Obvious by inspection — but the same crank turns when the answer <em>isn't</em> obvious, like Fibonacci.)</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>7.3</b> — In how many ways can you make 10¢ from pennies and nickels? Get it from the generating function, then list them.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>G(z) = (1+z+z²+⋯)(1+z⁵+z¹⁰+⋯). The coefficient of z¹⁰: choose the nickel term z⁰, z⁵, or z¹⁰, and pennies fill the rest — 3 combinations, so <b>3 ways</b>.</p>
+      <p>List: 10 pennies; 5 pennies + 1 nickel; 2 nickels. ✓</p>
+      <p class="dim">§7.1 scales this exact idea up to pennies-nickels-dimes-quarters-halves and cracks the famous "ways to change a dollar" problem (answer: 292).</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch8">
+  <h2>Chapter 8 · Discrete Probability <span class="pages">pp. 381–438</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●●○</span></span><span><b>Budget:</b> ~2 weeks</span><span><b>Depends on:</b> Ch 7</span></div>
+  <p>Probability as a computer scientist needs it: finite/countable sample spaces, expectations computed through generating functions, and two fully-worked algorithm analyses. This is where the book most directly rehearses Knuth's signature move — <em>average-case analysis</em>.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p><b>Expected value</b> is the long-run average: if a raffle ticket pays $100 with probability 1/50 and $0 otherwise, its expected value is $2 — buy tickets for years and you'll average $2 each. The superpower of the chapter is <b>linearity of expectation</b>: the average of a sum is the sum of the averages, <em>even when the parts influence each other</em>. Want the expected number of people who draw their own name in a gift exchange of any size? Each person has probability 1/n, there are n people, answer: exactly 1. No independence needed, no casework — that's the trick TAOCP uses on every algorithm.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 540 210" width="540" height="210" role="img" aria-label="Distribution of the sum of two dice">
+      <line x1="55" y1="170" x2="515" y2="170" stroke="var(--baseline)" stroke-width="1.5"/>
+      <g>
+        <rect x="70"  y="145" width="26" height="25" rx="3" fill="var(--accent)"/>
+        <rect x="110" y="120" width="26" height="50" rx="3" fill="var(--accent)"/>
+        <rect x="150" y="95"  width="26" height="75" rx="3" fill="var(--accent)"/>
+        <rect x="190" y="70"  width="26" height="100" rx="3" fill="var(--accent)"/>
+        <rect x="230" y="45"  width="26" height="125" rx="3" fill="var(--accent)"/>
+        <rect x="270" y="20"  width="26" height="150" rx="3" fill="var(--accent)"/>
+        <rect x="310" y="45"  width="26" height="125" rx="3" fill="var(--accent)"/>
+        <rect x="350" y="70"  width="26" height="100" rx="3" fill="var(--accent)"/>
+        <rect x="390" y="95"  width="26" height="75" rx="3" fill="var(--accent)"/>
+        <rect x="430" y="120" width="26" height="50" rx="3" fill="var(--accent)"/>
+        <rect x="470" y="145" width="26" height="25" rx="3" fill="var(--accent)"/>
+      </g>
+      <text x="283" y="14" class="svgtxt" font-size="12" text-anchor="middle">6/36</text>
+      <g class="svgtxt2" font-size="11.5" text-anchor="middle">
+        <text x="83" y="186">2</text><text x="123" y="186">3</text><text x="163" y="186">4</text><text x="203" y="186">5</text><text x="243" y="186">6</text><text x="283" y="186">7</text><text x="323" y="186">8</text><text x="363" y="186">9</text><text x="403" y="186">10</text><text x="443" y="186">11</text><text x="483" y="186">12</text>
+      </g>
+      <text x="285" y="205" class="svgtxt" font-size="13" text-anchor="middle">sum of two fair dice — 7 is the peak because it has the most ways (1+6, 2+5, 3+4, 4+3, 5+2, 6+1)</text>
+    </svg>
+    <div class="cap">Probability = counting (Ch 5) divided by total cases. The dice histogram is Pascal-triangle thinking in disguise.</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§8.1–8.2 Definitions; mean and variance.</b> Random variables, independence, and the tools that do 90% of the work: <b>linearity of expectation</b> (no independence needed!) and Var(X) = E(X²) − E(X)². Chebyshev's inequality for tail bounds. The dice examples expose every classic fallacy.</li>
+    <li><b>§8.3 Probability generating functions.</b> The synthesis: if G<sub>X</sub>(z) = Σ Pr(X=k)zᵏ, then E(X) = G′(1) and Var(X) = G″(1) + G′(1) − G′(1)². Mean and variance drop out of derivatives.</li>
+    <li><b>§8.4 Flipping coins.</b> Waiting times for patterns — including the wonderful surprise that waiting for HTHT differs from HHHH, and the elegant algebra of pattern autocorrelation.</li>
+    <li><b>§8.5 Hashing.</b> A genuine, complete average-case analysis of hashing with chaining: expected search costs derived with pgfs. Study it as a template — this is a miniature TAOCP section.</li>
+  </ul>
+  <div class="formula"><span class="fname">The workhorses</span>
+    E(X + Y) = E(X) + E(Y) — always  ·  E(X) = G′<sub>X</sub>(1)  ·  Var(X) = G″<sub>X</sub>(1) + G′<sub>X</sub>(1) − G′<sub>X</sub>(1)²
+  </div>
+  <div class="pitfall"><b>Pitfall</b>E(XY) = E(X)E(Y) needs independence; E(X+Y) = E(X)+E(Y) doesn't. Confusing these two is the classic error. Also beware conditioning traps in the dice/coin problems — simulate anything you're unsure of.</div>
+  <div class="taocp"><b>TAOCP connection</b>Direct: TAOCP §1.2.10 (analysis of an algorithm) uses pgfs exactly like §8.3, and TAOCP Vol 3's sorting and searching chapters are essentially this chapter applied a hundred times.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>8.1</b> — What is the expected value of one fair die roll? Of the sum of two?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>One die: (1+2+3+4+5+6)/6 = <b>3.5</b>. Two dice: by linearity, 3.5 + 3.5 = <b>7</b> — no need to touch the 36-case histogram at all. (Note that 3.5 is not a possible roll; expected values are averages, not predictions.)</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>8.2</b> — Flip a fair coin until the first head appears. On average, how many flips does it take?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>Let E be the answer. First flip: heads (prob ½) → done in 1; tails (prob ½) → one flip spent and you're back where you started, so E = ½·1 + ½·(1 + E). Solve: <b>E = 2</b>.</p>
+      <p class="dim">This "condition on the first step" self-reference is a recurrence — Chapter 1's idea wearing a probability costume. §8.4 pushes it to full patterns like THTH.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>8.3</b> — A hash table has 10 slots and 5 keys land in uniformly random slots. What's the expected number of empty slots?</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>For one particular slot, Pr(empty) = (9/10)⁵ ≈ 0.590. By linearity, expected empties = 10 · (9/10)⁵ ≈ <b>5.9</b>.</p>
+      <p class="dim">Notice what linearity let you skip: the slots are <em>not</em> independent (if one is empty, others are slightly more crowded) — and it doesn't matter. This is a baby version of §8.5's hashing analysis.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="ch9">
+  <h2>Chapter 9 · Asymptotics <span class="pages">pp. 439–496</span></h2>
+  <div class="meta"><span><b>Difficulty:</b> <span class="diff">●●●●●</span> (§9.1–9.3: ●●●○○)</span><span><b>Budget:</b> ~3 weeks; §9.5–9.6 at survey depth</span><span><b>Depends on:</b> everything, especially Ch 2 and limits</span></div>
+  <p>When exact answers are unreachable or unreadable, approximate — <em>with control over the error</em>. This chapter is the grammar of algorithm analysis: what O(·) really means and how to calculate with it, not just cite it.</p>
+  <div class="plain"><b class="t">In plain English</b>
+    <p>Big-O compares <b>how things scale, not how big they are today</b>. Walking beats flying for a trip across the street — the airport overhead dominates — but flying wins across an ocean. Likewise an O(n²) algorithm with a tiny constant can beat an O(n log n) one for small inputs, yet <em>must</em> lose eventually. "f = O(g)" is a promise about eventually: from some point on, f is at most a constant multiple of g. The chapter's real skill is arithmetic <em>inside</em> the O — adding, multiplying, and feeding approximations into each other without losing track of the error.</p>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 540 230" width="540" height="230" role="img" aria-label="Growth rate comparison of log n, n, n squared and 2 to the n">
+      <line x1="55" y1="195" x2="515" y2="195" stroke="var(--baseline)" stroke-width="1.5"/>
+      <line x1="55" y1="20" x2="55" y2="195" stroke="var(--baseline)" stroke-width="1.5"/>
+      <polyline fill="none" stroke="var(--accent)" stroke-width="2" points="78,195 124,181.1 170,173 216,167.2 262,162.7 308,159.1 354,156 400,153.3 446,150.9 492,148.7"/>
+      <text x="497" y="152" font-size="12.5" fill="var(--accent)" font-family="system-ui">log n</text>
+      <polyline fill="none" stroke="#319c4c" stroke-width="2" points="78,193 124,185 170,177 216,169 262,161 308,153 354,145 400,137 446,129 492,121"/>
+      <text x="497" y="124" font-size="12.5" fill="#319c4c" font-family="system-ui">n</text>
+      <polyline fill="none" stroke="#97499e" stroke-width="2" points="78,194.8 124,191.8 170,186.8 216,179.8 262,170.8 308,159.8 354,146.8 400,131.8 446,114.8 492,95.8"/>
+      <text x="497" y="99" font-size="12.5" fill="#97499e" font-family="system-ui">n²</text>
+      <polyline fill="none" stroke="#de2e21" stroke-width="2" points="78,194.6 124,193.2 170,190.4 216,184.8 262,173.6 308,151.2 354,106.4 400,25"/>
+      <text x="382" y="20" font-size="12.5" fill="#de2e21" font-family="system-ui">2ⁿ</text>
+      <text x="285" y="215" class="svgtxt2" font-size="12" text-anchor="middle">n →   (heights scaled to fit; 2ⁿ exits the top of any chart you draw)</text>
+    </svg>
+    <div class="cap">The §9.1 hierarchy in one picture: for small n the curves flirt and cross, but order wins in the end — every curve is eventually crushed by the one above it.</div>
+  </div>
+  <h3>Section by section</h3>
+  <ul>
+    <li><b>§9.1 A hierarchy.</b> Growth-rate ladder: 1 ≺ log log n ≺ log n ≺ n^ε ≺ nᶜ ≺ n^{log n} ≺ cⁿ ≺ nⁿ ≺ cᶜⁿ. Learn to place any function on it.</li>
+    <li><b>§9.2 O notation.</b> The definition as a <em>set membership written as equality</em> — and the crucial "one-way" convention: n = O(n²) is true, O(n²) = n is nonsense.</li>
+    <li><b>§9.3 O manipulation.</b> The calculus of O: absorbing constants, multiplying/composing estimates, and the exp/log tricks used to squeeze asymptotics out of products (e.g., estimating n! via ln n!).</li>
+    <li><b>§9.4 Two asymptotic tricks.</b> <b>Bootstrapping</b> (feed a crude estimate back into the equation to refine it) and <b>trading tails</b> (split a sum where the approximation is good, bound the rest).</li>
+    <li><b>§9.5 Euler's summation formula.</b> The exact bridge between Σ and ∫, with Bernoulli-number correction terms — the machine that produces Stirling's approximation and the sharp Hₙ expansion.</li>
+    <li><b>§9.6 Final summations.</b> The formula in action on Σ ln k (⟹ Stirling) and harder sums. Survey depth is fine for a first pass.</li>
+  </ul>
+  <div class="formula"><span class="fname">The two crown jewels</span>
+    H<sub>n</sub> = ln n + γ + <span class="frac"><span>1</span><span>2n</span></span> − <span class="frac"><span>1</span><span>12n²</span></span> + O(n⁻⁴)  ·  n! = √(2πn) <span class="paren">(</span><span class="frac"><span>n</span><span>e</span></span><span class="paren">)</span>ⁿ (1 + O(1/n))
+  </div>
+  <div class="pitfall"><b>Pitfall</b>O-equations are one-directional: you may replace the left side by the right, never the reverse. Writing chains backwards produces "proofs" of false statements — the book demonstrates several. When in doubt, unwind O(f) into an explicit |error| ≤ C·f.</div>
+  <div class="taocp"><b>TAOCP connection</b>TAOCP §1.2.11 is this chapter condensed. Every running-time statement in all of TAOCP is written in this language; Euler summation is how Knuth derives the sharp constants he's famous for.</div>
+  <h3>Practice problems</h3>
+  <details class="ex"><summary><b>9.1</b> — Sort by eventual growth, slowest first: n log n, 2ⁿ, n², log n, n, n!, 1000000.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p><b>1000000 ≺ log n ≺ n ≺ n log n ≺ n² ≺ 2ⁿ ≺ n!</b></p>
+      <p class="dim">A constant — even a million — sits at the very bottom: it doesn't grow at all. And n! beats 2ⁿ because its "multiplier" per step (n) itself grows, while 2ⁿ's multiplier is stuck at 2.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>9.2</b> — Simplify 3n² + 100n + 7 in O-notation, and say precisely why dropping the 100n is legal.</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p>3n² + 100n + 7 = <b>O(n²)</b>. Justification with an explicit constant: for n ≥ 1, 3n² + 100n + 7 ≤ 3n² + 100n² + 7n² = 110n². One constant (110) that works from some point on (here, everywhere) is all the definition demands.</p>
+      <p class="dim">Also true: 3n² + 100n + 7 = O(n³) — O gives an upper bound, not the best one. Saying "the algorithm is O(n³)" when it's also O(n²) is legal but uninformative.</p>
+    </div>
+  </details>
+  <details class="ex"><summary><b>9.3</b> — True or false: (a) n = O(n²); (b) O(n²) = n; (c) 2ⁿ⁺¹ = O(2ⁿ); (d) (n+1)² = n² + O(n).</summary>
+    <div class="sol">
+      <p><span class="steplbl">Solution</span></p>
+      <p><b>(a) True</b> — n ≤ n² eventually.</p>
+      <p><b>(b) Nonsense/false</b> — O-equations read left to right only; the right side can't be less informative than the left. This is §9.2's "one-way equality" convention.</p>
+      <p><b>(c) True</b> — 2ⁿ⁺¹ = 2·2ⁿ, and constants (the 2) are absorbed into the O.</p>
+      <p><b>(d) True</b> — (n+1)² = n² + 2n + 1, and 2n + 1 = O(n).</p>
+      <p class="dim">If you got all four, you understand O-notation better than most working programmers.</p>
+    </div>
+  </details>
+</div>
+
+<div class="card" id="next">
+  <h2>The road to TAOCP</h2>
+  <p>Finish this book and TAOCP Volume 1's Chapter 1 becomes a <em>review</em> rather than a wall. The mapping is nearly one-to-one:</p>
+  <table>
+    <tr><th>TAOCP §1.2.x topic</th><th>Where Concrete Mathematics covered it</th></tr>
+    <tr><td>1.2.1 Induction & proofs</td><td>Ch 1 + your Phase-0 work</td></tr>
+    <tr><td>1.2.2 Numbers, powers, logs</td><td>Ch 3 (floors, mod, lg)</td></tr>
+    <tr><td>1.2.3 Sums and products</td><td>Ch 2 — in far more depth</td></tr>
+    <tr><td>1.2.4 Integer functions</td><td>Ch 3</td></tr>
+    <tr><td>1.2.5–1.2.6 Permutations, factorials, binomials</td><td>Ch 4 (factorial factors) + Ch 5</td></tr>
+    <tr><td>1.2.7 Harmonic numbers</td><td>Ch 6 §6.3–6.4</td></tr>
+    <tr><td>1.2.8 Fibonacci numbers</td><td>Ch 6 §6.6</td></tr>
+    <tr><td>1.2.9 Generating functions</td><td>Ch 7</td></tr>
+    <tr><td>1.2.10 Analysis of an algorithm</td><td>Ch 8 (esp. §8.3, §8.5)</td></tr>
+    <tr><td>1.2.11 Asymptotics, Stirling's approx.</td><td>Ch 9</td></tr>
+  </table>
+  <p>What's genuinely <em>new</em> in TAOCP after this book: the MMIX machine and its assembly language (get the MMIX fascicle), data structures (TAOCP Chapter 2: lists, trees, garbage collection), and Knuth's deeper algorithm-specific analyses. The mathematics itself will feel like home turf.</p>
+  <div class="tip"><b>Tip</b>Keep <em>Concrete Mathematics</em> on the desk while reading TAOCP — it is the standard reference Knuth himself points back to. Appendix A's worked answers remain useful as a lookup of techniques for years.</div>
+  <p class="toplink"><a href="#top">↑ back to top</a></p>
+</div>
+
+
+<footer>Compiled from the 2nd edition (1994) — table of contents, preface, and "A Note on Notation" — for personal study use.<br>Styled with Workday Canvas Design System color tokens (blueberry · soap · licorice · black pepper · green apple · grape soda · cinnamon).</footer>
+</main>
+</div>
+</body>
+</html>

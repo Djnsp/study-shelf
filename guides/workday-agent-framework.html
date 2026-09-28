@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Workday Agent Framework — A Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F6F8;
+  --surface:#FFFFFF;
+  --ink:#14213D;
+  --ink-2:#33405A;
+  --muted:#64748B;
+  --hair:#D8DEE7;
+  --hair-2:#E8ECF1;
+  --indigo:#5B53D6;        /* the agent / AI brain */
+  --indigo-tint:#EEEDFB;
+  --teal:#0E7C7B;          /* tools / MCP / connectivity */
+  --teal-tint:#E2F2F1;
+  --amber:#C2410C;         /* security / guardrails / attention */
+  --amber-tint:#FBECE3;
+  --slate-tint:#EEF1F5;    /* data / platform */
+  --grid:#E3E8EF;
+  --display:'Space Grotesk',-apple-system,BlinkMacSystemFont,sans-serif;
+  --body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:16.5px;line-height:1.66;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px;
+  display:grid;grid-template-columns:236px minmax(0,1fr);gap:48px;}
+@media(max-width:920px){.wrap{grid-template-columns:1fr;gap:0}}
+
+/* ---------- Cover ---------- */
+.cover{grid-column:1/-1;background:var(--ink);color:#fff;border-radius:0 0 22px 22px;
+  padding:64px 56px 56px;position:relative;overflow:hidden;margin-bottom:8px;}
+.cover::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(var(--grid-l,rgba(255,255,255,.05)) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:34px 34px;mask-image:radial-gradient(circle at 80% 20%,#000,transparent 70%);}
+.cover .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:#9DB4FF;position:relative}
+.cover h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5.4vw,58px);
+  line-height:1.04;letter-spacing:-.02em;margin:14px 0 16px;position:relative;max-width:14ch}
+.cover p{position:relative;max-width:60ch;color:#C5CEDF;font-size:18px;margin:0}
+.cover .tags{position:relative;margin-top:26px;display:flex;flex-wrap:wrap;gap:8px}
+.cover .tags span{font-family:var(--mono);font-size:11.5px;border:1px solid rgba(255,255,255,.22);
+  color:#DCE3F0;padding:5px 11px;border-radius:30px;letter-spacing:.04em}
+
+/* ---------- TOC ---------- */
+.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  padding:40px 0 40px;font-size:13.5px}
+.toc h4{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 12px}
+.toc a{display:block;color:var(--ink-2);text-decoration:none;padding:5px 0 5px 14px;
+  border-left:2px solid var(--hair);line-height:1.35;transition:.15s}
+.toc a:hover{color:var(--indigo);border-left-color:var(--indigo)}
+.toc a.part{font-weight:600;color:var(--ink);font-family:var(--display);margin-top:14px;
+  border-left-color:var(--ink)}
+.toc a .n{font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:7px}
+@media(max-width:920px){.toc{position:static;height:auto;border-bottom:1px solid var(--hair);
+  padding:22px 0}}
+
+/* ---------- Content ---------- */
+main{padding:34px 0 90px;min-width:0}
+.part-head{margin:64px 0 8px;padding-top:18px}
+.part-head:first-of-type{margin-top:18px}
+.part-head .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--indigo)}
+.part-head h2{font-family:var(--display);font-weight:700;font-size:clamp(27px,3.6vw,38px);
+  letter-spacing:-.02em;line-height:1.1;margin:8px 0 0}
+.part-head .lede{color:var(--muted);font-size:17.5px;margin:14px 0 0;max-width:64ch}
+
+h3{font-family:var(--display);font-weight:600;font-size:23px;letter-spacing:-.01em;
+  margin:46px 0 4px;scroll-margin-top:20px}
+h3 .hn{font-family:var(--mono);font-size:14px;color:var(--indigo);margin-right:10px;font-weight:500}
+h4{font-family:var(--display);font-weight:600;font-size:18px;margin:30px 0 2px}
+p{margin:14px 0;max-width:70ch}
+main a{color:var(--indigo);text-decoration:none;border-bottom:1px solid var(--indigo-tint)}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.87em;background:var(--slate-tint);
+  border:1px solid var(--hair-2);padding:1.5px 6px;border-radius:5px;color:var(--ink)}
+ul,ol{max-width:70ch;padding-left:22px}
+li{margin:7px 0}
+li::marker{color:var(--indigo)}
+hr{border:0;border-top:1px solid var(--hair);margin:40px 0}
+
+/* analogy / callout */
+.note{border:1px solid var(--hair);background:var(--surface);border-radius:14px;
+  padding:18px 22px;margin:22px 0;max-width:74ch}
+.note .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--indigo);display:block;margin-bottom:6px}
+.note.analogy{border-left:3px solid var(--indigo)}
+.note.security{border-left:3px solid var(--amber)}
+.note.security .tag{color:var(--amber)}
+.note p{margin:6px 0;max-width:none}
+
+/* figure / diagram */
+figure{margin:30px 0;background:var(--surface);border:1px solid var(--hair);border-radius:16px;
+  padding:26px 22px 16px;overflow:hidden}
+figure svg{display:block;width:100%;height:auto;max-width:840px;margin:0 auto}
+figcaption{font-size:13.5px;color:var(--muted);text-align:center;margin-top:14px;
+  font-family:var(--body);max-width:62ch;margin-left:auto;margin-right:auto}
+figcaption b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-2);display:block;margin-bottom:3px}
+
+/* svg primitives */
+.d-box{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.d-agent{fill:var(--indigo-tint);stroke:var(--indigo);stroke-width:1.5}
+.d-tool{fill:var(--teal-tint);stroke:var(--teal);stroke-width:1.5}
+.d-data{fill:var(--slate-tint);stroke:#9AA7BC;stroke-width:1.5}
+.d-sec{fill:var(--amber-tint);stroke:var(--amber);stroke-width:1.5}
+.d-fill-ink{fill:var(--ink)}
+.d-t{font-family:var(--body);fill:var(--ink);font-size:13.5px;font-weight:500}
+.d-t-w{font-family:var(--body);fill:#fff;font-size:13.5px;font-weight:600}
+.d-sm{font-family:var(--body);fill:var(--muted);font-size:11.5px;font-weight:500}
+.d-mono{font-family:var(--mono);fill:var(--ink-2);font-size:11px}
+.d-mono-i{font-family:var(--mono);fill:var(--indigo);font-size:11px;font-weight:500}
+.d-mono-t{font-family:var(--mono);fill:var(--teal);font-size:11px;font-weight:500}
+.d-line{stroke:var(--ink);stroke-width:1.6;fill:none}
+.d-line-d{stroke:var(--muted);stroke-width:1.4;fill:none;stroke-dasharray:5 4}
+.d-cap{font-family:var(--display);font-weight:600;fill:var(--ink);font-size:14px}
+.d-lane{fill:#F8FAFC;stroke:var(--hair);stroke-width:1}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:12px;
+  font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px}
+.legend i{width:13px;height:13px;border-radius:4px;display:inline-block;border:1.5px solid}
+.lg-agent{background:var(--indigo-tint);border-color:var(--indigo)}
+.lg-tool{background:var(--teal-tint);border-color:var(--teal)}
+.lg-data{background:var(--slate-tint);border-color:#9AA7BC}
+.lg-sec{background:var(--amber-tint);border-color:var(--amber)}
+.lg-box{background:var(--surface);border-color:var(--ink)}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;margin:22px 0;font-size:14.5px;display:block;overflow-x:auto}
+.tbl table{width:100%;border-collapse:collapse;min-width:520px}
+.tbl th{font-family:var(--display);font-weight:600;text-align:left;background:var(--ink);color:#fff;
+  padding:11px 14px;font-size:13.5px}
+.tbl td{border-bottom:1px solid var(--hair);padding:11px 14px;vertical-align:top}
+.tbl tr:nth-child(even) td{background:#FAFBFC}
+.tbl td code{font-size:12.5px}
+
+/* code block */
+pre{background:#0F1729;color:#E6EAF2;border-radius:12px;padding:18px 20px;overflow-x:auto;
+  font-family:var(--mono);font-size:13px;line-height:1.6;margin:20px 0;border:1px solid #1F2A44}
+pre .c{color:#7C89A8}
+pre .k{color:#9DB4FF}
+pre .s{color:#86E1C8}
+
+/* key-term chips row */
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:24px 0}
+.term{background:var(--surface);border:1px solid var(--hair);border-radius:13px;padding:16px 18px}
+.term h5{font-family:var(--display);font-weight:600;font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.term h5 i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.term p{font-size:13.5px;color:var(--ink-2);margin:0;max-width:none}
+
+.foot{grid-column:1/-1;border-top:1px solid var(--hair);margin-top:20px;padding:26px 0 60px;
+  font-size:13px;color:var(--muted);font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <div class="eyebrow">Workday DevCon 2026 · Platform Field Guide</div>
+  <h1>The Workday Agent Framework</h1>
+  <p>How AI agents actually work — and how Workday turns that into a secure, governed platform where agents read, write, and act on your behalf across HCM, Payroll, and Financials.</p>
+  <div class="tags">
+    <span>Agents</span><span>Skills &amp; Tools</span><span>MCP</span><span>ASOR</span>
+    <span>Agent Gateway</span><span>A2A · A2UI</span><span>Delegate / Ambient</span><span>Agent Passport</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <a class="part" href="#part1">Part 1 · How agents work</a>
+  <a href="#what-agent"><span class="n">1.1</span>What an agent is</a>
+  <a href="#agent-loop"><span class="n">1.2</span>The agent loop</a>
+  <a href="#tools"><span class="n">1.3</span>Tools &amp; function calling</a>
+  <a href="#skills"><span class="n">1.4</span>Skills</a>
+  <a href="#mcp"><span class="n">1.5</span>What MCP is</a>
+  <a href="#together1"><span class="n">1.6</span>One full request</a>
+
+  <a class="part" href="#part2">Part 2 · The Workday framework</a>
+  <a href="#wd-big"><span class="n">2.1</span>The big picture</a>
+  <a href="#wd-vocab"><span class="n">2.2</span>Agent · Skill · Tool</a>
+  <a href="#asor"><span class="n">2.3</span>ASOR control plane</a>
+  <a href="#wd-tools"><span class="n">2.4</span>Tools &amp; MCP server</a>
+  <a href="#build"><span class="n">2.5</span>Building a custom agent</a>
+  <a href="#orchestrate"><span class="n">2.6</span>Orchestrate actions</a>
+  <a href="#a2ui"><span class="n">2.7</span>A2UI in chat</a>
+  <a href="#modes"><span class="n">2.8</span>Delegate vs Ambient</a>
+  <a href="#invoke"><span class="n">2.9</span>How agents get invoked</a>
+  <a href="#a2a"><span class="n">2.10</span>A2A interoperability</a>
+
+  <a class="part" href="#part3">Part 3 · Tying it together</a>
+  <a href="#lifecycle"><span class="n">3.1</span>Register → activate → run</a>
+  <a href="#e2e"><span class="n">3.2</span>End-to-end trace</a>
+
+  <a class="part" href="#part4">Part 4 · How it's secure</a>
+  <a href="#sec-layers"><span class="n">4.1</span>Layers of defense</a>
+  <a href="#sec-oauth"><span class="n">4.2</span>OAuth &amp; the Gateway</a>
+  <a href="#sec-passport"><span class="n">4.3</span>Agent Passport</a>
+  <a href="#sec-audit"><span class="n">4.4</span>Audit &amp; tokens</a>
+
+  <a class="part" href="#glossary">Glossary &amp; endpoints</a>
+</nav>
+
+<main>
+
+<!-- =================== PART 1 =================== -->
+<div class="part-head" id="part1">
+  <div class="kicker">Part 1 — The Foundations</div>
+  <h2>How AI agents actually work</h2>
+  <p class="lede">Before any Workday-specific terms, here is the whole idea in plain language: what an agent is, how it thinks, and how it uses <em>tools</em> and <em>skills</em> to get things done. Everything in Part 2 is just this, applied inside Workday.</p>
+</div>
+
+<h3 id="what-agent"><span class="hn">1.1</span>What an "agent" really is</h3>
+<p>A plain large language model (LLM) — the thing behind a chatbot — can only do one thing: read text and write text back. It is brilliant at language but it is <strong>sealed in a box</strong>. It can't look up your time-off balance, it can't submit a request, it can't read a live database. It only predicts words.</p>
+<p>An <strong>AI agent</strong> is that same language model, but given two new things: a set of <strong>tools</strong> it is allowed to use, and the freedom to <strong>decide on its own</strong> when to use them, in a loop, until a goal is met. The model stops being a narrator and becomes a <em>doer</em>.</p>
+
+<div class="note analogy">
+  <span class="tag">The simplest analogy</span>
+  <p>A chatbot is a brilliant colleague locked in a room with no phone — you can ask them anything and they'll talk, but they can't <em>act</em>. An agent is the same colleague, now handed a phone, a company directory, and permission to make calls. Same brain. Suddenly they can get things done — look things up, fill out forms, take actions — because they can reach the outside world and decide which "call" to make.</p>
+</div>
+
+<p>Three differences separate an agent from ordinary automation like a script or an integration:</p>
+<ul>
+  <li><strong>It decides, you don't script it.</strong> A traditional integration follows a fixed, pre-written path. An agent is given a goal in plain language and works out the steps itself.</li>
+  <li><strong>It loops.</strong> It can take an action, look at the result, and decide what to do next — adjusting as it goes, instead of running once top-to-bottom.</li>
+  <li><strong>It speaks human.</strong> The instruction is "what is my time-off balance?", not a function signature. The model translates intent into the right tool calls.</li>
+</ul>
+
+<h3 id="agent-loop"><span class="hn">1.2</span>The agent loop — how it "thinks"</h3>
+<p>Functionally, every agent runs the same cycle. The model is handed your request <em>plus</em> a list of the tools available to it. It reasons about what's needed, optionally calls a tool, reads what comes back, and repeats until it can give a final answer. This loop is the entire mechanism.</p>
+
+<figure>
+<svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The agent reasoning loop">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/>
+    </marker>
+    <marker id="ar-i" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#5B53D6"/>
+    </marker>
+  </defs>
+  <!-- user request -->
+  <rect x="20" y="150" width="120" height="60" rx="10" class="d-box"/>
+  <text x="80" y="176" text-anchor="middle" class="d-t">User goal</text>
+  <text x="80" y="194" text-anchor="middle" class="d-sm">in plain language</text>
+  <path d="M140,180 H188" class="d-line" marker-end="url(#ar)"/>
+
+  <!-- brain -->
+  <rect x="190" y="120" width="170" height="120" rx="14" class="d-agent"/>
+  <text x="275" y="150" text-anchor="middle" class="d-cap" fill="#5B53D6">LLM — the brain</text>
+  <text x="275" y="174" text-anchor="middle" class="d-sm">1 · understand intent</text>
+  <text x="275" y="192" text-anchor="middle" class="d-sm">2 · pick a tool</text>
+  <text x="275" y="210" text-anchor="middle" class="d-sm">3 · read result</text>
+  <text x="275" y="228" text-anchor="middle" class="d-sm">4 · decide next step</text>
+
+  <!-- tool call out -->
+  <path d="M360,160 H470" class="d-line-d" marker-end="url(#ar-i)" stroke="#5B53D6"/>
+  <text x="415" y="152" text-anchor="middle" class="d-mono-i">call tool(args)</text>
+  <rect x="472" y="120" width="150" height="55" rx="10" class="d-tool"/>
+  <text x="547" y="143" text-anchor="middle" class="d-t">Tool runs</text>
+  <text x="547" y="161" text-anchor="middle" class="d-sm">API / query / action</text>
+
+  <!-- result back -->
+  <path d="M472,196 H362" class="d-line-d" marker-end="url(#ar-i)" stroke="#5B53D6"/>
+  <text x="417" y="214" text-anchor="middle" class="d-mono-t">result</text>
+  <rect x="472" y="185" width="150" height="40" rx="10" class="d-data"/>
+  <text x="547" y="210" text-anchor="middle" class="d-sm">data returned</text>
+
+  <!-- loop arc -->
+  <path d="M275,240 q0,55 70,55 h150" class="d-line-d" fill="none"/>
+  <text x="345" y="312" text-anchor="middle" class="d-sm">repeat until the goal is met</text>
+  <path d="M495,295 q60,0 60,-55 v-12" class="d-line-d" marker-end="url(#ar)"/>
+
+  <!-- final answer -->
+  <path d="M360,135 q80,-95 160,-95 h150" class="d-line" marker-end="url(#ar)"/>
+  <text x="560" y="32" text-anchor="middle" class="d-sm">when done →</text>
+  <rect x="672" y="18" width="128" height="46" rx="10" class="d-box"/>
+  <text x="736" y="40" text-anchor="middle" class="d-t">Final answer</text>
+  <text x="736" y="56" text-anchor="middle" class="d-sm">to the user</text>
+</svg>
+<figcaption><b>Figure 1 · The agent loop</b>The model is the only "thinker." Tools are hands. The loop — reason, act, observe — is what makes it an agent rather than a chatbot.</figcaption>
+</figure>
+
+<p>The crucial point: <strong>the model never touches your systems directly.</strong> It only ever <em>emits a request to call a tool</em>. Something outside the model actually runs that tool and hands the result back as text. That separation is exactly where security and governance live — a theme that returns throughout Part 4.</p>
+
+<h3 id="tools"><span class="hn">1.3</span>Tools and "function calling"</h3>
+<p>A <strong>tool</strong> is a single, well-defined capability the agent can use — "get a worker's details," "submit a time-off request," "run this query." Technically, a tool is described to the model as a small contract: a <em>name</em>, a plain-English <em>description</em> of what it does and when to use it, and a <em>schema</em> of the inputs it expects.</p>
+<p>The model is given this list of contracts alongside your question. When it decides a tool is needed, it doesn't run code — it produces a structured message that says "call <code>getTimeOff</code> with <code>{worker: "me"}</code>." This is called <strong>function calling</strong> or <strong>tool calling</strong>. The runtime executes it and feeds the output back into the loop.</p>
+
+<figure>
+<svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Function calling sequence">
+  <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+  <!-- lanes -->
+  <text x="80" y="26" text-anchor="middle" class="d-cap">User</text>
+  <text x="300" y="26" text-anchor="middle" class="d-cap" fill="#5B53D6">Model (brain)</text>
+  <text x="540" y="26" text-anchor="middle" class="d-cap">Runtime</text>
+  <text x="745" y="26" text-anchor="middle" class="d-cap" fill="#0E7C7B">Tool / API</text>
+  <line x1="80" y1="38" x2="80" y2="280" class="d-line-d"/>
+  <line x1="300" y1="38" x2="300" y2="280" class="d-line-d"/>
+  <line x1="540" y1="38" x2="540" y2="280" class="d-line-d"/>
+  <line x1="745" y1="38" x2="745" y2="280" class="d-line-d"/>
+
+  <path d="M80,62 H300" class="d-line" marker-end="url(#ar2)"/>
+  <text x="190" y="55" text-anchor="middle" class="d-sm">"What's my PTO balance?"</text>
+
+  <rect x="232" y="78" width="136" height="34" rx="7" class="d-agent"/>
+  <text x="300" y="100" text-anchor="middle" class="d-sm">reasons: need a tool</text>
+
+  <path d="M300,134 H540" class="d-line" marker-end="url(#ar2)"/>
+  <text x="420" y="127" text-anchor="middle" class="d-mono-i">getTimeOff({worker:"me"})</text>
+
+  <path d="M540,166 H745" class="d-line" marker-end="url(#ar2)"/>
+  <text x="642" y="159" text-anchor="middle" class="d-sm">execute the real call</text>
+
+  <path d="M745,198 H540" class="d-line" marker-end="url(#ar2)"/>
+  <text x="642" y="191" text-anchor="middle" class="d-mono-t">{ balance: 14.5 days }</text>
+
+  <path d="M540,230 H300" class="d-line" marker-end="url(#ar2)"/>
+  <text x="420" y="223" text-anchor="middle" class="d-sm">result fed back to model</text>
+
+  <path d="M300,262 H80" class="d-line" marker-end="url(#ar2)"/>
+  <text x="190" y="255" text-anchor="middle" class="d-sm">"You have 14.5 days."</text>
+</svg>
+<figcaption><b>Figure 2 · Function calling</b>The model only <em>proposes</em> a call (name + arguments). The runtime executes it and returns data the model can then explain in human terms.</figcaption>
+</figure>
+
+<p>Why the descriptions matter so much: the model picks tools <em>by reading their descriptions</em>. A vague description ("does stuff with pay") makes the model choose badly; a precise one ("makes an ad-hoc percentage adjustment to base pay; use when asked to raise or lower compensation by a percent") makes it choose correctly. This is a detail Workday is explicit about — when you expose your own logic as a tool, the quality of the description directly drives whether the agent calls it at the right time.</p>
+
+<h3 id="skills"><span class="hn">1.4</span>Skills — bundling capability with intent</h3>
+<p>If a tool is a single action, a <strong>skill</strong> is a higher-level capability that an agent advertises — for example "Staffing" or "Time Off Management." A skill packages together the <em>instructions</em> for how to handle a kind of request and the <em>set of tools</em> needed to fulfil it. One agent can have several skills; one skill can call several tools.</p>
+
+<figure>
+<svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agent skill and tool hierarchy">
+  <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" class="d-fill-ink"/></marker></defs>
+  <rect x="320" y="16" width="180" height="50" rx="12" class="d-agent"/>
+  <text x="410" y="38" text-anchor="middle" class="d-cap" fill="#5B53D6">Agent</text>
+  <text x="410" y="56" text-anchor="middle" class="d-sm">a persona / domain</text>
+
+  <!-- skills -->
+  <path d="M410,66 V92 H170 V112" class="d-line" marker-end="url(#ar3)"/>
+  <path d="M410,66 V112" class="d-line" marker-end="url(#ar3)"/>
+  <path d="M410,66 V92 H650 V112" class="d-line" marker-end="url(#ar3)"/>
+
+  <rect x="90" y="114" width="160" height="46" rx="10" class="d-box"/>
+  <text x="170" y="135" text-anchor="middle" class="d-t">Skill: Time Off</text>
+  <text x="170" y="152" text-anchor="middle" class="d-sm">instructions + tools</text>
+  <rect x="330" y="114" width="160" height="46" rx="10" class="d-box"/>
+  <text x="410" y="135" text-anchor="middle" class="d-t">Skill: Staffing</text>
+  <text x="410" y="152" text-anchor="middle" class="d-sm">instructions + tools</text>
+  <rect x="570" y="114" width="160" height="46" rx="10" class="d-box"/>
+  <text x="650" y="135" text-anchor="middle" class="d-t">Skill: Pay Info</text>
+  <text x="650" y="152" text-anchor="middle" class="d-sm">instructions + tools</text>
+
+  <!-- tools under staffing -->
+  <path d="M410,160 V184 H330 V200" class="d-line" marker-end="url(#ar3)"/>
+  <path d="M410,160 V200" class="d-line" marker-end="url(#ar3)"/>
+  <path d="M410,160 V184 H500 V200" class="d-line" marker-end="url(#ar3)"/>
+  <rect x="276" y="202" width="108" height="38" rx="8" class="d-tool"/>
+  <text x="330" y="225" text-anchor="middle" class="d-sm">getWorkers</text>
+  <rect x="388" y="202" width="120" height="38" rx="8" class="d-tool"/>
+  <text x="448" y="225" text-anchor="middle" class="d-sm">terminateEmployee</text>
+  <rect x="512" y="202" width="40" height="38" rx="8" class="d-tool" opacity=".5"/>
+  <text x="532" y="225" text-anchor="middle" class="d-sm">…</text>
+</svg>
+<figcaption><b>Figure 3 · Agent → Skills → Tools</b>An agent is the persona. Skills are the capabilities it advertises and the unit that gets secured. Tools are the concrete calls each skill makes.</figcaption>
+</figure>
+
+<p>This three-level shape — <strong>Agent → Skill → Tool</strong> — is worth holding onto, because Workday uses these exact three words with exactly these meanings. The skill is also the level at which <em>permissions</em> are attached: you decide which users may invoke a given skill, not the agent as a whole.</p>
+
+<h3 id="mcp"><span class="hn">1.5</span>What MCP is — the universal adapter</h3>
+<p>Here's the problem MCP solves. Every AI platform (Claude, Cursor, Copilot, a homegrown agent) used to need its own custom code to connect to every system (Workday, Salesforce, your database). That's an N×M mess — every client times every system.</p>
+<p>The <strong>Model Context Protocol (MCP)</strong> is an open standard that fixes this. A system exposes its tools <em>once</em> behind an <strong>MCP server</strong>. Any MCP-compatible <strong>client</strong> can connect to that one endpoint and immediately discover and call every tool, using one common language. It is, in effect, a <strong>USB-C port for AI tools</strong>: one shape that fits everything.</p>
+
+<figure>
+<svg viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MCP as a universal connector">
+  <defs><marker id="ar4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#0E7C7B"/></marker></defs>
+  <!-- clients -->
+  <text x="110" y="22" text-anchor="middle" class="d-cap">MCP clients (agents)</text>
+  <rect x="40" y="36" width="140" height="34" rx="8" class="d-agent"/><text x="110" y="58" text-anchor="middle" class="d-sm">Claude / Cursor</text>
+  <rect x="40" y="80" width="140" height="34" rx="8" class="d-agent"/><text x="110" y="102" text-anchor="middle" class="d-sm">Copilot Studio</text>
+  <rect x="40" y="124" width="140" height="34" rx="8" class="d-agent"/><text x="110" y="146" text-anchor="middle" class="d-sm">Custom agent</text>
+  <rect x="40" y="168" width="140" height="34" rx="8" class="d-agent"/><text x="110" y="190" text-anchor="middle" class="d-sm">Google Agentspace</text>
+
+  <!-- arrows to server -->
+  <path d="M182,53 C260,53 270,120 330,128" class="d-line" stroke="#0E7C7B" marker-end="url(#ar4)"/>
+  <path d="M182,97 C260,97 280,124 330,135" class="d-line" stroke="#0E7C7B" marker-end="url(#ar4)"/>
+  <path d="M182,141 C260,141 280,142 330,142" class="d-line" stroke="#0E7C7B" marker-end="url(#ar4)"/>
+  <path d="M182,185 C260,185 280,156 330,150" class="d-line" stroke="#0E7C7B" marker-end="url(#ar4)"/>
+  <text x="250" y="245" text-anchor="middle" class="d-mono-t">one protocol · JSON-RPC 2.0</text>
+
+  <!-- server -->
+  <rect x="332" y="96" width="150" height="92" rx="14" class="d-tool"/>
+  <text x="407" y="128" text-anchor="middle" class="d-cap" fill="#0E7C7B">MCP server</text>
+  <text x="407" y="150" text-anchor="middle" class="d-sm">tools/list</text>
+  <text x="407" y="168" text-anchor="middle" class="d-sm">tools/call</text>
+
+  <!-- tools -->
+  <text x="650" y="22" text-anchor="middle" class="d-cap">the system's tools</text>
+  <path d="M482,118 H560" class="d-line" stroke="#0E7C7B" marker-end="url(#ar4)"/>
+  <path d="M482,142 H560" class="d-line" stroke="#0E7C7B" marker-end="url(#ar4)"/>
+  <path d="M482,166 H560" class="d-line" stroke="#0E7C7B" marker-end="url(#ar4)"/>
+  <rect x="562" y="42" width="216" height="34" rx="8" class="d-data"/><text x="670" y="64" text-anchor="middle" class="d-sm">getWorkers · getTimeOff</text>
+  <rect x="562" y="86" width="216" height="34" rx="8" class="d-data"/><text x="670" y="108" text-anchor="middle" class="d-sm">submitRequest · runQuery</text>
+  <rect x="562" y="130" width="216" height="34" rx="8" class="d-data"/><text x="670" y="152" text-anchor="middle" class="d-sm">… 300+ more</text>
+  <rect x="562" y="174" width="216" height="34" rx="8" class="d-data"/><text x="670" y="196" text-anchor="middle" class="d-sm">your own logic, exposed once</text>
+</svg>
+<figcaption><b>Figure 4 · MCP, the universal adapter</b>Expose tools once behind an MCP server; any compatible agent connects to the single endpoint and discovers them. No more custom glue per client.</figcaption>
+</figure>
+
+<p>Technically MCP rides on <strong>JSON-RPC 2.0</strong>. A client calls a method named <code>tools/list</code> to discover what's available, and <code>tools/call</code> to run one. The model handles tool <em>selection</em> and call syntax automatically — you, the builder, mostly just point your agent at the endpoint and grant it access. Keep this picture; in Part 2 the "MCP server" becomes a specific Workday URL and the "300+ tools" become real Workday operations.</p>
+
+<h3 id="together1"><span class="hn">1.6</span>One full request, end to end</h3>
+<p>Stitching 1.2–1.5 together, here is the complete shape of a single agent request against an MCP-connected system — still generic, no Workday yet:</p>
+<ol>
+  <li><strong>You ask</strong> in plain language. Your message, the conversation so far, and the agent's tool list all go to the model.</li>
+  <li><strong>The model reasons</strong> and decides a tool is needed. It emits a <code>tools/call</code> with a tool name and arguments.</li>
+  <li><strong>The runtime authenticates</strong> the call and routes it to the MCP server, which executes the real operation against the underlying system.</li>
+  <li><strong>The result returns</strong> to the model as data.</li>
+  <li><strong>The model loops or finishes</strong> — calling more tools if needed, then writing a human answer (or rendering a form / card) back to you.</li>
+</ol>
+<p>That is the entire machine. The rest of this guide is Workday giving each of these boxes a concrete name, a real endpoint, and — critically — a wrapper of governance and security around every arrow.</p>
+<!-- =================== PART 2 =================== -->
+<div class="part-head" id="part2">
+  <div class="kicker">Part 2 — Applied</div>
+  <h2>The Workday Agent Framework</h2>
+  <p class="lede">Now the same five boxes, with Workday names. The model is Workday's delivered LLM. The tools are 300+ Agent-Ready operations. The MCP server is a real URL. And a control plane called ASOR governs every one of those arrows.</p>
+</div>
+
+<h3 id="wd-big"><span class="hn">2.1</span>The big picture</h3>
+<p>Read this diagram top to bottom: a person (or another system) makes a request through some <em>surface</em>; the <strong>Agent Gateway</strong> authenticates and routes it; <strong>ASOR</strong> decides what the agent is allowed to do; the agent's skills call <strong>Agent-Ready tools</strong> over MCP; and those tools touch real Workday data and business processes — always under the user's own permissions.</p>
+
+<figure>
+<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Workday Agent Framework architecture">
+  <defs><marker id="arc" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+
+  <!-- Layer 1: surfaces -->
+  <rect x="20" y="20" width="780" height="74" rx="12" class="d-lane"/>
+  <text x="36" y="40" class="d-mono" fill="#5B53D6">SURFACES — where the request starts</text>
+  <rect x="40" y="48" width="150" height="36" rx="8" class="d-box"/><text x="115" y="71" text-anchor="middle" class="d-sm">Workday Chat Panel</text>
+  <rect x="206" y="48" width="160" height="36" rx="8" class="d-box"/><text x="286" y="71" text-anchor="middle" class="d-sm">Business Process step</text>
+  <rect x="382" y="48" width="180" height="36" rx="8" class="d-box"/><text x="472" y="71" text-anchor="middle" class="d-sm">External: Gemini / Copilot</text>
+  <rect x="578" y="48" width="200" height="36" rx="8" class="d-box"/><text x="678" y="71" text-anchor="middle" class="d-sm">IDE: Claude · Cursor · VS Code</text>
+
+  <path d="M410,94 V118" class="d-line" marker-end="url(#arc)"/>
+
+  <!-- Layer 2: gateway -->
+  <rect x="120" y="120" width="580" height="56" rx="12" class="d-sec"/>
+  <text x="410" y="144" text-anchor="middle" class="d-cap" fill="#C2410C">Agent Gateway — OAuth 2.0 authentication &amp; regional routing</text>
+  <text x="410" y="164" text-anchor="middle" class="d-sm">https://us.agent.workday.com  ·  every request carries a Bearer token</text>
+
+  <path d="M410,176 V200" class="d-line" marker-end="url(#arc)"/>
+
+  <!-- Layer 3: ASOR -->
+  <rect x="80" y="202" width="660" height="92" rx="12" class="d-agent"/>
+  <text x="410" y="224" text-anchor="middle" class="d-cap" fill="#5B53D6">ASOR — Agent System of Record (the control plane)</text>
+  <rect x="100" y="236" width="180" height="46" rx="8" class="d-box"/><text x="190" y="256" text-anchor="middle" class="d-sm">Agent Registry</text><text x="190" y="272" text-anchor="middle" class="d-sm">who exists, active?</text>
+  <rect x="320" y="236" width="180" height="46" rx="8" class="d-box"/><text x="410" y="256" text-anchor="middle" class="d-sm">Skill permissions</text><text x="410" y="272" text-anchor="middle" class="d-sm">"Available To" groups</text>
+  <rect x="540" y="236" width="180" height="46" rx="8" class="d-box"/><text x="630" y="256" text-anchor="middle" class="d-sm">Trust &amp; Safety Passport</text><text x="630" y="272" text-anchor="middle" class="d-sm">guardrail stamps</text>
+
+  <path d="M410,294 V318" class="d-line" marker-end="url(#arc)"/>
+  <text x="470" y="312" class="d-mono-t">MCP · JSON-RPC</text>
+
+  <!-- Layer 4: agent + tools -->
+  <rect x="60" y="320" width="700" height="72" rx="12" class="d-lane"/>
+  <text x="76" y="340" class="d-mono" fill="#0E7C7B">AGENT SKILLS → TOOLS (over the Workday MCP server)</text>
+  <rect x="80" y="348" width="150" height="34" rx="8" class="d-tool"/><text x="155" y="370" text-anchor="middle" class="d-sm">Agent-Ready Tools</text>
+  <rect x="244" y="348" width="150" height="34" rx="8" class="d-tool"/><text x="319" y="370" text-anchor="middle" class="d-sm">Orchestrate Actions</text>
+  <rect x="408" y="348" width="150" height="34" rx="8" class="d-tool"/><text x="483" y="370" text-anchor="middle" class="d-sm">Live Data Query</text>
+  <rect x="572" y="348" width="168" height="34" rx="8" class="d-tool"/><text x="656" y="370" text-anchor="middle" class="d-sm">A2UI (render in chat)</text>
+
+  <path d="M410,392 V416" class="d-line" marker-end="url(#arc)"/>
+
+  <!-- Layer 5: data -->
+  <rect x="160" y="418" width="500" height="44" rx="12" class="d-data"/>
+  <text x="410" y="445" text-anchor="middle" class="d-t">Workday — HCM · Payroll · Financials · Business Processes · Data Cloud</text>
+</svg>
+<figcaption><b>Figure 5 · The framework, end to end</b>Five layers. The amber band (Gateway) and the indigo band (ASOR) are the two governance checkpoints every request must clear before any tool runs.</figcaption>
+</figure>
+
+<div class="legend">
+  <span><i class="lg-agent"></i>agent / AI &amp; control plane</span>
+  <span><i class="lg-tool"></i>tools / MCP / connectivity</span>
+  <span><i class="lg-sec"></i>security / gateway</span>
+  <span><i class="lg-data"></i>Workday data &amp; surfaces</span>
+  <span><i class="lg-box"></i>component</span>
+</div>
+
+<h3 id="wd-vocab"><span class="hn">2.2</span>Agent · Skill · Tool, the Workday way</h3>
+<p>Workday uses the exact three-level vocabulary from Figure 3, with precise meanings. Internalize these — every other concept hangs off them.</p>
+
+<div class="terms">
+  <div class="term">
+    <h5><i style="background:#5B53D6"></i>Agent</h5>
+    <p>The top-level entity — a persona or functional domain, like "Payroll Agent" or "Recruiting Assistant." This is what gets <em>registered in ASOR</em> and what administrators manage.</p>
+  </div>
+  <div class="term">
+    <h5><i style="background:#14213D"></i>Skill</h5>
+    <p>A discrete capability the agent can perform. An agent can have many skills. The skill is the unit that gets <em>secured with permissions</em> and <em>activated for specific users</em>.</p>
+  </div>
+  <div class="term">
+    <h5><i style="background:#0E7C7B"></i>Tool</h5>
+    <p>A concrete Workday <em>Agent-Ready</em> operation a skill calls to do its work — e.g. <code>getWorkers</code>, <code>terminateEmployee</code>. One skill can call many tools.</p>
+  </div>
+</div>
+
+<p>When you build a Workday Custom Agent, these three things become real files: an <strong>agent definition</strong> (a <code>.agent</code> file) and one or more <strong>skill files</strong> (<code>.agentskills</code>) that declare the capabilities and the tools each skill is wired to.</p>
+
+<h3 id="asor"><span class="hn">2.3</span>ASOR — the control plane for every agent</h3>
+<p><strong>Agent System of Record (ASOR)</strong> is the single most important Workday-specific concept. It is the governed registry and control plane that sits between any agent and your Workday data. Nothing — no Workday-built agent, no custom agent, no external agent — can touch your tenant without being registered and activated here first.</p>
+<p>ASOR answers three questions for every agent: <strong>Does it exist and is it active?</strong> (the Agent Registry) · <strong>Which of its skills may run, and for which users?</strong> (skill status + the "Available To" security groups) · <strong>Is it safe?</strong> (the Trust &amp; Safety Passport, covered in Part 4).</p>
+
+<figure>
+<svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ASOR as control plane">
+  <defs><marker id="ara" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+  <!-- incoming agents -->
+  <rect x="20" y="60" width="150" height="40" rx="9" class="d-agent"/><text x="95" y="84" text-anchor="middle" class="d-sm">Workday-built agent</text>
+  <rect x="20" y="118" width="150" height="40" rx="9" class="d-agent"/><text x="95" y="142" text-anchor="middle" class="d-sm">Custom agent</text>
+  <rect x="20" y="176" width="150" height="40" rx="9" class="d-agent"/><text x="95" y="200" text-anchor="middle" class="d-sm">External agent (M365)</text>
+  <text x="95" y="44" text-anchor="middle" class="d-cap">Any agent</text>
+
+  <path d="M170,80 C220,80 230,120 268,130" class="d-line" marker-end="url(#ara)"/>
+  <path d="M170,138 H268" class="d-line" marker-end="url(#ara)"/>
+  <path d="M170,196 C220,196 230,156 268,146" class="d-line" marker-end="url(#ara)"/>
+  <text x="218" y="240" text-anchor="middle" class="d-sm">register</text>
+
+  <!-- ASOR box -->
+  <rect x="270" y="40" width="280" height="220" rx="16" class="d-sec" opacity=".25"/>
+  <rect x="270" y="40" width="280" height="220" rx="16" fill="none" stroke="#5B53D6" stroke-width="2"/>
+  <text x="410" y="66" text-anchor="middle" class="d-cap" fill="#5B53D6">ASOR control plane</text>
+  <rect x="290" y="80" width="240" height="44" rx="9" class="d-box"/><text x="410" y="100" text-anchor="middle" class="d-t">Agent Registry</text><text x="410" y="116" text-anchor="middle" class="d-sm">active / inactive status</text>
+  <rect x="290" y="132" width="240" height="44" rx="9" class="d-box"/><text x="410" y="152" text-anchor="middle" class="d-t">Skill &amp; user permissions</text><text x="410" y="168" text-anchor="middle" class="d-sm">"Available To" groups · modes</text>
+  <rect x="290" y="184" width="240" height="44" rx="9" class="d-box"/><text x="410" y="204" text-anchor="middle" class="d-t">Trust &amp; Safety Passport</text><text x="410" y="220" text-anchor="middle" class="d-sm">guardrail / safety stamps</text>
+
+  <!-- gated access to workday -->
+  <path d="M550,150 H636" class="d-line" marker-end="url(#ara)"/>
+  <text x="593" y="142" text-anchor="middle" class="d-sm">only if allowed</text>
+  <rect x="638" y="100" width="160" height="100" rx="12" class="d-data"/>
+  <text x="718" y="140" text-anchor="middle" class="d-cap">Workday</text>
+  <text x="718" y="162" text-anchor="middle" class="d-sm">data · actions ·</text>
+  <text x="718" y="178" text-anchor="middle" class="d-sm">business processes</text>
+</svg>
+<figcaption><b>Figure 6 · ASOR is the gate</b>Every agent — Workday's own, yours, or a synced Microsoft one — must pass through ASOR. It decides existence, permission, and safety before a single tool fires.</figcaption>
+</figure>
+
+<p>Enabling ASOR is a one-time tenant setup: you turn on the <em>Agent System of Record</em> functional area and grant a security group permissions on its domains — <em>Agent Management Hub, Manage: Agents, Setup: Agents, Reports: Agent Reporting,</em> and <em>Agent Compliance</em>. One constraint worth flagging now: <strong>ASOR currently supports only Unconstrained security groups.</strong> The central interface where admins live day-to-day is the <strong>Agent Management Hub</strong>.</p>
+
+<h3 id="wd-tools"><span class="hn">2.4</span>The tools and the MCP server</h3>
+<p>Workday ships <strong>300+ Agent-Ready tools</strong> spanning Workforce, Financials, Talent, Payroll, and Recruiting. "Agent-Ready" means Workday has wrapped a native operation as an MCP-callable tool with the right description and schema. They are the <em>same</em> tools whether they power a Workday Custom Agent or an external agent like Claude — the difference is only how the agent is registered.</p>
+
+<h4>Finding tools — two ways</h4>
+<ul>
+  <li><strong>MCP Explorer</strong> — a browsable web UI at <code>developer.workday.com/mcp-explorer</code> that lists every Agent-Ready tool and Workday-built agent. Filter by functional area, search by name, read descriptions, no code required. The recommended starting point.</li>
+  <li><strong>Finder API (ASOR Agent Resource Search)</strong> — programmatic discovery for scripts and build pipelines. You search by <code>searchString</code>, filter by <code>toolType</code> (<code>AGENT_READY</code> or <code>AGENT</code>), <code>operationType</code> (CREATE / PATCH / VIEW), and <code>protocol=MCP</code>. Each result returns a <code>wid</code> — the identifier you drop into your agent definition to wire the tool in.</li>
+</ul>
+
+<pre><span class="c"># Finder API — discover Agent-Ready tools for "time off"</span>
+<span class="k">GET</span> https://us.agent.workday.com/asor/agentResourceSearch/v1
+    ?searchString=time off &amp;toolType=AGENT_READY &amp;protocol=MCP
+
+<span class="c"># →</span> [{ <span class="s">"name"</span>:<span class="s">"getTimeOffEntries"</span>, <span class="s">"wid"</span>:<span class="s">"386c…0000"</span>, <span class="s">"mcpEnabled"</span>:true }]</pre>
+
+<h4>The four kinds of tool a custom agent can call</h4>
+<p>When you build a Workday Custom Agent, its skills can reach for any of four tool families:</p>
+<div class="tbl"><table>
+<tr><th>Tool family</th><th>What it does</th></tr>
+<tr><td><strong>Agent-Ready Tools MCP</strong></td><td>Calls Workday APIs that are agent-ready. Includes Workday's delivered LLM components.</td></tr>
+<tr><td><strong>Orchestrate Actions MCP</strong></td><td>Calls your own Orchestrations (registered as Agent Actions) as tools — your proprietary business logic, Pipedream connectors, custom processing, REST/SOAP calls.</td></tr>
+<tr><td><strong>Live Data Query (LDQ)</strong></td><td>Connects to Workday Data Cloud as a query tool for SQL generation against tenant data.</td></tr>
+<tr><td><strong>Agent-to-User Interface (A2UI)</strong></td><td>Lets the agent render real UI — forms, cards, buttons — in the Workday Chat Panel instead of plain text.</td></tr>
+</table></div>
+
+<h4>The single MCP endpoint</h4>
+<p>External agents connect to one URL — <code>https://us.agent.workday.com/mcp</code> — speaking standard JSON-RPC 2.0. Calling <code>tools/list</code> returns exactly the tools your registered agent is permitted to use; <code>tools/call</code> runs one. For Workday Custom Agents built in App Builder, tool discovery and registration are handled <em>automatically</em> when you Save &amp; Deploy — you never hand-wire the endpoint.</p>
+
+<pre><span class="c"># Verify your agent's tools are wired correctly</span>
+<span class="k">POST</span> https://us.agent.workday.com/mcp
+Authorization: Bearer &lt;ASU token&gt;
+{ <span class="s">"jsonrpc"</span>:<span class="s">"2.0"</span>, <span class="s">"id"</span>:1, <span class="s">"method"</span>:<span class="s">"tools/list"</span> }</pre>
+<h3 id="build"><span class="hn">2.5</span>Building a custom agent with Developer Agent</h3>
+<p>The <strong>Developer Agent</strong> is an AI builder that lives in App Builder (and in your IDE via a VS Code extension for Claude, Cursor, Antigravity, and others). You describe the agent you want in plain English; it scaffolds the <code>.agent</code> and <code>.agentskills</code> files for you, which you can then refine by prompt or by editing the code directly.</p>
+
+<figure>
+<svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Custom agent build and deploy flow">
+  <defs><marker id="arb" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+  <!-- step boxes -->
+  <rect x="20" y="60" width="140" height="70" rx="11" class="d-box"/>
+  <text x="90" y="84" text-anchor="middle" class="d-mono-i">01</text><text x="90" y="104" text-anchor="middle" class="d-sm">Prompt Dev Agent</text><text x="90" y="120" text-anchor="middle" class="d-sm">"get my worker info"</text>
+  <path d="M160,95 H192" class="d-line" marker-end="url(#arb)"/>
+  <rect x="194" y="60" width="140" height="70" rx="11" class="d-agent"/>
+  <text x="264" y="84" text-anchor="middle" class="d-mono-i">02</text><text x="264" y="104" text-anchor="middle" class="d-sm">It scaffolds</text><text x="264" y="120" text-anchor="middle" class="d-mono">.agent · .agentskills</text>
+  <path d="M334,95 H366" class="d-line" marker-end="url(#arb)"/>
+  <rect x="368" y="60" width="140" height="70" rx="11" class="d-box"/>
+  <text x="438" y="84" text-anchor="middle" class="d-mono-i">03</text><text x="438" y="104" text-anchor="middle" class="d-sm">Refine &amp; preview</text><text x="438" y="120" text-anchor="middle" class="d-sm">edit skills · Play ▶</text>
+  <path d="M508,95 H540" class="d-line" marker-end="url(#arb)"/>
+  <rect x="542" y="60" width="140" height="70" rx="11" class="d-box"/>
+  <text x="612" y="84" text-anchor="middle" class="d-mono-i">04</text><text x="612" y="104" text-anchor="middle" class="d-sm">Save &amp; Deploy</text><text x="612" y="120" text-anchor="middle" class="d-sm">tools auto-wired</text>
+  <path d="M682,95 H714" class="d-line" marker-end="url(#arb)"/>
+  <rect x="690" y="60" width="120" height="70" rx="11" class="d-sec"/>
+  <text x="750" y="84" text-anchor="middle" class="d-mono-i" fill="#C2410C">05</text><text x="750" y="104" text-anchor="middle" class="d-sm">Activate in</text><text x="750" y="120" text-anchor="middle" class="d-sm">ASOR</text>
+
+  <!-- result band -->
+  <rect x="20" y="170" width="790" height="48" rx="11" class="d-data"/>
+  <text x="415" y="190" text-anchor="middle" class="d-t">Live agent — reads, writes &amp; acts in Workday on the user's behalf · automatically A2A-ready</text>
+  <text x="415" y="208" text-anchor="middle" class="d-sm">test with Agent Preview · inspect every run with Agent Traces</text>
+</svg>
+<figcaption><b>Figure 7 · From prompt to live agent</b>Building is a five-step loop. Notice step 5: deploying is not enough — an agent only becomes usable once you <em>activate</em> it in ASOR and grant skills to security groups.</figcaption>
+</figure>
+
+<p>Two safety-minded details are built into the workflow. <strong>Draft Mode:</strong> generated changes show as a side-by-side diff and don't touch your real app until you click Apply. <strong>Agent Traces:</strong> every message to a deployed agent captures a full execution trace — which tools were offered to the model, which it actually called, and what the chat panel rendered — so you can debug by comparing a working run against a broken one. If a tool is missing from the trace's inputs, the fix is almost always in your ASOR configuration.</p>
+
+<h3 id="orchestrate"><span class="hn">2.6</span>Orchestrate Agent Actions — your logic as a tool</h3>
+<p>This is how your <em>own</em> business logic enters the tool catalog. Any synchronous Workday <strong>Orchestration</strong> can be flagged as an <strong>Agent Action</strong>, which exposes it as an MCP tool that any compatible agent can discover and invoke by natural language. Rather than an agent stitching together dozens of low-level APIs, it calls the one deterministic orchestration you already built and trust.</p>
+<p>When you enable an Agent Action you give it an action name, a description that explains <em>what it does and when to use it</em>, parameter descriptions (with formats and sample values), and — importantly — an <strong>effect annotation</strong> so the agent understands the stakes:</p>
+<div class="tbl"><table>
+<tr><th>Annotation</th><th>Meaning</th><th>Agent behavior</th></tr>
+<tr><td><strong>Read-Only</strong></td><td>Reads data; can't modify or delete.</td><td>May call without asking the user.</td></tr>
+<tr><td><strong>Idempotent</strong></td><td>Safe to retry; calling twice = calling once.</td><td>Safe to repeat on failure.</td></tr>
+<tr><td><strong>Destructive</strong></td><td>Can modify or delete data.</td><td>May prompt the user to confirm first.</td></tr>
+</table></div>
+<p class="note"><span class="tag" style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--indigo)">Builder's note</span>Workday warns that empty parameter descriptions or stray empty header/query rows produce invalid tool schemas and badly degrade the agent's ability to pick and call the tool. The description quality <em>is</em> the interface.</p>
+
+<h3 id="a2ui"><span class="hn">2.7</span>A2UI — when the agent needs to show, not tell</h3>
+<p>Sometimes a text reply isn't enough — the user needs a form to edit, a card highlighting a figure, or a button to approve something. <strong>Agent-to-User Interface (A2UI)</strong> lets a custom agent render real interactive components <em>inside the Workday Chat Panel</em>. You build an A2UI-enabled Extend page using a subset of page tags called <em>chat tags</em> (containers, editable fields, read-only fields, and invisible fields for tracking IDs), and a skill instructs the agent when to invoke that page.</p>
+<p>Functionally this closes the loop back to the user: the agent can gather structured input (pre-populated from an endpoint if needed), the user edits and submits, and the agent's skills persist the change. It's how a conversational agent becomes a genuine mini-application rather than just a smart reply box.</p>
+
+<h3 id="modes"><span class="hn">2.8</span>Delegate vs Ambient — the two ways an agent acts</h3>
+<p>Every agent skill runs in one of two execution modes, and the distinction is the heart of Workday's security model. It decides <em>whose</em> permissions apply when a tool runs.</p>
+
+<figure>
+<svg viewBox="0 0 820 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Delegate versus Ambient execution modes">
+  <defs><marker id="arm" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+  <!-- delegate lane -->
+  <rect x="20" y="30" width="370" height="220" rx="14" class="d-lane"/>
+  <text x="205" y="56" text-anchor="middle" class="d-cap" fill="#5B53D6">Delegate mode</text>
+  <text x="205" y="76" text-anchor="middle" class="d-sm">acts on behalf of a specific user</text>
+  <rect x="60" y="92" width="100" height="40" rx="9" class="d-box"/><text x="110" y="116" text-anchor="middle" class="d-sm">User</text>
+  <path d="M160,112 H210" class="d-line" marker-end="url(#arm)"/>
+  <rect x="212" y="92" width="118" height="40" rx="9" class="d-agent"/><text x="271" y="116" text-anchor="middle" class="d-sm">Agent skill</text>
+  <path d="M271,132 V160" class="d-line" marker-end="url(#arm)"/>
+  <rect x="150" y="162" width="240" height="44" rx="9" class="d-data"/><text x="270" y="182" text-anchor="middle" class="d-sm">Workday — runs as the USER</text><text x="270" y="198" text-anchor="middle" class="d-sm">user's own security applies</text>
+  <text x="205" y="232" text-anchor="middle" class="d-mono-i">OAuth Authorization Code · Client ID + Secret</text>
+
+  <!-- ambient lane -->
+  <rect x="430" y="30" width="370" height="220" rx="14" class="d-lane"/>
+  <text x="615" y="56" text-anchor="middle" class="d-cap" fill="#0E7C7B">Ambient mode</text>
+  <text x="615" y="76" text-anchor="middle" class="d-sm">runs independent of any user session</text>
+  <rect x="556" y="92" width="118" height="40" rx="9" class="d-agent"/><text x="615" y="116" text-anchor="middle" class="d-sm">Agent skill</text>
+  <path d="M615,132 V160" class="d-line" marker-end="url(#arm)"/>
+  <rect x="495" y="162" width="240" height="44" rx="9" class="d-data"/><text x="615" y="182" text-anchor="middle" class="d-sm">Workday — its OWN identity</text><text x="615" y="198" text-anchor="middle" class="d-sm">ambient-allowed domains only</text>
+  <text x="615" y="232" text-anchor="middle" class="d-mono-t">x509 key association · public key credential</text>
+</svg>
+<figcaption><b>Figure 8 · Delegate vs Ambient</b>Delegate = the agent borrows the user's badge and can never exceed the user's access. Ambient = the agent has its own badge, and is restricted to domains explicitly opened to ambient skills.</figcaption>
+</figure>
+
+<div class="tbl"><table>
+<tr><th>&nbsp;</th><th>Delegate skills</th><th>Ambient skills</th></tr>
+<tr><td><strong>Acts as</strong></td><td>A specific signed-in user</td><td>Itself, with its own permissions</td></tr>
+<tr><td><strong>OAuth flow</strong></td><td>Authorization Code Grant</td><td>x509 Key Association</td></tr>
+<tr><td><strong>Primary credential</strong></td><td>Client ID + Client Secret</td><td>x509 Public Key</td></tr>
+<tr><td><strong>Activation needs</strong></td><td>A Redirect URI</td><td>An x509 association</td></tr>
+<tr><td><strong>Allowed where</strong></td><td>Any tool the user can access</td><td>Only domains whose <em>Allowed Security Group Types</em> permit ambient access</td></tr>
+</table></div>
+<p>The single most reassuring sentence in the whole framework: <strong>in Delegate mode the agent cannot bypass the user's security.</strong> If the user can't see a worker's pay, neither can the agent acting for them. You validate this with the <em>View Security for Agent Skill</em> report.</p>
+
+<h3 id="invoke"><span class="hn">2.9</span>How agents actually get invoked</h3>
+<p>A registered, active agent can be reached three ways — the same agent, three front doors:</p>
+<ul>
+  <li><strong>Conversationally</strong> — a user chats with it in the Workday Chat Panel (or in an external platform via A2A, next section).</li>
+  <li><strong>Inside a business process</strong> — you add an <em>Invoke Agent</em> service step to a business process. Because no human is in the loop, you instruct the agent in the step's configuration (e.g. <em>"Execute actions immediately; do not seek user confirmation"</em>) and pick a <em>Run As</em> security group for delegate skills. When the step fires, Workday confirms the agent is registered and active in ASOR, runs it, then continues the process.</li>
+  <li><strong>File-driven</strong> — users can attach documents (up to 10 per message) in chat and ask the agent to process them, with the agent able to pull files into a sandbox for further work.</li>
+</ul>
+
+<h3 id="a2a"><span class="hn">2.10</span>A2A — agents talking to agents across platforms</h3>
+<p><strong>Agent-to-Agent (A2A)</strong> is how a Workday agent becomes callable from <em>outside</em> Workday — from Google Gemini Enterprise, Microsoft Copilot Studio, or any A2A-compatible platform. The end user chats in their own tool; behind the scenes, a Workday agent (such as the delivered <em>Self-Service Agent</em>) does the real work and answers back in natural language. Every custom agent you build is <strong>automatically A2A-ready.</strong></p>
+
+<figure>
+<svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A2A flow from external platform to Workday">
+  <defs><marker id="ar2a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+  <text x="120" y="24" text-anchor="middle" class="d-cap">External platform</text>
+  <text x="690" y="24" text-anchor="middle" class="d-cap" fill="#5B53D6">Workday</text>
+
+  <rect x="40" y="100" width="160" height="56" rx="11" class="d-box"/>
+  <text x="120" y="124" text-anchor="middle" class="d-t">Gemini / Copilot</text>
+  <text x="120" y="142" text-anchor="middle" class="d-sm">user chats here</text>
+
+  <!-- discover -->
+  <path d="M200,116 H360" class="d-line" marker-end="url(#ar2a)"/>
+  <text x="280" y="108" text-anchor="middle" class="d-mono">1 · GET agent-card.json</text>
+  <path d="M360,140 H200" class="d-line-d" marker-end="url(#ar2a)"/>
+  <text x="280" y="158" text-anchor="middle" class="d-sm">2 · capabilities + auth</text>
+
+  <!-- gateway -->
+  <rect x="362" y="78" width="150" height="96" rx="12" class="d-sec"/>
+  <text x="437" y="104" text-anchor="middle" class="d-cap" fill="#C2410C">Agent Gateway</text>
+  <text x="437" y="126" text-anchor="middle" class="d-sm">3 · invoke (Bearer)</text>
+  <text x="437" y="144" text-anchor="middle" class="d-sm">4 · authenticate</text>
+  <text x="437" y="162" text-anchor="middle" class="d-sm">via ASOR</text>
+
+  <path d="M512,126 H600" class="d-line" marker-end="url(#ar2a)"/>
+  <rect x="602" y="92" width="170" height="68" rx="12" class="d-agent"/>
+  <text x="687" y="120" text-anchor="middle" class="d-t">Self-Service Agent</text>
+  <text x="687" y="140" text-anchor="middle" class="d-sm">5 · does the work</text>
+
+  <!-- response back -->
+  <path d="M602,150 C540,180 240,180 200,150" class="d-line-d" marker-end="url(#ar2a)"/>
+  <text x="400" y="200" text-anchor="middle" class="d-sm">natural-language answer flows back through the chain to the user</text>
+</svg>
+<figcaption><b>Figure 9 · A2A — external platform calls a Workday agent</b>Discover the agent card, invoke through the Gateway with a Bearer token, ASOR authenticates, the Workday agent answers. The user never leaves Gemini or Copilot.</figcaption>
+</figure>
+
+<p>The bridge is the <strong>agent card</strong> — a JSON document at <code>/.well-known/agent-card.json</code> describing the agent's endpoints, capabilities, and auth requirements. The external platform fetches it, you paste in OAuth client details (Client ID/Secret, Auth URL, Token URL, Redirect URI) you created with <em>Register API Client for agents</em>, and grant your users an "Agent User" role on that side. From then on, users authenticate to Workday once and chat naturally — <em>"what is my time off balance?", "show me my goals."</em></p>
+
+<p>Traffic also runs the <em>other</em> direction. With <strong>Microsoft Agent Sync</strong>, agents built in Copilot Studio or Azure AI Foundry are pulled <em>into</em> ASOR, their Microsoft tools mapped to Workday tools, and then governed by ASOR like any native agent — one registry of record for agents wherever they were built.</p>
+<!-- =================== PART 3 =================== -->
+<div class="part-head" id="part3">
+  <div class="kicker">Part 3 — Synthesis</div>
+  <h2>How it all ties together</h2>
+  <p class="lede">Two views of the whole machine in motion: the <em>lifecycle</em> of getting an agent live, and the <em>runtime trace</em> of a single user request travelling through every layer you've now met.</p>
+</div>
+
+<h3 id="lifecycle"><span class="hn">3.1</span>The lifecycle — discover, register, activate, run</h3>
+<p>No matter how an agent is built, it follows the same path to becoming usable. The recurring lesson: <strong>building or registering an agent does nothing on its own — activation in ASOR plus a permitted security group is what flips it on.</strong></p>
+
+<figure>
+<svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agent lifecycle">
+  <defs><marker id="arl" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+  <rect x="14" y="70" width="120" height="64" rx="11" class="d-box"/><text x="74" y="92" text-anchor="middle" class="d-mono-i">A</text><text x="74" y="112" text-anchor="middle" class="d-sm">Discover tools</text><text x="74" y="127" text-anchor="middle" class="d-sm">Explorer / Finder</text>
+  <path d="M134,102 H162" class="d-line" marker-end="url(#arl)"/>
+  <rect x="164" y="70" width="120" height="64" rx="11" class="d-box"/><text x="224" y="92" text-anchor="middle" class="d-mono-i">B</text><text x="224" y="112" text-anchor="middle" class="d-sm">Build / Register</text><text x="224" y="127" text-anchor="middle" class="d-sm">.agent or API</text>
+  <path d="M284,102 H312" class="d-line" marker-end="url(#arl)"/>
+  <rect x="314" y="70" width="120" height="64" rx="11" class="d-sec"/><text x="374" y="92" text-anchor="middle" class="d-mono-i" fill="#C2410C">C</text><text x="374" y="112" text-anchor="middle" class="d-sm">Activate in ASOR</text><text x="374" y="127" text-anchor="middle" class="d-sm">+ Available To group</text>
+  <path d="M434,102 H462" class="d-line" marker-end="url(#arl)"/>
+  <rect x="464" y="70" width="120" height="64" rx="11" class="d-sec"/><text x="524" y="92" text-anchor="middle" class="d-mono-i" fill="#C2410C">D</text><text x="524" y="112" text-anchor="middle" class="d-sm">Scan / Passport</text><text x="524" y="127" text-anchor="middle" class="d-sm">safety stamps</text>
+  <path d="M584,102 H612" class="d-line" marker-end="url(#arl)"/>
+  <rect x="614" y="70" width="120" height="64" rx="11" class="d-agent"/><text x="674" y="92" text-anchor="middle" class="d-mono-i">E</text><text x="674" y="112" text-anchor="middle" class="d-sm">Invoke &amp; trace</text><text x="674" y="127" text-anchor="middle" class="d-sm">chat · BP · A2A</text>
+  <text x="410" y="30" text-anchor="middle" class="d-cap">From idea to a governed, running agent</text>
+  <path d="M674,134 q0,46 -300,46 q-300,0 -300,-46" class="d-line-d" marker-end="url(#arl)"/>
+  <text x="374" y="196" text-anchor="middle" class="d-sm">iterate — re-prompt, redeploy, re-scan</text>
+</svg>
+<figcaption><b>Figure 10 · The agent lifecycle</b>Discovery and build are the easy part. The governance steps (C and D) are what make a Workday agent trustworthy enough to act on real data.</figcaption>
+</figure>
+
+<h3 id="e2e"><span class="hn">3.2</span>End to end — "What's my time off balance?"</h3>
+<p>Here is the payoff: a single, ordinary question traced through every component in this guide. Each numbered step maps to a concept you've already met — the agent loop (Part 1), the Gateway and ASOR (Part 2), and the security checks (Part 4).</p>
+
+<figure>
+<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="End to end request trace">
+  <defs><marker id="are" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" class="d-fill-ink"/></marker></defs>
+  <!-- lanes -->
+  <text x="70" y="22" text-anchor="middle" class="d-cap">User</text>
+  <text x="232" y="22" text-anchor="middle" class="d-cap" fill="#C2410C">Gateway</text>
+  <text x="402" y="22" text-anchor="middle" class="d-cap" fill="#5B53D6">ASOR + Agent</text>
+  <text x="590" y="22" text-anchor="middle" class="d-cap" fill="#0E7C7B">MCP tool</text>
+  <text x="752" y="22" text-anchor="middle" class="d-cap">Workday</text>
+  <line x1="70" y1="34" x2="70" y2="450" class="d-line-d"/>
+  <line x1="232" y1="34" x2="232" y2="450" class="d-line-d"/>
+  <line x1="402" y1="34" x2="402" y2="450" class="d-line-d"/>
+  <line x1="590" y1="34" x2="590" y2="450" class="d-line-d"/>
+  <line x1="752" y1="34" x2="752" y2="450" class="d-line-d"/>
+
+  <path d="M70,60 H232" class="d-line" marker-end="url(#are)"/>
+  <text x="151" y="53" text-anchor="middle" class="d-sm">1 · asks in chat</text>
+
+  <rect x="166" y="74" width="132" height="32" rx="7" class="d-sec"/>
+  <text x="232" y="94" text-anchor="middle" class="d-sm">2 · check Bearer token</text>
+
+  <path d="M232,128 H402" class="d-line" marker-end="url(#are)"/>
+  <text x="317" y="121" text-anchor="middle" class="d-sm">3 · route to agent</text>
+
+  <rect x="330" y="142" width="144" height="48" rx="8" class="d-agent"/>
+  <text x="402" y="162" text-anchor="middle" class="d-sm">4 · ASOR: skill active?</text>
+  <text x="402" y="178" text-anchor="middle" class="d-sm">user in "Available To"?</text>
+
+  <rect x="330" y="200" width="144" height="40" rx="8" class="d-agent"/>
+  <text x="402" y="220" text-anchor="middle" class="d-sm">5 · model reasons:</text>
+  <text x="402" y="234" text-anchor="middle" class="d-sm">"call getTimeOff"</text>
+
+  <path d="M402,262 H590" class="d-line" marker-end="url(#are)"/>
+  <text x="496" y="255" text-anchor="middle" class="d-mono-i">6 · tools/call (delegate)</text>
+
+  <rect x="528" y="276" width="124" height="40" rx="8" class="d-tool"/>
+  <text x="590" y="296" text-anchor="middle" class="d-sm">7 · runs AS the user</text>
+  <text x="590" y="310" text-anchor="middle" class="d-sm">user's security applies</text>
+
+  <path d="M590,338 H752" class="d-line" marker-end="url(#are)"/>
+  <text x="671" y="331" text-anchor="middle" class="d-sm">8 · read balance</text>
+  <path d="M752,366 H590" class="d-line" marker-end="url(#are)"/>
+  <text x="671" y="359" text-anchor="middle" class="d-mono-t">14.5 days</text>
+
+  <path d="M590,394 H402" class="d-line" marker-end="url(#are)"/>
+  <text x="496" y="387" text-anchor="middle" class="d-sm">9 · result to model</text>
+
+  <path d="M402,426 H70" class="d-line" marker-end="url(#are)"/>
+  <text x="236" y="419" text-anchor="middle" class="d-sm">10 · "You have 14.5 days." (or an A2UI card) · logged to audit trail</text>
+</svg>
+<figcaption><b>Figure 11 · One request, every layer</b>The same loop from Figure 1, now wrapped in two governance gates (token check, ASOR permission check) and executed under the user's own identity — then written to the audit trail.</figcaption>
+</figure>
+
+<p>Notice what had to be true for step 8 to succeed: the token was valid (Gateway), the skill was active and the user was in its permitted group (ASOR), <em>and</em> that same user independently had the right to view their own time-off balance (delegate-mode security). Three separate locks, all of which must open. That layered design is the entire subject of Part 4.</p>
+<!-- =================== PART 4 =================== -->
+<div class="part-head" id="part4">
+  <div class="kicker">Part 4 — Trust</div>
+  <h2>How it's kept secure</h2>
+  <p class="lede">An agent that can read pay, terminate workers, and move money is only as good as the controls around it. Workday's answer is defense in depth: independent layers, any one of which can stop a bad action — and none of which an agent can talk its way past.</p>
+</div>
+
+<h3 id="sec-layers"><span class="hn">4.1</span>Layers of defense</h3>
+<p>Security isn't one feature; it's five concentric checks a request crosses before it can change anything. They are independent on purpose — defeating one doesn't defeat the rest.</p>
+
+<figure>
+<svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Concentric security layers">
+  <!-- concentric rings -->
+  <rect x="40" y="20" width="740" height="320" rx="18" fill="#FBECE3" stroke="#C2410C" stroke-width="1.5"/>
+  <text x="410" y="42" text-anchor="middle" class="d-mono" fill="#C2410C">1 · AGENT GATEWAY — OAuth 2.0, every request needs a valid Bearer token</text>
+  <rect x="92" y="58" width="636" height="266" rx="16" fill="#EEEDFB" stroke="#5B53D6" stroke-width="1.5"/>
+  <text x="410" y="80" text-anchor="middle" class="d-mono-i">2 · ASOR — registered &amp; active? skill permitted for this user's group?</text>
+  <rect x="146" y="96" width="528" height="212" rx="14" fill="#FFFFFF" stroke="#14213D" stroke-width="1.5"/>
+  <text x="410" y="118" text-anchor="middle" class="d-mono">3 · EXECUTION MODE — delegate runs as the user &amp; can't exceed their access</text>
+  <rect x="200" y="134" width="420" height="156" rx="12" fill="#E2F2F1" stroke="#0E7C7B" stroke-width="1.5"/>
+  <text x="410" y="156" text-anchor="middle" class="d-mono-t">4 · DOMAIN &amp; BP POLICY — the tool's own Workday security</text>
+  <rect x="252" y="172" width="316" height="100" rx="10" fill="#EEF1F5" stroke="#9AA7BC" stroke-width="1.5"/>
+  <text x="410" y="196" text-anchor="middle" class="d-mono">5 · AGENT PASSPORT</text>
+  <text x="410" y="216" text-anchor="middle" class="d-sm">guardrails · jailbreak &amp;</text>
+  <text x="410" y="232" text-anchor="middle" class="d-sm">PII-exfiltration resistance</text>
+  <rect x="320" y="244" width="180" height="20" rx="6" class="d-data"/>
+  <text x="410" y="258" text-anchor="middle" class="d-sm">your data &amp; actions</text>
+</svg>
+<figcaption><b>Figure 12 · Defense in depth</b>A request must cross all five rings. Even a perfectly authenticated agent (rings 1–2) still can't read data the user can't (rings 3–4), and still can't be coaxed into leaking it (ring 5).</figcaption>
+</figure>
+
+<h3 id="sec-oauth"><span class="hn">4.2</span>OAuth, the Gateway, and agent identities</h3>
+<p>All agent access is built on the <strong>OAuth 2.0</strong> framework, enforced at the <strong>Agent Gateway</strong>, which also routes each request to the correct regional endpoint. How an agent proves who it is depends on its mode (from §2.8):</p>
+<ul>
+  <li><strong>Delegate skills</strong> use the <em>Authorization Code Grant</em>: the user logs in, the platform gets an authorization code, exchanges it for an access token, and every tool call rides on that token. The agent is, in effect, holding the user's session.</li>
+  <li><strong>Ambient skills</strong> use <em>x509 key association</em> instead — a public-key credential tied to an <strong>Agent Service User (ASU)</strong> identity, governed by its own permissions and limited to domains explicitly opened to ambient skills.</li>
+</ul>
+<p>Credentials are managed in the agent profile's Connectivity tab, and the OAuth client secrets shown at activation are displayed <em>once</em> — Workday is explicit that you must save them immediately. At runtime, these ASU/OAuth credentials are what let the agent call MCP tools on the user's behalf.</p>
+
+<div class="note security">
+  <span class="tag">The principle that anchors everything</span>
+  <p>An agent never gets a master key. In delegate mode it borrows the <em>user's</em> permissions and can do nothing the user couldn't do by hand. In ambient mode it has its own narrowly-scoped identity, allowed only into domains that have explicitly opted in. There is no "agent override."</p>
+</div>
+
+<h3 id="sec-passport"><span class="hn">4.3</span>Agent Passport — proving an agent is safe</h3>
+<p>Authentication proves <em>who</em> an agent is; it doesn't prove the agent is <em>well-behaved</em>. That's the job of the <strong>Trust &amp; Safety Passport</strong> (Agent Passport). After you activate an agent, you run <strong>Scan Agent</strong>; Workday (with validation partners) probes it and records a set of <strong>stamps</strong> — pass/fail safety attestations visible on the agent's profile. The Passport tab only appears <em>after</em> activation, by design.</p>
+
+<div class="terms">
+  <div class="term"><h5><i style="background:#0E7C7B"></i>Runtime Guardrails</h5><p>Live controls on what the agent may do as it runs. Target status: <strong>Passed</strong>.</p></div>
+  <div class="term"><h5><i style="background:#C2410C"></i>PII Exfiltration Resistance</h5><p>Can the agent be tricked into leaking personal data? Must resolve to Passed or Failed — never left Pending.</p></div>
+  <div class="term"><h5><i style="background:#C2410C"></i>Jailbreak Resistance</h5><p>Does it hold up against prompts engineered to break its instructions?</p></div>
+  <div class="term"><h5><i style="background:#5B53D6"></i>System-Prompt Confidentiality</h5><p>Will it keep its own hidden instructions hidden when probed?</p></div>
+  <div class="term"><h5><i style="background:#5B53D6"></i>Output Safety Filtering</h5><p>Are the agent's responses screened for unsafe content?</p></div>
+</div>
+<p>A failing stamp is a signal to fix the agent before trusting it with real work — Workday publishes guidance on addressing successful attacks surfaced by validation. The Passport turns "is this agent safe?" from a hopeful assumption into a checkable, ongoing status.</p>
+
+<h3 id="sec-audit"><span class="hn">4.4</span>Audit trails and token hygiene</h3>
+<p>Every agent action is accountable. Because delegate-mode calls run under the user's identity, the standard Workday audit trail shows the agent acting on that user's behalf, and the dedicated <strong>View AI Agent User Audit Trail</strong> report (secured to <em>Reports: AI Agent Security</em>) gives a purpose-built view of agent activity. Nothing an agent does is invisible.</p>
+<p>Finally, tokens are deliberately short-lived so a leaked credential has a small blast radius:</p>
+<div class="tbl"><table>
+<tr><th>Credential</th><th>Lifetime</th><th>Renewal</th></tr>
+<tr><td>MCP access token</td><td>~60 minutes</td><td>Use the refresh token before it expires</td></tr>
+<tr><td>Refresh token</td><td>~24 hours</td><td>User re-authenticates after this</td></tr>
+<tr><td>Orchestrate Agent Action token</td><td>~1 hour</td><td>MCP client must refresh to stay connected</td></tr>
+</table></div>
+<p>Most agent platforms and API clients handle this refresh cycle automatically — but the design intent is clear: access is continuously re-proven, never granted once and forgotten.</p>
+
+<!-- =================== GLOSSARY =================== -->
+<div class="part-head" id="glossary">
+  <div class="kicker">Reference</div>
+  <h2>Glossary &amp; endpoints</h2>
+  <p class="lede">The acronym soup, decoded — plus the handful of real endpoints the framework runs on.</p>
+</div>
+
+<div class="tbl"><table>
+<tr><th>Term</th><th>Meaning</th></tr>
+<tr><td><strong>Agent</strong></td><td>Top-level persona/domain registered in ASOR; has skills.</td></tr>
+<tr><td><strong>Skill</strong></td><td>A capability of an agent; the unit that's secured and activated for users.</td></tr>
+<tr><td><strong>Tool</strong></td><td>A concrete Agent-Ready operation a skill calls (e.g. <code>getWorkers</code>).</td></tr>
+<tr><td><strong>ASOR</strong></td><td>Agent System of Record — the control plane that registers, permits, and governs every agent.</td></tr>
+<tr><td><strong>MCP</strong></td><td>Model Context Protocol — open JSON-RPC 2.0 standard for exposing/calling tools.</td></tr>
+<tr><td><strong>Agent Gateway</strong></td><td>The authenticating, regionally-routing front door for all agent traffic.</td></tr>
+<tr><td><strong>Agent-Ready tool</strong></td><td>A Workday operation wrapped as an MCP-callable tool (300+ available).</td></tr>
+<tr><td><strong>A2A</strong></td><td>Agent-to-Agent — lets external platforms (Gemini, Copilot) call a Workday agent.</td></tr>
+<tr><td><strong>A2UI</strong></td><td>Agent-to-User Interface — renders forms/cards/buttons in the Workday Chat Panel.</td></tr>
+<tr><td><strong>Delegate mode</strong></td><td>Agent acts as a specific user, bound by that user's security.</td></tr>
+<tr><td><strong>Ambient mode</strong></td><td>Agent acts as itself (its own ASU identity), limited to ambient-allowed domains.</td></tr>
+<tr><td><strong>ASU</strong></td><td>Agent Service User — the system identity an agent uses to authenticate.</td></tr>
+<tr><td><strong>WID</strong></td><td>Workday ID — the unique identifier for a tool/agent, used when wiring tools in.</td></tr>
+<tr><td><strong>LDQ</strong></td><td>Live Data Query — queries Workday Data Cloud via SQL as an agent tool.</td></tr>
+<tr><td><strong>Agent Passport</strong></td><td>Trust &amp; Safety stamps attesting an agent resists jailbreaks, PII leaks, etc.</td></tr>
+<tr><td><strong>Developer Agent</strong></td><td>AI builder (App Builder + IDE extension) that scaffolds custom agents.</td></tr>
+<tr><td><strong>Orchestrate Agent Action</strong></td><td>A synchronous Orchestration exposed as an MCP tool.</td></tr>
+<tr><td><strong>Invoke Agent step</strong></td><td>A business-process service step that runs an agent mid-process.</td></tr>
+</table></div>
+
+<h4>Key endpoints</h4>
+<pre><span class="c"># MCP server (call tools)</span>
+https://us.agent.workday.com/mcp
+
+<span class="c"># Tool discovery — Finder API</span>
+https://us.agent.workday.com/asor/agentResourceSearch/v1
+
+<span class="c"># Register an agent in ASOR</span>
+https://us.agent.workday.com/asor/v1/agentDefinition
+
+<span class="c"># A2A agent card</span>
+https://us.agent.workday.com/v1/a2a/&lt;tenant&gt;/&lt;agent&gt;/.well-known/agent-card.json
+
+<span class="c"># OAuth token endpoint</span>
+https://us.agent.workday.com/auth/oauth2/&lt;tenant&gt;/token
+
+<span class="c"># Browse tools (no code)</span>
+https://developer.workday.com/mcp-explorer</pre>
+
+<div class="note">
+  <span class="tag" style="font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--indigo)">The whole guide in three sentences</span>
+  <p>An agent is an LLM that can <em>decide</em> to call <em>tools</em>, grouped into <em>skills</em>, discovered and run over <em>MCP</em>. Workday delivers 300+ ready tools and a builder for your own, all governed by <em>ASOR</em>, which controls who exists, what runs, and for whom. And every action is wrapped in layered security — Gateway auth, ASOR permission, the user's own access, the tool's domain policy, and the Agent Passport — so an agent can be powerful without ever being a master key.</p>
+</div>
+
+</main>
+
+<footer class="foot">
+  Field guide compiled from the Workday 2026 DevCon Hackathon documentation · agentic, developer-agent, orchestrate &amp; extend tracks. For deeper reference see developer.workday.com.
+</footer>
+
+</div>
+</body>
+</html>

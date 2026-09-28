@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XSLT in Workday Studio — Combining Two XML Documents, Step by Step</title>
+<style>
+  :root{
+    --ink:#1a2332; --muted:#5b6575; --bg:#f7f8fa; --card:#ffffff;
+    --accent:#0b5fff; --accent-soft:#e8f0ff;
+    --code-bg:#0f1626; --code-ink:#d6e2f0;
+    --ok:#0a7d4f; --ok-soft:#e3f5ec;
+    --warn:#a05a00; --warn-soft:#fdf3e3;
+    --err:#b3261e; --err-soft:#fdecea;
+    --line:#e3e7ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:17px}
+  header{background:linear-gradient(135deg,#0d1b3e 0%,#153a8a 60%,#0b5fff 100%);color:#fff;padding:56px 24px 48px}
+  .wrap{max-width:880px;margin:0 auto;padding:0 8px}
+  header h1{font-size:2.1em;margin:0 0 10px;line-height:1.2}
+  header p{margin:0;font-size:1.05em;opacity:.85;max-width:640px}
+  header .tag{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:3px 14px;font-size:.72em;letter-spacing:.12em;text-transform:uppercase;font-family:Verdana,sans-serif;margin-bottom:18px}
+  nav{background:var(--card);border-bottom:1px solid var(--line);padding:18px 24px}
+  nav ol{max-width:880px;margin:0 auto;padding:0 8px 0 28px;columns:2;column-gap:40px;font-family:Verdana,sans-serif;font-size:.82em}
+  nav li{margin:4px 0;break-inside:avoid}
+  nav a{color:var(--accent);text-decoration:none}
+  nav a:hover{text-decoration:underline}
+  main{padding:40px 24px 80px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:34px 38px;margin:0 auto 28px;max-width:880px}
+  h2{font-size:1.5em;margin:0 0 6px;line-height:1.25}
+  h2 .step{display:inline-block;background:var(--accent);color:#fff;border-radius:8px;font-family:Verdana,sans-serif;font-size:.55em;padding:4px 10px;vertical-align:middle;margin-right:10px;letter-spacing:.05em}
+  h3{font-size:1.12em;margin:26px 0 8px}
+  p{margin:12px 0}
+  .sub{color:var(--muted);font-style:italic;margin-top:0}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:18px 20px;overflow-x:auto;font-size:.78em;line-height:1.55;font-family:'Consolas','Menlo',monospace}
+  code{font-family:'Consolas','Menlo',monospace;background:#eef1f6;border-radius:4px;padding:1px 6px;font-size:.85em}
+  pre code{background:none;padding:0;font-size:1em}
+  .k{color:#7cc7ff}      /* xsl keywords / tags */
+  .a{color:#ffd479}      /* attributes */
+  .s{color:#9ce29c}      /* strings */
+  .c{color:#7a8699;font-style:italic} /* comments */
+  .hl{background:#243b6b;display:inline-block;width:100%;border-radius:3px}
+  .callout{border-radius:10px;padding:14px 18px;margin:16px 0;font-size:.95em;border-left:4px solid}
+  .callout b{font-family:Verdana,sans-serif;font-size:.8em;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
+  .err{background:var(--err-soft);border-color:var(--err)}
+  .err b{color:var(--err)}
+  .tip{background:var(--ok-soft);border-color:var(--ok)}
+  .tip b{color:var(--ok)}
+  .warn{background:var(--warn-soft);border-color:var(--warn)}
+  .warn b{color:var(--warn)}
+  table{border-collapse:collapse;width:100%;margin:16px 0;font-size:.88em}
+  th{background:var(--accent-soft);text-align:left;font-family:Verdana,sans-serif;font-size:.78em;letter-spacing:.05em}
+  th,td{border:1px solid var(--line);padding:9px 12px;vertical-align:top}
+  td code{white-space:nowrap}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:Verdana,sans-serif;font-size:.75em;margin:18px 0}
+  .flow .box{background:var(--accent-soft);border:1.5px solid var(--accent);color:#0d3a99;border-radius:8px;padding:8px 14px;text-align:center}
+  .flow .arr{color:var(--muted);font-size:1.3em}
+  footer{text-align:center;color:var(--muted);font-size:.8em;font-family:Verdana,sans-serif;padding:0 24px 48px}
+  @media (max-width:640px){ nav ol{columns:1} section{padding:24px 20px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="tag">Workday Studio &middot; XSLT Deep Dive</div>
+    <h1>Combining Two XML Documents with XSLT in Workday Studio</h1>
+    <p>A step-by-step guide built around a real scenario: a PECI payroll extract and a RaaS
+    report living in two Studio variables, merged into one XML output — including every
+    error you will meet on the way and why it happens.</p>
+  </div>
+</header>
+
+<nav>
+  <ol>
+    <li><a href="#s1">The scenario and the two documents</a></li>
+    <li><a href="#s2">Namespaces — the #1 source of silent failure</a></li>
+    <li><a href="#s3">How Studio actually runs your XSLT</a></li>
+    <li><a href="#s4">XSLT mental model: templates, not scripts</a></li>
+    <li><a href="#s5">The identity transform — your default starting point</a></li>
+    <li><a href="#s6">Getting the second document into the stylesheet</a></li>
+    <li><a href="#s7">Anatomy of the XPTY0019 string error</a></li>
+    <li><a href="#s8">Joining the two documents (PID = Employee_ID)</a></li>
+    <li><a href="#s9">Renaming namespaces with modes</a></li>
+    <li><a href="#s10">The final tested stylesheet, line by line</a></li>
+    <li><a href="#s11">XSLT 3.0 — what it buys you</a></li>
+    <li><a href="#s12">Debugging playbook &amp; error decoder</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ============================================================ 1 -->
+<section id="s1">
+  <h2><span class="step">STEP 1</span>Understand the scenario and the two documents</h2>
+  <p class="sub">Before writing a line of XSLT, know exactly what trees you are working with.</p>
+
+  <p>The integration has <strong>two XML documents in memory</strong> inside a Studio
+  mediation, each held in a variable:</p>
+
+  <table>
+    <tr><th>Variable</th><th>Content</th><th>Root element</th><th>Namespace URI</th></tr>
+    <tr><td><code>input</code></td><td>PECI payroll extract</td><td><code>peci:Workers_Effective_Stack</code></td><td><code>urn:com.workday/peci</code></td></tr>
+    <tr><td><code>reportdatavar</code></td><td>RaaS report output</td><td><code>wd:Report_Data</code></td><td><code>urn:com.workday.report/INT044_Time_and_absence_tracking</code></td></tr>
+  </table>
+
+  <p>The PECI side is a stack of <code>peci:Worker</code> elements, each with a
+  <code>Worker_Summary</code> (containing <code>Employee_ID</code>) and a series of
+  <code>Effective_Change</code> blocks. The report side is a flat list of
+  <code>wd:Report_Entry</code> rows, each carrying a <code>wd:PID</code> that holds the
+  same employee number.</p>
+
+  <div class="flow">
+    <div class="box">PECI<br>peci:Worker<br>Employee_ID = 208611</div>
+    <div class="arr">&#8596;</div>
+    <div class="box">Report<br>wd:Report_Entry<br>PID = 208611</div>
+    <div class="arr">&#8658;</div>
+    <div class="box">Combined output<br>one document</div>
+  </div>
+
+  <div class="callout warn"><b>Key fact</b>
+  You cannot simply concatenate the two files. An XML document has exactly <em>one</em>
+  root element and at most <em>one</em> <code>&lt;?xml ... ?&gt;</code> declaration, which
+  must be the very first bytes. Two documents glued together is not XML — every parser
+  downstream will reject it. Combining always means building a <em>new single tree</em>
+  that contains material from both.</div>
+</section>
+
+<!-- ============================================================ 2 -->
+<section id="s2">
+  <h2><span class="step">STEP 2</span>Namespaces — the #1 source of silent failure</h2>
+  <p class="sub">Nine out of ten “my XPath returns nothing” problems live here.</p>
+
+  <p>A namespace is identified by its <strong>URI</strong>, not its prefix. The prefix
+  (<code>wd:</code>, <code>peci:</code>) is only a local nickname declared with
+  <code>xmlns:prefix="uri"</code>. Two consequences matter enormously:</p>
+
+  <p><strong>First:</strong> your stylesheet must declare the <em>same URIs</em> as the
+  source documents, or nothing will ever match. The prefix can differ; the URI cannot:</p>
+
+<pre><code>&lt;<span class="k">xsl:stylesheet</span> <span class="a">version</span>=<span class="s">"2.0"</span>
+    <span class="a">xmlns:xsl</span>=<span class="s">"http://www.w3.org/1999/XSL/Transform"</span>
+    <span class="a">xmlns:peci</span>=<span class="s">"urn:com.workday/peci"</span>
+    <span class="a">xmlns:wd</span>=<span class="s">"urn:com.workday.report/INT044_Time_and_absence_tracking"</span>&gt;</code></pre>
+
+  <p><strong>Second:</strong> an element with no prefix in the source is only “no
+  namespace” if no default namespace is in force. In Workday output everything is
+  prefixed, so always write prefixed XPath: <code>peci:Worker</code>, never
+  <code>Worker</code>.</p>
+
+  <div class="callout err"><b>Classic symptom</b>
+  The transform runs without error but the output is empty or missing sections. Cause:
+  the namespace URI in the stylesheet differs by one character from the source (RaaS
+  namespaces embed the <em>report name</em> — change the report, and
+  <code>urn:com.workday.report/INT044_...</code> changes with it). Fix the URI, not the XPath.</div>
+
+  <div class="callout tip"><b>Tip</b>
+  Use <code>exclude-result-prefixes="wd"</code> on the stylesheet element to stop unused
+  namespace declarations leaking into your output once you have renamed elements away
+  from that namespace.</div>
+</section>
+
+<!-- ============================================================ 3 -->
+<section id="s3">
+  <h2><span class="step">STEP 3</span>How Studio actually runs your XSLT</h2>
+  <p class="sub">The mediation message is the input tree. Everything else must be fetched.</p>
+
+  <p>An <code>xslt</code> step in a Studio mediation transforms <strong>the current
+  message rootpart</strong>. Whatever document is “the message” when the step executes
+  becomes <code>/</code> inside the stylesheet. So the assembly pattern for our scenario is:</p>
+
+<pre><code><span class="c">&lt;!-- 1. report XML is the message here --&gt;</span>
+&lt;<span class="k">cc:copy</span> <span class="a">id</span>=<span class="s">"Copy"</span> <span class="a">output</span>=<span class="s">"variable"</span> <span class="a">output-variable</span>=<span class="s">"reportdatavar"</span>/&gt;
+
+<span class="c">&lt;!-- 2. PECI XML becomes the message --&gt;</span>
+&lt;<span class="k">cc:copy</span> <span class="a">id</span>=<span class="s">"Copy0"</span> <span class="a">output</span>=<span class="s">"variable"</span> <span class="a">output-variable</span>=<span class="s">"input"</span> <span class="a">input</span>=<span class="s">"message"</span>/&gt;
+
+<span class="c">&lt;!-- 3. transform runs with PECI as the input tree --&gt;</span>
+&lt;<span class="k">cc:xslt</span> <span class="a">id</span>=<span class="s">"Xslt"</span> <span class="a">url</span>=<span class="s">"NewStylesheet.xsl"</span>/&gt;</code></pre>
+
+  <p>That gives the stylesheet <em>one</em> of the two documents for free. The whole
+  challenge of this scenario is getting the <em>second</em> document (the variable) into
+  the stylesheet — Step 6 covers the three ways to do it, and Step 7 dissects the famous
+  error you get when it goes wrong.</p>
+
+  <div class="callout tip"><b>Studio protocol worth knowing</b>
+  Studio resolves special URL schemes at runtime. <code>mctx:vars/&lt;name&gt;</code>
+  reads a mediation-context variable — usable in component attributes
+  (<code>url="mctx:vars/xslt.file"</code>) <em>and</em> from inside a stylesheet via
+  <code>document('mctx:vars/reportdatavar')</code>. This is the cleanest bridge between
+  Studio variables and XSLT.</div>
+</section>
+
+<!-- ============================================================ 4 -->
+<section id="s4">
+  <h2><span class="step">STEP 4</span>The XSLT mental model: templates, not scripts</h2>
+  <p class="sub">XSLT is pattern → action, driven by the input tree.</p>
+
+  <p>XSLT is not a procedural script that walks the file top to bottom. It is a set of
+  <strong>template rules</strong>. The processor starts at the document node
+  (<code>/</code>), finds the best-matching template, and executes it. Inside a template,
+  <code>&lt;xsl:apply-templates/&gt;</code> says “now go process my children the same
+  way.” Output is whatever the executed templates emit.</p>
+
+  <table>
+    <tr><th>Instruction</th><th>What it does</th><th>When to use</th></tr>
+    <tr><td><code>&lt;xsl:template match="..."&gt;</code></td><td>Declares a rule for nodes matching the pattern</td><td>The building block of everything</td></tr>
+    <tr><td><code>&lt;xsl:apply-templates/&gt;</code></td><td>Recursively processes child nodes</td><td>Default way to descend the tree</td></tr>
+    <tr><td><code>&lt;xsl:copy&gt;</code></td><td>Shallow copy: the current node only, no children, no attributes</td><td>Inside identity transforms</td></tr>
+    <tr><td><code>&lt;xsl:copy-of select="..."&gt;</code></td><td>Deep copy: the selected nodes with everything inside them</td><td>Grabbing whole subtrees unchanged</td></tr>
+    <tr><td><code>&lt;xsl:element name="..."&gt;</code></td><td>Creates a brand-new element, name/namespace under your control</td><td>Renaming elements (Step 9)</td></tr>
+    <tr><td><code>&lt;xsl:value-of select="..."&gt;</code></td><td>Emits the string value of the selection</td><td>Text output, not structure</td></tr>
+  </table>
+
+  <p>The most important distinction in merge scenarios is
+  <strong><code>copy</code> vs <code>copy-of</code></strong>: <code>copy-of</code>
+  transplants a subtree exactly as-is (namespaces included), while <code>copy</code> +
+  <code>apply-templates</code> rebuilds the tree node by node — which is what lets you
+  <em>intervene</em> at any level, e.g. to inject extra content into
+  <code>peci:Worker</code>.</p>
+</section>
+
+<!-- ============================================================ 5 -->
+<section id="s5">
+  <h2><span class="step">STEP 5</span>The identity transform — your default starting point</h2>
+  <p class="sub">Copy everything through, then override only what should change.</p>
+
+<pre><code>&lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"@*|node()"</span>&gt;
+    &lt;<span class="k">xsl:copy</span>&gt;
+        &lt;<span class="k">xsl:apply-templates</span> <span class="a">select</span>=<span class="s">"@*|node()"</span>/&gt;
+    &lt;/<span class="k">xsl:copy</span>&gt;
+&lt;/<span class="k">xsl:template</span>&gt;</code></pre>
+
+  <p>This one rule matches every attribute and every node, copies it, and recurses. On
+  its own it reproduces the input exactly. Its power is that XSLT prefers a <em>more
+  specific</em> template over a generic one — so adding a second template for
+  <code>peci:Worker</code> means workers get special handling while everything else
+  flows through untouched:</p>
+
+<pre><code>&lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"peci:Worker"</span>&gt;
+    &lt;<span class="k">xsl:copy</span>&gt;
+        &lt;<span class="k">xsl:apply-templates</span> <span class="a">select</span>=<span class="s">"@*|node()"</span>/&gt;
+        <span class="c">&lt;!-- extra content is injected here, after the worker's own children --&gt;</span>
+    &lt;/<span class="k">xsl:copy</span>&gt;
+&lt;/<span class="k">xsl:template</span>&gt;</code></pre>
+
+  <div class="callout tip"><b>Rule of thumb</b>
+  “Keep the document mostly the same, change these bits” = identity transform + targeted
+  overrides. “Build a completely new shape” = a single <code>match="/"</code> template
+  that constructs the output explicitly. Our scenario uses the first pattern for the
+  per-worker merge, and the second for the simple wrap-both-documents variant.</div>
+</section>
+
+<!-- ============================================================ 6 -->
+<section id="s6">
+  <h2><span class="step">STEP 6</span>Getting the second document into the stylesheet</h2>
+  <p class="sub">Three approaches, from most robust to most manual.</p>
+
+  <h3>Approach A — <code>document('mctx:vars/...')</code> (recommended in Studio)</h3>
+<pre><code>&lt;<span class="k">xsl:variable</span> <span class="a">name</span>=<span class="s">"report"</span> <span class="a">select</span>=<span class="s">"document('mctx:vars/reportdatavar')"</span>/&gt;</code></pre>
+  <p>The XSLT <code>document()</code> function loads an external document via a URI, and
+  Studio's resolver understands <code>mctx:vars/&lt;variable&gt;</code>. The result is a
+  genuine <strong>document node</strong> — XPath works on it immediately
+  (<code>$report/wd:Report_Data/wd:Report_Entry</code>). No parameters to configure, no
+  string parsing, works in XSLT 1.0/2.0/3.0.</p>
+
+  <h3>Approach B — stylesheet parameter</h3>
+  <p>Declare <code>&lt;xsl:param name="reportdata"/&gt;</code> and bind it on the xslt
+  step. The catch: the binding must actually exist on the step, and Studio hands variables
+  over as <strong>strings</strong>, so in 2.0 you still cannot do
+  <code>$reportdata/wd:Report_Data</code> — see Step 7 for the exact failure, and Step 11
+  for the 3.0 fix (<code>parse-xml()</code>).</p>
+
+  <h3>Approach C — combine before the XSLT</h3>
+  <p>Build one physical document in the mediation first (a write step producing
+  <code>&lt;Combined_Data&gt;</code> around both payloads — with the inner
+  <code>&lt;?xml?&gt;</code> declarations removed), then run the XSLT on the single
+  combined tree with no second document at all. Crude but processor-version-proof, and a
+  good fallback if the mctx protocol is unavailable.</p>
+
+  <table>
+    <tr><th>Approach</th><th>Pros</th><th>Cons</th></tr>
+    <tr><td>A: <code>document('mctx:vars/…')</code></td><td>No config, real nodes, any XSLT version</td><td>Studio-specific URI scheme</td></tr>
+    <tr><td>B: <code>xsl:param</code></td><td>Portable concept, testable outside Studio</td><td>Arrives as string; needs 3.0 <code>parse-xml()</code>; easy to leave unbound</td></tr>
+    <tr><td>C: pre-combine</td><td>Bulletproof, version-agnostic</td><td>Extra assembly steps; must strip XML declarations</td></tr>
+  </table>
+</section>
+
+<!-- ============================================================ 7 -->
+<section id="s7">
+  <h2><span class="step">STEP 7</span>Anatomy of the XPTY0019 string error</h2>
+  <p class="sub">The exact error from this scenario, decoded word by word.</p>
+
+  <div class="callout err"><b>The error</b>
+  <code>Required item type of first operand of '/' is node(); supplied value has item
+  type xs:string</code></div>
+
+  <p>Translation: you wrote <code>$reportdata/wd:Report_Data</code>. The <code>/</code>
+  operator's left side must be a <strong>node</strong> (something with children to step
+  into). But <code>$reportdata</code> contained a <strong>string</strong> — a flat piece
+  of text. XML text that has not been parsed is just characters; XPath cannot navigate it.</p>
+
+  <p>How the string gets there — two routes, same crash:</p>
+
+  <table>
+    <tr><th>Route</th><th>Mechanism</th></tr>
+    <tr><td>Parameter never bound</td><td>An <code>&lt;xsl:param name="reportdata"/&gt;</code> with no
+    <code>select</code> and no binding defaults to the <em>empty string</em> <code>""</code>.
+    The xslt step in the assembly was <code>&lt;cc:xslt id="Xslt" url="NewStylesheet.xsl"/&gt;</code> —
+    no parameter passed — so <code>$reportdata</code> was <code>""</code>, a string. Crash.</td></tr>
+    <tr><td>Parameter bound to a string</td><td>Even with a binding, Studio hands the
+    variable's <em>text</em> to Saxon. A string of XML is still a string. Same crash, just
+    with content in it.</td></tr>
+  </table>
+
+  <div class="callout tip"><b>The lesson that generalizes</b>
+  In XSLT 2.0+, every value has a <em>type</em>. When an error names two types
+  (“required <code>node()</code> … supplied <code>xs:string</code>”), the question is
+  never “how do I silence this?” but “where did my node turn into a string?” — usually at
+  a parameter boundary or a <code>value-of</code> that should have been
+  <code>copy-of</code>. The mctx <code>document()</code> approach avoids the boundary
+  entirely, which is why it is the recommended fix.</div>
+</section>
+
+<!-- ============================================================ 8 -->
+<section id="s8">
+  <h2><span class="step">STEP 8</span>Joining the two documents (PID = Employee_ID)</h2>
+  <p class="sub">A relational join, expressed as an XPath predicate.</p>
+
+  <p>Inside the <code>peci:Worker</code> template, select exactly the report rows whose
+  <code>wd:PID</code> equals this worker's <code>peci:Employee_ID</code>:</p>
+
+<pre><code>&lt;<span class="k">xsl:copy-of</span> <span class="a">select</span>=<span class="s">"$report/wd:Report_Data/wd:Report_Entry[
+    normalize-space(wd:PID) =
+    normalize-space(current()/peci:Worker_Summary/peci:Employee_ID)]"</span>/&gt;</code></pre>
+
+  <p>Three details deserve attention:</p>
+
+  <p><strong><code>current()</code> vs <code>.</code></strong> — inside a predicate the
+  context dot refers to the <code>wd:Report_Entry</code> being tested, so
+  <code>./peci:Worker_Summary</code> would look for a PECI child inside the report row
+  and find nothing. <code>current()</code> reaches back to the node the template matched:
+  the worker. This is the single most common join bug.</p>
+
+  <p><strong><code>normalize-space()</code></strong> — report values often carry
+  stray whitespace or line breaks. Comparing trimmed strings makes the join immune to it.
+  (If one side is zero-padded — <code>"208611"</code> vs <code>"0208611"</code> —
+  compare <code>number()</code> instead.)</p>
+
+  <p><strong>Scaling with <code>xsl:key</code></strong> — the predicate above rescans the
+  report for every worker (O(workers × entries)). For thousands of rows, index once and
+  look up in constant time:</p>
+
+<pre><code>&lt;<span class="k">xsl:key</span> <span class="a">name</span>=<span class="s">"repByPid"</span> <span class="a">match</span>=<span class="s">"wd:Report_Entry"</span> <span class="a">use</span>=<span class="s">"normalize-space(wd:PID)"</span>/&gt;
+
+<span class="c">&lt;!-- XSLT 2.0: third argument points key() at the report document --&gt;</span>
+&lt;<span class="k">xsl:copy-of</span> <span class="a">select</span>=<span class="s">"key('repByPid',
+    normalize-space(peci:Worker_Summary/peci:Employee_ID), $report)"</span>/&gt;</code></pre>
+</section>
+
+<!-- ============================================================ 9 -->
+<section id="s9">
+  <h2><span class="step">STEP 9</span>Renaming namespaces with modes</h2>
+  <p class="sub">Requirement: wrap the report in &lt;peci:reportdata&gt; and turn every wd:* into peci:*.</p>
+
+  <p><code>copy-of</code> cannot do this — it preserves names exactly. To change names
+  you must <em>rebuild</em> each element, and to keep the renaming rules separate from
+  the main identity rules you put them in a <strong>mode</strong>. A mode is a parallel
+  universe of templates: only <code>apply-templates</code> calls that name the mode will
+  use them.</p>
+
+<pre><code><span class="c">&lt;!-- inside the peci:Worker template --&gt;</span>
+&lt;<span class="k">peci:reportdata</span>&gt;
+    &lt;<span class="k">xsl:apply-templates</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>
+        <span class="a">select</span>=<span class="s">"$report/wd:Report_Data/wd:Report_Entry[...]/node()"</span>/&gt;
+&lt;/<span class="k">peci:reportdata</span>&gt;
+
+<span class="c">&lt;!-- every element gets rebuilt in the peci namespace, same local name --&gt;</span>
+&lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"*"</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>&gt;
+    &lt;<span class="k">xsl:element</span> <span class="a">name</span>=<span class="s">"peci:{local-name()}"</span> <span class="a">namespace</span>=<span class="s">"urn:com.workday/peci"</span>&gt;
+        &lt;<span class="k">xsl:apply-templates</span> <span class="a">select</span>=<span class="s">"@*|node()"</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>/&gt;
+    &lt;/<span class="k">xsl:element</span>&gt;
+&lt;/<span class="k">xsl:template</span>&gt;
+
+<span class="c">&lt;!-- attributes and text pass through unchanged --&gt;</span>
+&lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"@*|text()|comment()|processing-instruction()"</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>&gt;
+    &lt;<span class="k">xsl:copy</span>/&gt;
+&lt;/<span class="k">xsl:template</span>&gt;</code></pre>
+
+  <p>Piece by piece: <code>match="*"</code> catches every element;
+  <code>local-name()</code> is its name without any prefix
+  (<code>totalLOADays</code>, not <code>wd:totalLOADays</code>); the attribute value
+  template <code>peci:{local-name()}</code> builds the new prefixed name; and the
+  <code>namespace</code> attribute pins the actual URI. Because the template recurses
+  <em>in the same mode</em>, nested structures like
+  <code>Leave_of_Absence_Requests_group</code> are converted at every depth
+  automatically.</p>
+
+  <p>The trailing <code>/node()</code> in the select drops the
+  <code>Report_Entry</code> wrapper itself so its fields sit directly inside
+  <code>peci:reportdata</code> — remove it to keep <code>peci:Report_Entry</code> as an
+  inner wrapper.</p>
+</section>
+
+<!-- ============================================================ 10 -->
+<section id="s10">
+  <h2><span class="step">STEP 10</span>The final tested stylesheet, line by line</h2>
+  <p class="sub">The complete solution — verified against the real sample documents.</p>
+
+<pre><code>&lt;?xml version=<span class="s">"1.0"</span> encoding=<span class="s">"UTF-8"</span>?&gt;
+&lt;<span class="k">xsl:stylesheet</span> <span class="a">version</span>=<span class="s">"2.0"</span>
+    <span class="a">xmlns:xsl</span>=<span class="s">"http://www.w3.org/1999/XSL/Transform"</span>
+    <span class="a">xmlns:peci</span>=<span class="s">"urn:com.workday/peci"</span>
+    <span class="a">xmlns:wd</span>=<span class="s">"urn:com.workday.report/INT044_Time_and_absence_tracking"</span>
+    <span class="a">exclude-result-prefixes</span>=<span class="s">"wd"</span>&gt;
+
+    &lt;<span class="k">xsl:output</span> <span class="a">method</span>=<span class="s">"xml"</span> <span class="a">indent</span>=<span class="s">"yes"</span> <span class="a">encoding</span>=<span class="s">"UTF-8"</span>/&gt;
+
+    <span class="c">&lt;!-- [1] second document, read from the Studio variable --&gt;</span>
+    &lt;<span class="k">xsl:variable</span> <span class="a">name</span>=<span class="s">"report"</span> <span class="a">select</span>=<span class="s">"document('mctx:vars/reportdatavar')"</span>/&gt;
+
+    <span class="c">&lt;!-- [2] identity: PECI flows through untouched --&gt;</span>
+    &lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"@*|node()"</span>&gt;
+        &lt;<span class="k">xsl:copy</span>&gt;&lt;<span class="k">xsl:apply-templates</span> <span class="a">select</span>=<span class="s">"@*|node()"</span>/&gt;&lt;/<span class="k">xsl:copy</span>&gt;
+    &lt;/<span class="k">xsl:template</span>&gt;
+
+    <span class="c">&lt;!-- [3] per-worker merge: join + wrap + rename --&gt;</span>
+    &lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"peci:Worker"</span>&gt;
+        &lt;<span class="k">xsl:copy</span>&gt;
+            &lt;<span class="k">xsl:apply-templates</span> <span class="a">select</span>=<span class="s">"@*|node()"</span>/&gt;
+            &lt;<span class="k">peci:reportdata</span>&gt;
+                &lt;<span class="k">xsl:apply-templates</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>
+                    <span class="a">select</span>=<span class="s">"$report/wd:Report_Data/wd:Report_Entry[
+                        normalize-space(wd:PID) =
+                        normalize-space(current()/peci:Worker_Summary/peci:Employee_ID)]/node()"</span>/&gt;
+            &lt;/<span class="k">peci:reportdata</span>&gt;
+        &lt;/<span class="k">xsl:copy</span>&gt;
+    &lt;/<span class="k">xsl:template</span>&gt;
+
+    <span class="c">&lt;!-- [4] rename wd:* to peci:* at every depth --&gt;</span>
+    &lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"*"</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>&gt;
+        &lt;<span class="k">xsl:element</span> <span class="a">name</span>=<span class="s">"peci:{local-name()}"</span> <span class="a">namespace</span>=<span class="s">"urn:com.workday/peci"</span>&gt;
+            &lt;<span class="k">xsl:apply-templates</span> <span class="a">select</span>=<span class="s">"@*|node()"</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>/&gt;
+        &lt;/<span class="k">xsl:element</span>&gt;
+    &lt;/<span class="k">xsl:template</span>&gt;
+
+    <span class="c">&lt;!-- [5] leaves pass through --&gt;</span>
+    &lt;<span class="k">xsl:template</span> <span class="a">match</span>=<span class="s">"@*|text()|comment()|processing-instruction()"</span> <span class="a">mode</span>=<span class="s">"wd-to-peci"</span>&gt;
+        &lt;<span class="k">xsl:copy</span>/&gt;
+    &lt;/<span class="k">xsl:template</span>&gt;
+
+&lt;/<span class="k">xsl:stylesheet</span>&gt;</code></pre>
+
+  <p>Execution walkthrough for the sample data: the processor starts at <code>/</code>,
+  the identity rule [2] copies <code>Workers_Effective_Stack</code> and
+  <code>Summary</code> through. Reaching <code>peci:Worker</code>, rule [3] wins (more
+  specific than [2]): it copies the worker, replays all its children through the identity,
+  then opens <code>&lt;peci:reportdata&gt;</code> and applies the join — PID 208611
+  matches Employee_ID 208611, one <code>Report_Entry</code> selected. Its child nodes
+  enter mode <code>wd-to-peci</code>: rule [4] rebuilds
+  <code>wd:totalLOADays</code> as <code>peci:totalLOADays</code> and recurses; rule [5]
+  copies the text values. Result: the original PECI, with a fully converted report block
+  inside each worker.</p>
+</section>
+
+<!-- ============================================================ 11 -->
+<section id="s11">
+  <h2><span class="step">STEP 11</span>XSLT 3.0 — what it buys you in these scenarios</h2>
+  <p class="sub">If your Studio's Saxon accepts version="3.0", three upgrades apply.</p>
+
+  <table>
+    <tr><th>Feature</th><th>Replaces</th><th>Why it matters here</th></tr>
+    <tr><td><code>parse-xml($string)</code></td><td>nothing in 2.0 (dead end)</td>
+        <td>Turns a string of XML into a document node — makes the parameter approach
+        (Step 6B) viable: <code>parse-xml($reportdata)//wd:Report_Entry</code></td></tr>
+    <tr><td><code>&lt;xsl:mode on-no-match="shallow-copy"/&gt;</code></td>
+        <td>the 4-line identity template</td>
+        <td>One declaration gives you identity behaviour; you write only the overrides</td></tr>
+    <tr><td><code>$x instance of xs:string</code> guards<br>(2.0 has this too; 3.0 makes it useful with parse-xml)</td>
+        <td>runtime type crashes</td>
+        <td>Accept a param as string <em>or</em> node:
+        <code>if ($p instance of xs:string) then parse-xml($p) else $p</code></td></tr>
+  </table>
+
+<pre><code><span class="c">&lt;!-- 3.0 flavour of the same solution, parameter-based --&gt;</span>
+&lt;<span class="k">xsl:param</span> <span class="a">name</span>=<span class="s">"reportdata"</span>/&gt;
+&lt;<span class="k">xsl:variable</span> <span class="a">name</span>=<span class="s">"report"</span> <span class="a">select</span>=<span class="s">"
+    if ($reportdata instance of xs:string)
+    then parse-xml(replace($reportdata, '^[^&amp;lt;]+', ''))
+    else $reportdata"</span>/&gt;
+&lt;<span class="k">xsl:mode</span> <span class="a">on-no-match</span>=<span class="s">"shallow-copy"</span>/&gt;</code></pre>
+
+  <p>The <code>replace(..., '^[^&lt;]+', '')</code> strips any leading whitespace or
+  carriage returns before the <code>&lt;?xml</code> declaration — Studio write steps and
+  variables frequently carry <code>&amp;#xD;</code> noise that would otherwise make
+  <code>parse-xml()</code> fail, since an XML declaration must be the first thing in the
+  string.</p>
+</section>
+
+<!-- ============================================================ 12 -->
+<section id="s12">
+  <h2><span class="step">STEP 12</span>Debugging playbook &amp; error decoder</h2>
+  <p class="sub">Work the checklist top to bottom; most merge failures fall out at line one or two.</p>
+
+  <table>
+    <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+    <tr><td><code>XPTY0019 — first operand of '/' is node(); supplied xs:string</code></td>
+        <td>Unbound param (empty-string default) or variable passed as text</td>
+        <td>Use <code>document('mctx:vars/…')</code>, or bind the param and
+        <code>parse-xml()</code> it (3.0)</td></tr>
+    <tr><td>Runs clean, report section empty</td>
+        <td>Namespace URI mismatch, or join values differ (padding/whitespace)</td>
+        <td>Recheck URIs character-by-character; wrap both sides of the join in
+        <code>normalize-space()</code></td></tr>
+    <tr><td>Runs clean, <em>everything</em> empty</td>
+        <td>Wrong document is the message when the xslt step runs</td>
+        <td>Check step order; the last copy/write before <code>cc:xslt</code> decides the input tree</td></tr>
+    <tr><td><code>XTSE0110 / “3.0 not supported”</code> style compile errors</td>
+        <td>Studio's Saxon build predates XSLT 3.0</td>
+        <td>Stay on 2.0 + the mctx <code>document()</code> approach</td></tr>
+    <tr><td>Duplicate or missing namespace declarations in output</td>
+        <td>Prefixes leaking from source or stylesheet</td>
+        <td><code>exclude-result-prefixes</code>; create elements with explicit
+        <code>namespace=</code></td></tr>
+    <tr><td>Join matches the wrong rows / all rows</td>
+        <td><code>.</code> used inside a predicate where <code>current()</code> was meant</td>
+        <td>Step 8 — <code>current()</code> refers to the matched node, <code>.</code> to the candidate</td></tr>
+  </table>
+
+  <h3>Verification habits that catch problems early</h3>
+  <p>Test the stylesheet outside Studio first — any Saxon (oXygen, a local Saxon jar,
+  SaxonC) will reproduce Studio's behaviour for everything except the
+  <code>mctx:</code> protocol; substitute a local file path in <code>document()</code>
+  for the test and swap the mctx URI back for deployment. Make failures loud: an
+  <code>&lt;xsl:message terminate="yes"&gt;</code> when the second document is empty
+  beats silently shipping half a file to payroll. And keep a golden pair of sample
+  inputs (like the PECI and report used throughout this guide) with the expected output,
+  so any future edit to the stylesheet can be checked in seconds.</p>
+
+  <div class="callout tip"><b>The one-paragraph summary</b>
+  Combining two in-memory XML documents in Studio = make one document the message, reach
+  the other with <code>document('mctx:vars/&lt;variable&gt;')</code>, keep the main
+  document flowing with an identity transform, inject at the right spot with a specific
+  template, join with a normalized predicate or key, and rebuild elements via a mode when
+  names or namespaces must change. Every error you meet on the way is one of: a string
+  where a node was needed, a namespace URI that doesn't match, or the wrong document in
+  the message slot.</div>
+</section>
+
+</main>
+
+<footer>
+  XSLT in Workday Studio — step-by-step guide &middot; built from a live PECI + RaaS report merge scenario &middot; July 2026
+</footer>
+
+</body>
+</html>
