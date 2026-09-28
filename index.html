@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Shelf</title>
+<meta name="description" content="Study guides, reference pages and practice apps for Workday integrations, Workday Extend, computer science and mathematics.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:#F5F6F3; --ink:#17212B; --muted:#56677A; --rule:#D6DBD4;
+  --accent:#2C5E8F; --mark:#F1D66B; --field:#FFFFFF;
+  --serif:"Newsreader", Georgia, "Times New Roman", serif;
+  --sans:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper:#141A21; --ink:#E6EAEE; --muted:#9AA8B6; --rule:#2A333D; --accent:#8DB8E2; --mark:#5E5222; --field:#1B232C; }
+}
+:root[data-theme="dark"] { --paper:#141A21; --ink:#E6EAEE; --muted:#9AA8B6; --rule:#2A333D; --accent:#8DB8E2; --mark:#5E5222; --field:#1B232C; }
+*,*::before,*::after { box-sizing:inherit; }
+html { scroll-padding-top:calc(env(safe-area-inset-top,0px) + 5rem); scroll-behavior:smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+body { margin:0; background:var(--paper); color:var(--ink); font:400 1rem/1.55 var(--sans); }
+.wrap { max-width:68rem; margin:0 auto; padding:0 1.5rem; }
+a { color:inherit; }
+:focus-visible { outline:3px solid var(--accent); outline-offset:3px; border-radius:2px; }
+
+.hero { padding-top:5rem; padding-bottom:2.5rem; }
+.hero h1 { font:600 clamp(3rem,9vw,6.5rem)/0.95 var(--serif); letter-spacing:-0.025em; margin:0 0 1.25rem; }
+.hero p { max-width:38rem; font-size:1.125rem; color:var(--muted); margin:0; }
+
+.bar { position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--paper); border-bottom:1px solid var(--rule); }
+.bar .wrap { display:flex; flex-wrap:wrap; gap:.75rem 1.5rem; align-items:center; padding-top:.9rem; padding-bottom:.9rem; }
+.search { flex:1 1 18rem; display:flex; align-items:center; gap:.6rem; background:var(--field); border:1px solid var(--rule); border-radius:8px; padding:.55rem .8rem; }
+.search:focus-within { border-color:var(--accent); }
+.search input { flex:1; border:0; background:transparent; color:var(--ink); font:inherit; font-size:1rem; outline:none; min-width:0; }
+.search kbd { font:500 .75rem var(--sans); color:var(--muted); border:1px solid var(--rule); border-radius:4px; padding:.05rem .4rem; }
+.status { color:var(--muted); font-size:.9rem; min-width:7rem; }
+nav.jump { display:flex; gap:1.1rem; overflow-x:auto; font-size:.9rem; width:100%; scrollbar-width:none; }
+nav.jump a { color:var(--muted); text-decoration:none; white-space:nowrap; padding:.15rem 0; }
+nav.jump a:hover { color:var(--ink); text-decoration:underline; text-underline-offset:4px; }
+
+.shelf { padding:3rem 0 1rem; display:grid; grid-template-columns:16rem 1fr; gap:2rem; }
+.shelf-head h2 { font:600 1.75rem/1.15 var(--serif); margin:0 0 .5rem; position:sticky; top:8.5rem; }
+.shelf-head p { color:var(--muted); font-size:.95rem; margin:0; }
+.count { display:block; margin-top:.35rem; }
+.shelf ul { list-style:none; margin:0; padding:0; border-top:2px solid var(--ink); }
+.entry a { display:grid; grid-template-columns:1fr auto; gap:.25rem 1rem; padding:1.1rem 0; border-bottom:1px solid var(--rule); text-decoration:none; }
+.entry .title { font:600 1.2rem/1.3 var(--serif); color:var(--accent); }
+.entry a:hover .title { text-decoration:underline; text-underline-offset:3px; }
+.entry .kind { font-size:.8rem; color:var(--muted); border:1px solid var(--rule); border-radius:999px; padding:.1rem .6rem; align-self:start; white-space:nowrap; }
+.entry .desc { grid-column:1 / -1; color:var(--ink); opacity:.85; max-width:44rem; }
+.entry mark { background:var(--mark); color:inherit; border-radius:2px; }
+.shelf.empty { display:none; }
+.entry[hidden] { display:none; }
+.none { padding:3rem 0; color:var(--muted); }
+
+footer { margin-top:4rem; padding-top:2rem; padding-bottom:3rem; border-top:1px solid var(--rule); color:var(--muted); font-size:.9rem; }
+@media (max-width:760px) {
+  .hero { padding-top:3rem; }
+  .shelf { grid-template-columns:1fr; gap:1rem; padding-top:2.25rem; }
+  .shelf-head h2 { position:static; }
+}
+</style>
+</head>
+<body>
+<header class="hero wrap">
+  <h1>Study Shelf</h1>
+  <p>30 guides, reference pages and practice apps for Workday integrations, Workday Extend, computer science and mathematics. Everything opens in the browser, and quizzes save progress on your own device.</p>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <label class="search">
+      <span class="visually-hidden" style="position:absolute;left:-9999px">Search guides</span>
+      <input id="q" type="search" placeholder="Search guides, for example XSLT or PECI" autocomplete="off">
+      <kbd>/</kbd>
+    </label>
+    <span class="status" id="status" aria-live="polite">30 items</span>
+    <nav class="jump" aria-label="Jump to section">
+      <a href="#integrations">Workday integrations</a>
+      <a href="#extend">Workday Extend and AI agents</a>
+      <a href="#cert">Certification prep</a>
+      <a href="#cs">Computer science</a>
+      <a href="#math">Mathematics</a>
+      <a href="#tools">Tools</a>
+      <a href="#life">Outside work</a>
+    </nav>
+  </div>
+</div>
+
+<main class="wrap">
+  <section id="integrations" class="shelf">
+    <header class="shelf-head">
+      <h2>Workday integrations</h2>
+      <p>Studio, XSLT, PECI and Orchestrate. <span class="count">11 items</span></p>
+    </header>
+    <ul>
+      <li class="entry" data-text="workday studio: complete reference and build guide studio architecture, every major component, step-by-step build guides, mvel basics and a quiz. the best starting point for studio. guide">
+        <a href="guides/workday-studio-complete-guide.html">
+          <span class="title">Workday Studio: complete reference and build guide</span>
+          <span class="kind">Guide</span>
+          <span class="desc">Studio architecture, every major component, step-by-step build guides, MVEL basics and a quiz. The best starting point for Studio.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="workday studio reference and quiz lab how to build, batch and debug studio integrations the way the field does it, followed by a quiz to check what stuck. quiz">
+        <a href="guides/workday-studio-reference-and-quiz.html">
+          <span class="title">Workday Studio reference and quiz lab</span>
+          <span class="kind">Quiz</span>
+          <span class="desc">How to build, batch and debug Studio integrations the way the field does it, followed by a quiz to check what stuck.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="workday studio mvel guide mvel from scratch: where you write it in studio, the implicit variables, syntax, working with props, and a reference with quiz. guide">
+        <a href="guides/workday-studio-mvel-guide.html">
+          <span class="title">Workday Studio MVEL guide</span>
+          <span class="kind">Guide</span>
+          <span class="desc">MVEL from scratch: where you write it in Studio, the implicit variables, syntax, working with props, and a reference with quiz.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="xslt in studio: combining two xml documents a real scenario worked end to end: merging a peci extract and a raas report held in two studio variables into one xml output, including the errors you will hit. walkthrough">
+        <a href="guides/xslt-in-studio-combining-two-xml-documents.html">
+          <span class="title">XSLT in Studio: combining two XML documents</span>
+          <span class="kind">Walkthrough</span>
+          <span class="desc">A real scenario worked end to end: merging a PECI extract and a RaaS report held in two Studio variables into one XML output, including the errors you will hit.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="xslt 2.0 for workday: hands-on course five phases and twenty-two skills in the xslt 2.0 that studio and document transformation run on, each with a worked example and an assignment with a full solution. course">
+        <a href="guides/xslt-2-for-workday-course.html">
+          <span class="title">XSLT 2.0 for Workday: hands-on course</span>
+          <span class="kind">Course</span>
+          <span class="desc">Five phases and twenty-two skills in the XSLT 2.0 that Studio and Document Transformation run on, each with a worked example and an assignment with a full solution.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="xslt 3.0 for workday: study app what changed from 2.0, how the processor traverses and outputs, maps, streaming, and a built-in exam mode. study app">
+        <a href="guides/xslt-3-for-workday-study-app.html">
+          <span class="title">XSLT 3.0 for Workday: study app</span>
+          <span class="kind">Study app</span>
+          <span class="desc">What changed from 2.0, how the processor traverses and outputs, maps, streaming, and a built-in exam mode.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="xslt 3.0 for workday integrations: developer guide the raas document model and its namespace gotcha, a local lab setup, xsl:mode, text value templates and the rest of the 3.0 feature set applied to workday. guide">
+        <a href="guides/xslt-3-workday-developer-guide.html">
+          <span class="title">XSLT 3.0 for Workday integrations: developer guide</span>
+          <span class="kind">Guide</span>
+          <span class="desc">The RaaS document model and its namespace gotcha, a local lab setup, xsl:mode, text value templates and the rest of the 3.0 feature set applied to Workday.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="xslt 3.0 for workday: field guide a compact reference plus practice: text value templates, typed functions, maps and arrays, grouping and native json output, all against one sample document. reference">
+        <a href="guides/xslt-3-workday-field-guide.html">
+          <span class="title">XSLT 3.0 for Workday: field guide</span>
+          <span class="kind">Reference</span>
+          <span class="desc">A compact reference plus practice: text value templates, typed functions, maps and arrays, grouping and native JSON output, all against one sample document.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="inside the xslt engine what actually happens between feeding xml and a stylesheet into a processor and getting a finished document out, one stage at a time in plain language. explainer">
+        <a href="guides/inside-the-xslt-engine.html">
+          <span class="title">Inside the XSLT engine</span>
+          <span class="kind">Explainer</span>
+          <span class="desc">What actually happens between feeding XML and a stylesheet into a processor and getting a finished document out, one stage at a time in plain language.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="peci mastery: payroll effective change interface an interview-ready reference on how peci works: the effective stack, change detection, derived event codes and more, with a learning path and exam. study app">
+        <a href="guides/peci-mastery.html">
+          <span class="title">PECI mastery: Payroll Effective Change Interface</span>
+          <span class="kind">Study app</span>
+          <span class="desc">An interview-ready reference on how PECI works: the effective stack, change detection, derived event codes and more, with a learning path and exam.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="workday orchestrate: complete guide orchestrate components explained step by step with three hands-on builds: calling a report, reading a csv file, and an inbound custom id update. pdf">
+        <a href="pdfs/workday-orchestrate-complete-guide.pdf" target="_blank" rel="noopener">
+          <span class="title">Workday Orchestrate: complete guide</span>
+          <span class="kind">PDF</span>
+          <span class="desc">Orchestrate components explained step by step with three hands-on builds: calling a report, reading a CSV file, and an inbound Custom ID update.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+  <section id="extend" class="shelf">
+    <header class="shelf-head">
+      <h2>Workday Extend and AI agents</h2>
+      <p>PMD scripting, app architecture and the agent platform. <span class="count">4 items</span></p>
+    </header>
+    <ul>
+      <li class="entry" data-text="pmd scripting: complete reference guide the workday extend pmd script language section by section: lexical structure, scope, data types, operators, control flow, closures and built-in functions. reference">
+        <a href="guides/pmd-scripting-reference-guide.html">
+          <span class="title">PMD scripting: complete reference guide</span>
+          <span class="kind">Reference</span>
+          <span class="desc">The Workday Extend PMD script language section by section: lexical structure, scope, data types, operators, control flow, closures and built-in functions.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="pmd scripting: tutorial and field guide learn pmd scripting in order: where scripts live, predefined variables, events and page lifecycle, widget methods, endpoints and outbound calls. tutorial">
+        <a href="guides/pmd-scripting-tutorial-and-field-guide.html">
+          <span class="title">PMD scripting: tutorial and field guide</span>
+          <span class="kind">Tutorial</span>
+          <span class="desc">Learn PMD scripting in order: where scripts live, predefined variables, events and page lifecycle, widget methods, endpoints and outbound calls.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="workday extend: end-to-end application blueprint a full-stack reference build of a contingent worker compliance app, covering business objects, pmd pages, orchestrations and how the pieces connect. blueprint">
+        <a href="guides/workday-extend-end-to-end-blueprint.html">
+          <span class="title">Workday Extend: end-to-end application blueprint</span>
+          <span class="kind">Blueprint</span>
+          <span class="desc">A full-stack reference build of a contingent worker compliance app, covering business objects, PMD pages, orchestrations and how the pieces connect.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="the workday agent framework how ai agents work and how workday turns that into a governed platform where agents read, write and act across hcm, payroll and financials. guide">
+        <a href="guides/workday-agent-framework.html">
+          <span class="title">The Workday Agent Framework</span>
+          <span class="kind">Guide</span>
+          <span class="desc">How AI agents work and how Workday turns that into a governed platform where agents read, write and act across HCM, Payroll and Financials.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+  <section id="cert" class="shelf">
+    <header class="shelf-head">
+      <h2>Certification prep</h2>
+      <p>Practice exams and question banks. Your progress stays in your own browser. <span class="count">5 items</span></p>
+    </header>
+    <ul>
+      <li class="entry" data-text="workday integrations certification: practice exam a timed practice exam in the style of the workday pro integrations certification. practice exam">
+        <a href="guides/workday-integrations-practice-exam.html">
+          <span class="title">Workday Integrations certification: practice exam</span>
+          <span class="kind">Practice exam</span>
+          <span class="desc">A timed practice exam in the style of the Workday Pro Integrations certification.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="workday pro integrations: 500-question quiz drill xslt, eib, core connectors, document transformation, studio, web services and security, filtered by topic, fully offline. quiz">
+        <a href="guides/workday-pro-integrations-quiz.html">
+          <span class="title">Workday Pro Integrations: 500-question quiz</span>
+          <span class="kind">Quiz</span>
+          <span class="desc">Drill XSLT, EIB, Core Connectors, Document Transformation, Studio, web services and security, filtered by topic, fully offline.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="workday extend certification prep a dashboard, study material and an exam simulator for the workday pro extend certification. study app">
+        <a href="guides/workday-extend-cert-prep.html">
+          <span class="title">Workday Extend certification prep</span>
+          <span class="kind">Study app</span>
+          <span class="desc">A dashboard, study material and an exam simulator for the Workday Pro Extend certification.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="workday pro hcm core certification prep scenario-based single-answer questions aligned to the hcm core exam guide topics and weightings. question bank">
+        <a href="guides/workday-hcm-core-cert-prep.html">
+          <span class="title">Workday Pro HCM Core certification prep</span>
+          <span class="kind">Question bank</span>
+          <span class="desc">Scenario-based single-answer questions aligned to the HCM Core exam guide topics and weightings.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="prism analytics certification prep 176 scenario-based questions across seven sections, with timed 20-question exams. practice exam">
+        <a href="guides/prism-analytics-cert-prep.html">
+          <span class="title">Prism Analytics certification prep</span>
+          <span class="kind">Practice exam</span>
+          <span class="desc">176 scenario-based questions across seven sections, with timed 20-question exams.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+  <section id="cs" class="shelf">
+    <header class="shelf-head">
+      <h2>Computer science</h2>
+      <p>Data structures, SQL and networking. <span class="count">5 items</span></p>
+    </header>
+    <ul>
+      <li class="entry" data-text="data structures in c++: problem-first guide 27 problems from easy to hard plus a capstone, starting with setting up visual studio and building up from arrays and two pointers. course">
+        <a href="guides/data-structures-in-cpp.html">
+          <span class="title">Data structures in C++: problem-first guide</span>
+          <span class="kind">Course</span>
+          <span class="desc">27 problems from easy to hard plus a capstone, starting with setting up Visual Studio and building up from arrays and two pointers.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="dsa atlas: c++, python and javascript data structures and algorithms side by side in three languages, so you can see the same idea written three ways. reference">
+        <a href="guides/dsa-atlas.html">
+          <span class="title">DSA Atlas: C++, Python and JavaScript</span>
+          <span class="kind">Reference</span>
+          <span class="desc">Data structures and algorithms side by side in three languages, so you can see the same idea written three ways.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="sql and rdbms: beginner to expert a complete path from first select to advanced sql, with a real database engine running inside the page so every example can be executed. course">
+        <a href="guides/sql-and-rdbms-beginner-to-expert.html">
+          <span class="title">SQL and RDBMS: beginner to expert</span>
+          <span class="kind">Course</span>
+          <span class="desc">A complete path from first SELECT to advanced SQL, with a real database engine running inside the page so every example can be executed.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="sql joins: a visual masterclass every join type made visible, focused on the one thing that changes between them: what happens to rows that don&#x27;t match. includes a quiz. explainer">
+        <a href="guides/sql-joins-masterclass.html">
+          <span class="title">SQL joins: a visual masterclass</span>
+          <span class="kind">Explainer</span>
+          <span class="desc">Every join type made visible, focused on the one thing that changes between them: what happens to rows that don&#x27;t match. Includes a quiz.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="the osi model in plain english seven layers, one job each, traced through everyday examples like a web page or a workday sftp file drop. explainer">
+        <a href="guides/osi-model-guide.html">
+          <span class="title">The OSI model in plain English</span>
+          <span class="kind">Explainer</span>
+          <span class="desc">Seven layers, one job each, traced through everyday examples like a web page or a Workday SFTP file drop.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+  <section id="math" class="shelf">
+    <header class="shelf-head">
+      <h2>Mathematics</h2>
+      <p>Concrete Mathematics and a from-scratch formula reference. <span class="count">3 items</span></p>
+    </header>
+    <ul>
+      <li class="entry" data-text="a detailed guide to concrete mathematics a chapter-by-chapter companion to graham, knuth and patashnik, with study advice, the exercise system and a notation cheat sheet. guide">
+        <a href="guides/concrete-mathematics-guide.html">
+          <span class="title">A detailed guide to Concrete Mathematics</span>
+          <span class="kind">Guide</span>
+          <span class="desc">A chapter-by-chapter companion to Graham, Knuth and Patashnik, with study advice, the exercise system and a notation cheat sheet.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="concrete mathematics: 36-week tracker a week-by-week plan at about 15 hours a week, from high-school math to being ready for the art of computer programming. progress is saved in your browser. tracker">
+        <a href="guides/concrete-mathematics-tracker.html">
+          <span class="title">Concrete Mathematics: 36-week tracker</span>
+          <span class="kind">Tracker</span>
+          <span class="desc">A week-by-week plan at about 15 hours a week, from high-school math to being ready for The Art of Computer Programming. Progress is saved in your browser.</span>
+        </a>
+      </li>
+      <li class="entry" data-text="mathematics explained: every formula with its derivation algebra through calculus for absolute beginners, with each formula derived rather than just stated. large page, so give it a moment to load. reference">
+        <a href="guides/math-formulas-explained.html">
+          <span class="title">Mathematics explained: every formula with its derivation</span>
+          <span class="kind">Reference</span>
+          <span class="desc">Algebra through calculus for absolute beginners, with each formula derived rather than just stated. Large page, so give it a moment to load.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+  <section id="tools" class="shelf">
+    <header class="shelf-head">
+      <h2>Tools</h2>
+      <p>Small utilities that run entirely in the browser. <span class="count">1 item</span></p>
+    </header>
+    <ul>
+      <li class="entry" data-text="pem key formatter paste a key or certificate mangled by email or excel and get a correctly wrapped pem back. runs entirely in your browser; nothing is uploaded. tool">
+        <a href="guides/pem-key-formatter.html">
+          <span class="title">PEM key formatter</span>
+          <span class="kind">Tool</span>
+          <span class="desc">Paste a key or certificate mangled by email or Excel and get a correctly wrapped PEM back. Runs entirely in your browser; nothing is uploaded.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+  <section id="life" class="shelf">
+    <header class="shelf-head">
+      <h2>Outside work</h2>
+      <p><span class="count">1 item</span></p>
+    </header>
+    <ul>
+      <li class="entry" data-text="keto kitchen: 7-day plan two meals a day, low-carb and high-protein, built for cooking twice a week and assembling in minutes the rest. plan">
+        <a href="guides/keto-kitchen-7-day-plan.html">
+          <span class="title">Keto Kitchen: 7-day plan</span>
+          <span class="kind">Plan</span>
+          <span class="desc">Two meals a day, low-carb and high-protein, built for cooking twice a week and assembling in minutes the rest.</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+  <p class="none" id="none" hidden>No guides match that search. Try a shorter word, like "studio" or "sql".</p>
+</main>
+
+<footer class="wrap">
+  Hosted on GitHub Pages. Each guide is a single self-contained page.
+</footer>
+
+<script>
+(() => {
+  const q = document.getElementById('q'), status = document.getElementById('status'), none = document.getElementById('none');
+  const entries = [...document.querySelectorAll('.entry')];
+  const orig = new Map(entries.map(e => [e, [e.querySelector('.title').textContent, e.querySelector('.desc').textContent]]));
+  const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const hl = (text, words) => {
+    let out = esc(text);
+    words.forEach(w => { const re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi'); out = out.replace(re, '<mark>$1</mark>'); });
+    return out;
+  };
+  function run() {
+    const words = q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    entries.forEach(e => {
+      const ok = words.every(w => e.dataset.text.includes(w));
+      e.hidden = !ok; if (ok) shown++;
+      const [t, d] = orig.get(e);
+      e.querySelector('.title').innerHTML = words.length ? hl(t, words) : esc(t);
+      e.querySelector('.desc').innerHTML = words.length ? hl(d, words) : esc(d);
+    });
+    document.querySelectorAll('.shelf').forEach(s => s.classList.toggle('empty', !s.querySelector('.entry:not([hidden])')));
+    status.textContent = words.length ? `${shown} of ${entries.length} items` : `${entries.length} items`;
+    none.hidden = shown !== 0;
+  }
+  q.addEventListener('input', run);
+  document.addEventListener('keydown', ev => {
+    if (ev.key === '/' && document.activeElement !== q) { ev.preventDefault(); q.focus(); }
+    if (ev.key === 'Escape' && document.activeElement === q) { q.value = ''; run(); q.blur(); }
+  });
+})();
+</script>
+</body>
+</html>
